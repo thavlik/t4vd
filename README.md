@@ -44,7 +44,7 @@ While not officially supported, the backend images should be compatible with [do
 ## License
 All videos are property of their respective creators.
 
-Laselva logo is property of [Laselva MMA & Fitness](http://www.laselvamma.com/)
+Laselva logo is property of [Laselva MMA & Fitness](http://www.laselvamma.com/). This project was originally intended to create Brazilian Jiu-jitsu datasets, so the logo made sense for the prototype.
 
 This project's code is released under [MIT](LICENSE-MIT) / [Apache 2.0](LICENSE-Apache) dual license, which is extremely permissive.
 
