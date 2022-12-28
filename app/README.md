@@ -1,16 +1,8 @@
-# bjjv
+# t4vd Flutter App
 
-A new Flutter project.
+This is the [Flutter](https://github.com/flutter/flutter) front end root directory for [t4vd](https://github.com/thavlik/t4vd).
 
-## Getting Started
+## License
+This project's code is released under [MIT](../LICENSE-MIT) / [Apache 2.0](../LICENSE-Apache) dual license, which is extremely permissive.
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+You are encouraged to fork this project and use it for your own purposes, even commercial.
