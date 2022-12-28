@@ -1,0 +1,8 @@
+.DS_Store
+*/charts/*.tgz
+/target/
+.vscode/
+__pycache__
+secrets/*
+cmd/cmd
+cmd/out

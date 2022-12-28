@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-filter
+  labels:
+    app: {{ .Release.Name }}-filter
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Release.Name }}-filter
+  ports:
+  - name: http
+    port: 80

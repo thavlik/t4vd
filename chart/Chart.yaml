@@ -1,0 +1,8 @@
+apiVersion: v2
+description: Brazilian Jiu-jitsu Vision Backend
+name: application
+version: 0.0.1
+maintainers:
+  - name: Tom Havlik
+    email: thavlik@protonmail.com
+    url: https://github.com/thavlik

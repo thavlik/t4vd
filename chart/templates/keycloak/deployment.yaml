@@ -1,0 +1,59 @@
+{{- if .Values.iam.keycloak.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-keycloak
+  labels:
+    app: {{ .Release.Name }}-keycloak
+spec:
+  replicas: {{ .Values.iam.keycloak.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-keycloak
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-keycloak
+    spec:
+      containers:
+      - name: keycloak
+        imagePullPolicy: {{ .Values.iam.keycloak.imagePullPolicy }}
+        image: {{ .Values.iam.keycloak.image }}
+        args:
+        - start
+        - --db=postgres
+        - --features=token-exchange
+        - --http-enabled=true
+        - --hostname-strict-https=false
+        - --hostname-strict=false
+    {{- if .Values.iam.keycloak.resources }}
+        resources:
+{{ toYaml .Values.iam.keycloak.resources | indent 10 }}
+    {{- end }}
+        ports:
+        - name: http
+          containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /realms/master
+            port: 8080
+        env:
+        - name: KEYCLOAK_ADMIN
+{{ tpl (toYaml .Values.iam.keycloak.admin.username) . | indent 10 }}
+        - name: KEYCLOAK_ADMIN_PASSWORD
+{{ tpl (toYaml .Values.iam.keycloak.admin.password) . | indent 10 }}
+        - name: POSTGRES_DATABASE
+{{ tpl (toYaml .Values.db.postgres.database) . | indent 10 }}
+        - name: POSTGRES_HOST
+{{ tpl (toYaml .Values.db.postgres.host) . | indent 10 }}
+        - name: POSTGRES_PORT
+{{ tpl (toYaml .Values.db.postgres.port) . | indent 10 }}
+        - name: POSTGRES_USERNAME
+{{ tpl (toYaml .Values.db.postgres.username) . | indent 10 }}
+        - name: POSTGRES_PASSWORD
+{{ tpl (toYaml .Values.db.postgres.password) . | indent 10 }}
+        - name: POSTGRES_CA_CERT
+{{ tpl (toYaml .Values.db.postgres.ca) . | indent 10 }}
+        - name: POSTGRES_SSL_MODE
+{{ tpl (toYaml .Values.db.postgres.sslmode) . | indent 10 }}
+{{- end }}

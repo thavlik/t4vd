@@ -1,0 +1,159 @@
+imagePullSecrets: []
+
+prometheus:
+  enabled: false
+
+db:
+  # Configure the database for all microservices.
+  # Both mongo and postgres are supported, but
+  # postgres is required to run a local keycloak
+  # instance. Synergistic combinations include
+  # Mongo+Cognito and Postgres+KeyCloak
+  driver: "" # mongo | postgres
+  postgres:
+    host:
+      value: ""
+    port:
+      value: ""
+    database:
+      value: ""
+    username:
+      value: ""
+    password:
+      value: ""
+    sslmode:
+      value: ""
+    ca:
+      value: ""
+  mongo:
+    host:
+      value: ""
+    dbName:
+      value: ""
+    authSource:
+      value: ""
+    username:
+      value: ""
+    password:
+      value: ""
+
+iam:
+  # Configure identity & access management for
+  # the backend. This feature is optional, both
+  # AWS Cognito and KeyCloak are supported. Not
+  # specifying a driver will disable RBAC, thus
+  # allowing access to the public API without
+  # login.
+  driver: "" # keycloak | cognito
+  cognito:
+    region: us-east-1
+    userPoolId:
+      value: ""
+    clientId:
+      value: ""
+    clientSecret:
+      value: ""
+    accessKeyId:
+      value: ""
+    secretAccessKey:
+      value: ""
+  keycloak:
+    # to use an external keycloak instance, set enabled=false
+    # and set the endpoint to the external keycloak endpoint
+    enabled: false
+    endpoint: "http://{{ .Release.Name }}-keycloak:8080"
+    realm: ""
+    clientId:
+      value: ""
+    clientSecret:
+      value: ""
+    admin:
+      realm: master
+      username:
+        value: null
+      password:
+        value: null
+    image: thavlik/bjjv-keycloak:latest
+    imagePullPolicy: Always
+    replicas: 1
+    resources: {}
+
+s3:
+  endpoint: ""
+  region: us-west-2
+  videoBucket: ""
+  thumbnailBucket: ""
+  accessKeyId:
+    value: ""
+  secretAccessKey:
+    value: ""
+
+redis:
+  enabled: false
+  username:
+    value: ""
+  password:
+    value: ""
+  host:
+    value: ""
+  port:
+    value: ""
+
+gateway:
+  corsHeader: "*" # Access-Control-Allow-Origin value, e.g. https://app.mydomain.com
+  image: thavlik/bjjv-gateway:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
+  resources: {}
+
+app:
+  enabled: false
+  image: thavlik/bjjv-app:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources: {}
+
+compiler:
+  enabled: true
+  concurrency: 2
+  compileOnStart: false
+  image: thavlik/bjjv-compiler:latest
+  imagePullPolicy: Always
+  logLevel: debug
+  resources: {}
+
+sources:
+  image: thavlik/bjjv-sources:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
+  resources: {}
+
+seer:
+  format: webm # download format
+  image: thavlik/bjjv-seer:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
+  audio:
+    enabled: false
+    format: ""
+  resources: {}
+
+filter:
+  stackSize: 5
+  stackBufferSize: 5
+  image: thavlik/bjjv-filter:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
+  resources: {}
+
+slideshow:
+  enabled: false
+  image: thavlik/bjjv-slideshow:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
+  resources: {}

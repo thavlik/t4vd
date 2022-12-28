@@ -1,0 +1,55 @@
+gadgets:
+  # dataset gadgets are the elementary tool for
+  # providing data to the rest of the gadgets
+  - name: my-latest-dataset
+    dataset: # dataset gadget provides a single output
+      projectID: my-project-id
+  # filters gadgets are useful for assigning labels
+  # to individual frames
+  - name: my-basic-filter
+    filter:
+      sources:
+        - name: my-latest-dataset
+        # outputs: [0] # use of output 0 is implied
+      classes: # define two classes for this filter
+        - name: discard # indicates garbage frame
+          value: 0
+        - name: keep # indicates frame is "useful"
+          value: 1
+  # the following example creates a basic tagger
+  # that serves only examples that were assigned
+  # the `keep` label by the previous filter
+  - name: my-tagger
+    tagger:
+      sources:
+        - name: my-basic-filter
+          outputs: [1] # take examples marked `keep`
+  # the following example creates a second filter
+  # that serves only examples that the basic filter
+  # deemed useful and assigns them one of several
+  # mutually exclusive labels
+  - name: my-animal-filter
+    filter:
+      sources:
+        - name: my-basic-filter
+          outputs: [1]
+      classes:
+        - name: giraffe
+          value: 0
+        - name: fish
+          value: 1
+        - name: tiger
+          value: 2
+        - name: zebra
+          value: 3
+        - name: eagle
+          value: 4
+        - name: mosquito
+          value: 100 # any integer value is okay
+  # the following creates a tagger from the mammal
+  # frames labeled in the previous filter example
+  - name: my-mammal-tagger
+    tagger:
+      sources:
+        - name: my-animal-filter
+          outputs: [0, 2, 3] # exclude fish

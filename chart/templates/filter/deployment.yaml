@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-filter
+spec:
+  replicas: {{ .Values.filter.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-filter
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-filter
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: filter
+        imagePullPolicy: {{ .Values.filter.imagePullPolicy }}
+        image: {{ .Values.filter.image }}
+    {{- if .Values.filter.resources }}
+        resources:
+{{ toYaml .Values.filter.resources | indent 10 }}
+    {{- end }}
+        command:
+          - filter
+          - server
+          - --db-driver
+          - {{ required "missing db.driver" .Values.db.driver }}
+          - --compiler-endpoint
+          - "http://{{ .Release.Name }}-compiler:80"
+          - --slide-show-endpoint
+          - "http://{{ .Release.Name }}-slideshow:80"
+        {{- if .Values.prometheus.enabled }}
+          - --metrics-port
+          - "2112"
+        {{- end }}
+        ports:
+        - containerPort: 80
+          name: http
+      {{- if .Values.prometheus.enabled }}
+        - containerPort: 2112
+          protocol: TCP
+          name: metrics
+      {{- end }}
+        env:
+        - name: LOG_LEVEL
+          value: {{ .Values.filter.logLevel }}
+{{- if eq .Values.db.driver "postgres" }}
+        - name: POSTGRES_DATABASE
+{{ tpl (toYaml .Values.db.postgres.database) . | indent 10 }}
+        - name: POSTGRES_HOST
+{{ tpl (toYaml .Values.db.postgres.host) . | indent 10 }}
+        - name: POSTGRES_PORT
+{{ tpl (toYaml .Values.db.postgres.port) . | indent 10 }}
+        - name: POSTGRES_USERNAME
+{{ tpl (toYaml .Values.db.postgres.username) . | indent 10 }}
+        - name: POSTGRES_PASSWORD
+{{ tpl (toYaml .Values.db.postgres.password) . | indent 10 }}
+        - name: POSTGRES_CA_CERT
+{{ tpl (toYaml .Values.db.postgres.ca) . | indent 10 }}
+        - name: POSTGRES_SSL_MODE
+{{ tpl (toYaml .Values.db.postgres.sslmode) . | indent 10 }}
+{{- else if eq .Values.db.driver "mongo" }}
+        - name: MONGO_DB_NAME
+{{ tpl (toYaml .Values.db.mongo.dbName) . | indent 10 }}
+        - name: MONGO_AUTH_SOURCE
+{{ tpl (toYaml .Values.db.mongo.authSource) . | indent 10 }}
+        - name: MONGO_HOST
+{{ tpl (toYaml .Values.db.mongo.host) . | indent 10 }}
+        - name: MONGO_USERNAME
+{{ tpl (toYaml .Values.db.mongo.username) . | indent 10 }}
+        - name: MONGO_PASSWORD
+{{ tpl (toYaml .Values.db.mongo.password) . | indent 10 }}
+{{- end }}
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /etc/ready
+          initialDelaySeconds: 1
+          periodSeconds: 4

@@ -1,0 +1,191 @@
+dependencies:
+  - base
+  - keycloak
+  - app
+  - sources
+  - seer
+  - gateway
+  - compiler
+  - slideshow
+  - filter
+env:
+  kubernetes:
+    resources:
+      - secrets/
+    charts:
+      bjjv:
+        name: chart
+        releaseName: bjjv
+        namespace: bjjv
+        values:
+          db:
+            driver: postgres
+            postgres:
+              url:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: url
+              username:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: username
+              password:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: password
+              host:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: host
+              port:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: port
+              database:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: database
+              sslmode:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: sslmode
+              ca:
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-cred
+                    key: ca
+            mongo:
+              host:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: host
+              dbName:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: dbname
+              authSource:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: authsource
+              username:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: username
+              password:
+                valueFrom:
+                  secretKeyRef:
+                    name: mongo-cred
+                    key: password
+          app:
+            enabled: true
+          compiler:
+            enabled: true
+            compileOnStart: false
+          filter:
+            replicas: 1
+          gateway:
+            corsHeader: "*"
+            replicas: 1
+          seer:
+            replicas: 1
+          slideshow:
+            enabled: true
+            replicas: 1
+          sources:
+            replicas: 1
+          iam:
+            driver: keycloak
+            cognito:
+              region: us-east-1
+              userPoolId:
+                valueFrom:
+                  secretKeyRef:
+                    name: cognito-cred
+                    key: userpoolid
+              clientId:
+                  valueFrom:
+                    secretKeyRef:
+                      name: cognito-cred
+                      key: clientid
+              accessKeyId:
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-cred
+                    key: accesskeyid
+              secretAccessKey:
+                valueFrom:
+                  secretKeyRef:
+                    name: aws-cred
+                    key: secretaccesskey
+            keycloak:
+              enabled: true
+              realm: bjjv
+              clientId:
+                  valueFrom:
+                    secretKeyRef:
+                      name: keycloak-cred
+                      key: clientid
+              clientSecret:
+                  valueFrom:
+                    secretKeyRef:
+                      name: keycloak-cred
+                      key: clientsecret
+              admin:
+                username:
+                  valueFrom:
+                    secretKeyRef:
+                      name: keycloak-cred
+                      key: username
+                password:
+                  valueFrom:
+                    secretKeyRef:
+                      name: keycloak-cred
+                      key: password
+          s3:
+            endpoint: "https://nyc3.digitaloceanspaces.com"
+            videoBucket: ytvids
+            thumbnailBucket: ytimg
+            accessKeyId:
+              valueFrom:
+                secretKeyRef:
+                  name: s3-cred
+                  key: accesskeyid
+            secretAccessKey:
+              valueFrom:
+                secretKeyRef:
+                  name: s3-cred
+                  key: secretaccesskey
+          redis:
+            enabled: true
+            username:
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cred
+                  key: username
+            password:
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cred
+                  key: password
+            host:
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cred
+                  key: host
+            port:
+              valueFrom:
+                secretKeyRef:
+                  name: redis-cred
+                  key: port
+          

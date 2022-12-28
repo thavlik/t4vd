@@ -1,0 +1,113 @@
+{{- if .Values.compiler.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-compiler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-compiler
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-compiler
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: compiler
+        imagePullPolicy: {{ .Values.compiler.imagePullPolicy }}
+        image: {{ .Values.compiler.image }}
+    {{- if .Values.compiler.resources }}
+        resources:
+{{ toYaml .Values.compiler.resources | indent 10 }}
+    {{- end }}
+        command:
+          - compiler
+          - server
+          - --db-driver
+          - {{ required "missing db.driver" .Values.db.driver }}
+          - --concurrency
+          - "{{ .Values.compiler.concurrency }}"
+          - --slide-show-endpoint
+          - "http://{{ .Release.Name }}-slideshow:80"
+          - --seer-endpoint
+          - "http://{{ .Release.Name }}-seer:80"
+          - --sources-endpoint
+          - "http://{{ .Release.Name }}-sources:80"
+        {{- if .Values.compiler.compileOnStart }}
+          - --compile-on-start
+        {{- end }}
+        {{- if .Values.prometheus.enabled }}
+          - --metrics-port
+          - "2112"
+        {{- end }}
+        ports:
+        - containerPort: 80
+          name: http
+      {{- if .Values.prometheus.enabled }}
+        - containerPort: 2112
+          protocol: TCP
+          name: metrics
+      {{- end }}
+        env:
+        - name: LOG_LEVEL
+          value: {{ .Values.compiler.logLevel }}
+      {{- if .Values.s3.endpoint }}
+        - name: S3_ENDPOINT
+          value: {{ .Values.s3.endpoint }}
+      {{- end }}
+        - name: AWS_REGION
+          value: {{ .Values.s3.region }}
+        - name: AWS_ACCESS_KEY_ID
+{{ tpl (toYaml .Values.s3.accessKeyId) . | indent 10 }}
+        - name: AWS_SECRET_ACCESS_KEY
+{{ tpl (toYaml .Values.s3.secretAccessKey) . | indent 10 }}
+{{- if eq .Values.db.driver "postgres" }}
+        - name: POSTGRES_DATABASE
+{{ tpl (toYaml .Values.db.postgres.database) . | indent 10 }}
+        - name: POSTGRES_HOST
+{{ tpl (toYaml .Values.db.postgres.host) . | indent 10 }}
+        - name: POSTGRES_PORT
+{{ tpl (toYaml .Values.db.postgres.port) . | indent 10 }}
+        - name: POSTGRES_USERNAME
+{{ tpl (toYaml .Values.db.postgres.username) . | indent 10 }}
+        - name: POSTGRES_PASSWORD
+{{ tpl (toYaml .Values.db.postgres.password) . | indent 10 }}
+        - name: POSTGRES_CA_CERT
+{{ tpl (toYaml .Values.db.postgres.ca) . | indent 10 }}
+        - name: POSTGRES_SSL_MODE
+{{ tpl (toYaml .Values.db.postgres.sslmode) . | indent 10 }}
+{{- else if eq .Values.db.driver "mongo" }}
+        - name: MONGO_DB_NAME
+{{ tpl (toYaml .Values.db.mongo.dbName) . | indent 10 }}
+        - name: MONGO_AUTH_SOURCE
+{{ tpl (toYaml .Values.db.mongo.authSource) . | indent 10 }}
+        - name: MONGO_HOST
+{{ tpl (toYaml .Values.db.mongo.host) . | indent 10 }}
+        - name: MONGO_USERNAME
+{{ tpl (toYaml .Values.db.mongo.username) . | indent 10 }}
+        - name: MONGO_PASSWORD
+{{ tpl (toYaml .Values.db.mongo.password) . | indent 10 }}
+{{- end }}
+      {{- if .Values.redis.enabled }}
+        - name: REDIS_USERNAME
+{{ tpl (toYaml .Values.redis.username) . | indent 10 }}
+        - name: REDIS_PASSWORD
+{{ tpl (toYaml .Values.redis.password) . | indent 10 }}
+        - name: REDIS_HOST
+{{ tpl (toYaml .Values.redis.host) . | indent 10 }}
+        - name: REDIS_PORT
+{{ tpl (toYaml .Values.redis.port) . | indent 10 }}
+      {{- end }}
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /etc/ready
+          initialDelaySeconds: 1
+          periodSeconds: 4
+{{- end }}

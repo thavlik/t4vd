@@ -1,0 +1,14 @@
+.vscode/
+.gitignore
+.git
+/.git/
+/chart/
+target/
+/target/
+Dockerfile
+__pycache__
+README.md
+kindest.yaml
+secrets/
+Dockerfile
+

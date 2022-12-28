@@ -1,0 +1,27 @@
+package server
+
+import (
+	"context"
+
+	"github.com/pkg/errors"
+	"github.com/thavlik/bjjvb/compiler/pkg/api"
+)
+
+func (s *Server) CacheVideos(ctx context.Context, req api.CacheVideosRequest) (*api.Void, error) {
+	if len(req.Videos) == 1 {
+		if err := s.ds.CacheVideo(
+			context.Background(),
+			req.Videos[0],
+		); err != nil {
+			return nil, errors.Wrap(err, "datastore.CacheVideo")
+		}
+	} else {
+		if err := s.ds.CacheBulkVideos(
+			context.Background(),
+			req.Videos,
+		); err != nil {
+			return nil, errors.Wrap(err, "datastore.CacheBulkVideos")
+		}
+	}
+	return &api.Void{}, nil
+}

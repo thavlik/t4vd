@@ -1,0 +1,81 @@
+{{- if .Values.slideshow.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-slideshow
+spec:
+  replicas: {{ .Values.slideshow.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-slideshow
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-slideshow
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: slideshow
+        imagePullPolicy: {{ .Values.slideshow.imagePullPolicy }}
+        image: {{ .Values.slideshow.image }}
+    {{- if .Values.slideshow.resources }}
+        resources:
+{{ toYaml .Values.slideshow.resources | indent 10 }}
+    {{- end }}
+        command:
+          - slideshow
+          - server
+          - --bucket
+          - {{ .Values.s3.videoBucket }}
+          - --compiler-endpoint
+          - "http://{{ .Release.Name }}-compiler:80"
+          - --seer-endpoint
+          - "http://{{ .Release.Name }}-seer:80"
+          - --sources-endpoint
+          - "http://{{ .Release.Name }}-sources:80"
+        {{- if .Values.prometheus.enabled }}
+          - --metrics-port
+          - "2112"
+        {{- end }}
+        ports:
+        - containerPort: 80
+          name: http
+      {{- if .Values.prometheus.enabled }}
+        - containerPort: 2112
+          protocol: TCP
+          name: metrics
+      {{- end }}
+        env:
+        - name: LOG_LEVEL
+          value: {{ .Values.slideshow.logLevel }}
+      {{- if .Values.s3.endpoint }}
+        - name: S3_ENDPOINT
+          value: {{ .Values.s3.endpoint }}
+      {{- end }}
+        - name: AWS_REGION
+          value: {{ .Values.s3.region }}
+        - name: AWS_ACCESS_KEY_ID
+{{ tpl (toYaml .Values.s3.accessKeyId) . | indent 10 }}
+        - name: AWS_SECRET_ACCESS_KEY
+{{ tpl (toYaml .Values.s3.secretAccessKey) . | indent 10 }}
+      {{- if .Values.redis.enabled }}
+        - name: REDIS_USERNAME
+{{ tpl (toYaml .Values.redis.username) . | indent 10 }}
+        - name: REDIS_PASSWORD
+{{ tpl (toYaml .Values.redis.password) . | indent 10 }}
+        - name: REDIS_HOST
+{{ tpl (toYaml .Values.redis.host) . | indent 10 }}
+        - name: REDIS_PORT
+{{ tpl (toYaml .Values.redis.port) . | indent 10 }}
+      {{- end }}
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /etc/ready
+          initialDelaySeconds: 1
+          periodSeconds: 4
+{{- end }}

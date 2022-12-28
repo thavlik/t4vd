@@ -1,0 +1,16 @@
+{{- if and .Values.compiler.enabled .Values.prometheus.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ .Release.Name }}-compiler
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-compiler
+  podMetricsEndpoints:
+  - port: metrics
+{{- end }}
+
+
