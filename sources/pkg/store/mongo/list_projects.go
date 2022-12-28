@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/sources/pkg/api"
 )
 
 func (s *mongoStore) ListProjects(

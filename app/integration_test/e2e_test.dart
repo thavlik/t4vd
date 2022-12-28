@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:bjjv/api.dart';
-import 'package:bjjv/model.dart';
+import 'package:t4vd/api.dart';
+import 'package:t4vd/model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 //import 'package:flutter_driver/flutter_driver.dart' as fd;
 import 'package:integration_test/integration_test.dart';
-import 'package:bjjv/main.dart' as app;
+import 'package:t4vd/main.dart' as app;
 import '../test/test_environment.dart';
 
 void main() {

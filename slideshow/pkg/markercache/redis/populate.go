@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-redis/redis/v9"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/compiler/pkg/datastore"
+	"github.com/thavlik/t4vd/compiler/pkg/datastore"
 	"go.uber.org/zap"
 )
 

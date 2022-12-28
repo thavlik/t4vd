@@ -1,7 +1,7 @@
 package mongo
 
 import (
-	"github.com/thavlik/bjjvb/seer/pkg/infocache"
+	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

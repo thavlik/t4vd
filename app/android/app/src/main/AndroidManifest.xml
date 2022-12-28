@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.bjjv">
+    package="com.example.t4vd">
    <application
-        android:label="bjjv"
+        android:label="t4vd"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

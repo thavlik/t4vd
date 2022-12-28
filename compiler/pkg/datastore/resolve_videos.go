@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/compiler/pkg/api"
-	seer "github.com/thavlik/bjjvb/seer/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/api"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"go.uber.org/zap"
 )
 

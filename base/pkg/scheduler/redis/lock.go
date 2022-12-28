@@ -7,7 +7,7 @@ import (
 
 	"github.com/bsm/redislock"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/scheduler"
+	"github.com/thavlik/t4vd/base/pkg/scheduler"
 )
 
 type redisLock struct {

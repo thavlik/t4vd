@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
 

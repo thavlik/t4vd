@@ -7,9 +7,9 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
-	sources "github.com/thavlik/bjjvb/sources/pkg/api"
-	"github.com/thavlik/bjjvb/sources/pkg/store"
+	"github.com/thavlik/t4vd/base/pkg/iam"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
+	"github.com/thavlik/t4vd/sources/pkg/store"
 	"go.uber.org/zap"
 )
 

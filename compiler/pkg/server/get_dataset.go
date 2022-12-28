@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/base"
 
-	"github.com/thavlik/bjjvb/compiler/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/api"
 	"go.uber.org/zap"
 )
 

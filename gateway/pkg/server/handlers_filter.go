@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
-	filter "github.com/thavlik/bjjvb/filter/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/iam"
+	filter "github.com/thavlik/t4vd/filter/pkg/api"
 )
 
 func (s *Server) handleGetFilterStack() http.HandlerFunc {

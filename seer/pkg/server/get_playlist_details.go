@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/seer/pkg/api"
-	"github.com/thavlik/bjjvb/seer/pkg/infocache"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"go.uber.org/zap"
 )
 

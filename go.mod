@@ -1,4 +1,4 @@
-module github.com/thavlik/bjjvb
+module github.com/thavlik/t4vd
 
 go 1.19
 

@@ -1,4 +1,4 @@
-package com.example.bjjv
+package com.example.t4vd
 
 import io.flutter.embedding.android.FlutterActivity
 

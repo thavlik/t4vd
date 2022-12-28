@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	seer "github.com/thavlik/bjjvb/seer/pkg/api"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"go.uber.org/zap"
 
-	"github.com/thavlik/bjjvb/compiler/pkg/datastore"
+	"github.com/thavlik/t4vd/compiler/pkg/datastore"
 )
 
 var (

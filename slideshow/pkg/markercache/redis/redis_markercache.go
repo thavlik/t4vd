@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v9"
-	"github.com/thavlik/bjjvb/slideshow/pkg/markercache"
+	"github.com/thavlik/t4vd/slideshow/pkg/markercache"
 	"go.uber.org/zap"
 )
 

@@ -11,8 +11,8 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/slideshow/pkg/slideshow"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/slideshow/pkg/slideshow"
 )
 
 var defaultReadAhead = 1024 * 10

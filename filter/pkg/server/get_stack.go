@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	slideshow "github.com/thavlik/bjjvb/slideshow/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	slideshow "github.com/thavlik/t4vd/slideshow/pkg/api"
 	"go.uber.org/zap"
 
-	"github.com/thavlik/bjjvb/filter/pkg/api"
+	"github.com/thavlik/t4vd/filter/pkg/api"
 )
 
 func (s *Server) generateStack(ctx context.Context, projectID string) (*api.Stack, error) {

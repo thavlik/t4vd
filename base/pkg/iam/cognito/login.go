@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
+	"github.com/thavlik/t4vd/base/pkg/iam"
 	"go.uber.org/zap"
 )
 

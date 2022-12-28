@@ -1,8 +1,8 @@
 package mongo
 
 import (
-	"github.com/thavlik/bjjvb/compiler/pkg/datastore"
-	seer "github.com/thavlik/bjjvb/seer/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/datastore"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.uber.org/zap"
 )

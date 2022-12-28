@@ -6,13 +6,13 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
-	"github.com/thavlik/bjjvb/slideshow/pkg/imgcache"
-	memory_imgcache "github.com/thavlik/bjjvb/slideshow/pkg/imgcache/memory"
-	redis_imgcache "github.com/thavlik/bjjvb/slideshow/pkg/imgcache/redis"
-	"github.com/thavlik/bjjvb/slideshow/pkg/server"
-	sources "github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
+	"github.com/thavlik/t4vd/slideshow/pkg/imgcache"
+	memory_imgcache "github.com/thavlik/t4vd/slideshow/pkg/imgcache/memory"
+	redis_imgcache "github.com/thavlik/t4vd/slideshow/pkg/imgcache/redis"
+	"github.com/thavlik/t4vd/slideshow/pkg/server"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 )
 
 var serverArgs struct {

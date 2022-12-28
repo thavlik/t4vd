@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/seer/pkg/api"
-	"github.com/thavlik/bjjvb/seer/pkg/infocache"
+	"github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

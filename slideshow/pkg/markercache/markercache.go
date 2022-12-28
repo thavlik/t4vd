@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/thavlik/bjjvb/slideshow/pkg/api"
+	"github.com/thavlik/t4vd/slideshow/pkg/api"
 )
 
 var ErrNoMarkers = errors.New("no markers")

@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/scheduler"
-	"github.com/thavlik/bjjvb/seer/pkg/api"
-	"github.com/thavlik/bjjvb/seer/pkg/infocache"
-	"github.com/thavlik/bjjvb/seer/pkg/thumbcache"
+	"github.com/thavlik/t4vd/base/pkg/scheduler"
+	"github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/infocache"
+	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"go.uber.org/zap"
 )
 

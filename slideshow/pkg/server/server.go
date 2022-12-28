@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 
 	"go.uber.org/zap"
 
 	"github.com/pacedotdev/oto/otohttp"
-	"github.com/thavlik/bjjvb/slideshow/pkg/api"
-	"github.com/thavlik/bjjvb/slideshow/pkg/imgcache"
-	"github.com/thavlik/bjjvb/slideshow/pkg/markercache"
+	"github.com/thavlik/t4vd/slideshow/pkg/api"
+	"github.com/thavlik/t4vd/slideshow/pkg/imgcache"
+	"github.com/thavlik/t4vd/slideshow/pkg/markercache"
 )
 
 type Server struct {

@@ -1,6 +1,6 @@
 package api
 
-import "github.com/thavlik/bjjvb/base/pkg/base"
+import "github.com/thavlik/t4vd/base/pkg/base"
 
 func NewSourcesClientFromOptions(opts base.ServiceOptions) Sources {
 	options := NewSourcesClientOptions().SetTimeout(opts.Timeout)

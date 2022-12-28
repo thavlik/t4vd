@@ -3,16 +3,16 @@ package main
 import (
 	"time"
 
-	"github.com/thavlik/bjjvb/base/cmd/iam"
-	"github.com/thavlik/bjjvb/base/pkg/base"
+	"github.com/thavlik/t4vd/base/cmd/iam"
+	"github.com/thavlik/t4vd/base/pkg/base"
 
 	"github.com/spf13/cobra"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
-	seer "github.com/thavlik/bjjvb/seer/pkg/api"
-	"github.com/thavlik/bjjvb/sources/pkg/server"
-	"github.com/thavlik/bjjvb/sources/pkg/store"
-	mongo_store "github.com/thavlik/bjjvb/sources/pkg/store/mongo"
-	postgres_store "github.com/thavlik/bjjvb/sources/pkg/store/postgres"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/sources/pkg/server"
+	"github.com/thavlik/t4vd/sources/pkg/store"
+	mongo_store "github.com/thavlik/t4vd/sources/pkg/store/mongo"
+	postgres_store "github.com/thavlik/t4vd/sources/pkg/store/postgres"
 )
 
 var serverArgs struct {

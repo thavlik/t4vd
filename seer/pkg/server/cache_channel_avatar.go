@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/seer/pkg/thumbcache"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"go.uber.org/zap"
 )
 

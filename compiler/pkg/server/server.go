@@ -6,12 +6,12 @@ import (
 	"time"
 
 	"github.com/pacedotdev/oto/otohttp"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/base/pkg/scheduler"
-	"github.com/thavlik/bjjvb/compiler/pkg/api"
-	"github.com/thavlik/bjjvb/compiler/pkg/datastore"
-	slideshow "github.com/thavlik/bjjvb/slideshow/pkg/api"
-	sources "github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/scheduler"
+	"github.com/thavlik/t4vd/compiler/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/datastore"
+	slideshow "github.com/thavlik/t4vd/slideshow/pkg/api"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
 

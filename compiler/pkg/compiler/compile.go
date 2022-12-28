@@ -5,11 +5,11 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/compiler/pkg/api"
-	"github.com/thavlik/bjjvb/compiler/pkg/datastore"
-	seer "github.com/thavlik/bjjvb/seer/pkg/api"
-	sources "github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/compiler/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/datastore"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
 

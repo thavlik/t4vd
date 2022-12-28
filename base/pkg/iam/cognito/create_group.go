@@ -4,7 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
+	"github.com/thavlik/t4vd/base/pkg/iam"
 )
 
 func (i *cognitoIAM) CreateGroup(name string) (*iam.Group, error) {

@@ -6,8 +6,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 )
 
 func keepOnly(vids []*compiler.Video, videoIDs []string) []*compiler.Video {

@@ -3,7 +3,7 @@ package server
 import (
 	"context"
 
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 	"go.uber.org/zap"
 )
 

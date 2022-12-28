@@ -2,8 +2,8 @@ package keycloak
 
 import (
 	"github.com/Nerzal/gocloak/v12"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/iam"
 	"go.uber.org/zap"
 )
 

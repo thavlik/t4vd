@@ -1,11 +1,11 @@
 package server
 
 import (
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
-	seer "github.com/thavlik/bjjvb/seer/pkg/api"
-	"github.com/thavlik/bjjvb/sources/pkg/store"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/iam"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/sources/pkg/store"
 	"go.uber.org/zap"
 )
 

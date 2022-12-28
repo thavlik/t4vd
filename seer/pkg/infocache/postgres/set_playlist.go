@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/api"
 )
 
 func (c *postgresInfoCache) SetPlaylist(playlist *api.PlaylistDetails) error {

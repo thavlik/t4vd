@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/sources/pkg/store"
+	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *postgresStore) RemoveVideo(

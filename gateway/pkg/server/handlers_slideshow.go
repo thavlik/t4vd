@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
-	slideshow "github.com/thavlik/bjjvb/slideshow/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/iam"
+	slideshow "github.com/thavlik/t4vd/slideshow/pkg/api"
 )
 
 func (s *Server) handleGetRandomMarker() http.HandlerFunc {

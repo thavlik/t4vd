@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:bjjv/model.dart';
+import 'package:t4vd/model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';

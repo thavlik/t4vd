@@ -5,9 +5,9 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
-	"github.com/thavlik/bjjvb/sources/pkg/api"
-	"github.com/thavlik/bjjvb/sources/pkg/store"
+	"github.com/thavlik/t4vd/base/pkg/iam"
+	"github.com/thavlik/t4vd/sources/pkg/api"
+	"github.com/thavlik/t4vd/sources/pkg/store"
 	"go.uber.org/zap"
 )
 

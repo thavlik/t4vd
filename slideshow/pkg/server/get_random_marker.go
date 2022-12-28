@@ -5,7 +5,7 @@ import (
 
 	"go.uber.org/zap"
 
-	"github.com/thavlik/bjjvb/slideshow/pkg/api"
+	"github.com/thavlik/t4vd/slideshow/pkg/api"
 )
 
 func (s *Server) GetRandomMarker(ctx context.Context, req api.GetRandomMarker) (*api.Marker, error) {

@@ -6,9 +6,9 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
-	seer "github.com/thavlik/bjjvb/seer/pkg/api"
-	sources "github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/iam"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 )
 
 func (s *Server) handleAddChannel() http.HandlerFunc {

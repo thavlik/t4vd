@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/iam/api"
+	"github.com/thavlik/t4vd/base/pkg/iam/api"
 	"go.uber.org/zap"
 )
 

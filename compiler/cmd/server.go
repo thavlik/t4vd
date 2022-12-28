@@ -3,20 +3,20 @@ package main
 import (
 	"time"
 
-	seer "github.com/thavlik/bjjvb/seer/pkg/api"
-	slideshow "github.com/thavlik/bjjvb/slideshow/pkg/api"
-	sources "github.com/thavlik/bjjvb/sources/pkg/api"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
+	slideshow "github.com/thavlik/t4vd/slideshow/pkg/api"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 
-	"github.com/thavlik/bjjvb/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/base"
 
 	"github.com/spf13/cobra"
-	"github.com/thavlik/bjjvb/base/pkg/scheduler"
-	memory_scheduler "github.com/thavlik/bjjvb/base/pkg/scheduler/memory"
-	redis_scheduler "github.com/thavlik/bjjvb/base/pkg/scheduler/redis"
-	"github.com/thavlik/bjjvb/compiler/pkg/datastore"
-	mongo_datastore "github.com/thavlik/bjjvb/compiler/pkg/datastore/mongo"
-	postgres_datastore "github.com/thavlik/bjjvb/compiler/pkg/datastore/postgres"
-	"github.com/thavlik/bjjvb/compiler/pkg/server"
+	"github.com/thavlik/t4vd/base/pkg/scheduler"
+	memory_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/memory"
+	redis_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/redis"
+	"github.com/thavlik/t4vd/compiler/pkg/datastore"
+	mongo_datastore "github.com/thavlik/t4vd/compiler/pkg/datastore/mongo"
+	postgres_datastore "github.com/thavlik/t4vd/compiler/pkg/datastore/postgres"
+	"github.com/thavlik/t4vd/compiler/pkg/server"
 )
 
 var serverArgs struct {

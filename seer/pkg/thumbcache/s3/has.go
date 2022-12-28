@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/base"
 )
 
 func (s *s3ThumbCache) Has(ctx context.Context, videoID string) (bool, error) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/bsm/redislock"
 	"github.com/go-redis/redis/v9"
-	"github.com/thavlik/bjjvb/base/pkg/scheduler"
+	"github.com/thavlik/t4vd/base/pkg/scheduler"
 )
 
 type redisScheduler struct {

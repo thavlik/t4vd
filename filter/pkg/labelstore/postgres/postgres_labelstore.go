@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/filter/pkg/labelstore"
+	"github.com/thavlik/t4vd/filter/pkg/labelstore"
 )
 
 var tableName = "filter"

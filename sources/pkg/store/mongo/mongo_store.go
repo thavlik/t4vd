@@ -1,7 +1,7 @@
 package mongo
 
 import (
-	"github.com/thavlik/bjjvb/sources/pkg/store"
+	"github.com/thavlik/t4vd/sources/pkg/store"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

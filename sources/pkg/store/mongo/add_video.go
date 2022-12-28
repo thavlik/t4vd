@@ -6,8 +6,8 @@ import (
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
-	"github.com/thavlik/bjjvb/sources/pkg/api"
-	"github.com/thavlik/bjjvb/sources/pkg/store"
+	"github.com/thavlik/t4vd/sources/pkg/api"
+	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *mongoStore) AddVideo(

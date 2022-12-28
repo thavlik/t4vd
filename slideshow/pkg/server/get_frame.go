@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/slideshow/pkg/imgcache"
-	"github.com/thavlik/bjjvb/slideshow/pkg/slideshow"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/slideshow/pkg/imgcache"
+	"github.com/thavlik/t4vd/slideshow/pkg/slideshow"
 	"go.uber.org/zap"
 )
 

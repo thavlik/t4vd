@@ -5,15 +5,15 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/thavlik/bjjvb/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/base"
 
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 
 	"go.uber.org/zap"
 
 	"github.com/pacedotdev/oto/otohttp"
-	"github.com/thavlik/bjjvb/filter/pkg/api"
-	"github.com/thavlik/bjjvb/filter/pkg/labelstore"
+	"github.com/thavlik/t4vd/filter/pkg/api"
+	"github.com/thavlik/t4vd/filter/pkg/labelstore"
 )
 
 type Server struct {

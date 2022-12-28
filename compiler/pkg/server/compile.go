@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	sources "github.com/thavlik/bjjvb/sources/pkg/api"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 
-	"github.com/thavlik/bjjvb/compiler/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/api"
 )
 
 func (s *Server) Compile(ctx context.Context, req api.Compile) (*api.Void, error) {

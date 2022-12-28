@@ -8,12 +8,12 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pacedotdev/oto/otohttp"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/base/pkg/scheduler"
-	"github.com/thavlik/bjjvb/seer/pkg/api"
-	"github.com/thavlik/bjjvb/seer/pkg/infocache"
-	"github.com/thavlik/bjjvb/seer/pkg/thumbcache"
-	"github.com/thavlik/bjjvb/seer/pkg/vidcache"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/scheduler"
+	"github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/infocache"
+	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
+	"github.com/thavlik/t4vd/seer/pkg/vidcache"
 )
 
 type Server struct {

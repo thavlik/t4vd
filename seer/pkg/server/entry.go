@@ -1,11 +1,11 @@
 package server
 
 import (
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/base/pkg/scheduler"
-	"github.com/thavlik/bjjvb/seer/pkg/infocache"
-	"github.com/thavlik/bjjvb/seer/pkg/thumbcache"
-	"github.com/thavlik/bjjvb/seer/pkg/vidcache"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/scheduler"
+	"github.com/thavlik/t4vd/seer/pkg/infocache"
+	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
+	"github.com/thavlik/t4vd/seer/pkg/vidcache"
 	"go.uber.org/zap"
 )
 

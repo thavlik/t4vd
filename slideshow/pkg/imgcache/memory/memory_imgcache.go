@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/thavlik/bjjvb/slideshow/pkg/imgcache"
+	"github.com/thavlik/t4vd/slideshow/pkg/imgcache"
 )
 
 type cachedImg struct {

@@ -8,7 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/api"
 )
 
 const (

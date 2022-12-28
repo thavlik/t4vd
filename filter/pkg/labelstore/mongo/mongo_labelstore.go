@@ -1,7 +1,7 @@
 package mongo
 
 import (
-	"github.com/thavlik/bjjvb/filter/pkg/labelstore"
+	"github.com/thavlik/t4vd/filter/pkg/labelstore"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

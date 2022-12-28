@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/compiler/pkg/api"
-	"github.com/thavlik/bjjvb/compiler/pkg/datastore"
+	"github.com/thavlik/t4vd/compiler/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/datastore"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 

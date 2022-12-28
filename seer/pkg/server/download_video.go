@@ -5,9 +5,9 @@ import (
 	"io"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/seer/pkg/vidcache"
-	"github.com/thavlik/bjjvb/seer/pkg/ytdl"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/seer/pkg/vidcache"
+	"github.com/thavlik/t4vd/seer/pkg/ytdl"
 	"go.uber.org/zap"
 )
 

@@ -5,14 +5,14 @@ import (
 
 	"github.com/go-redis/redis/v9"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
-	"github.com/thavlik/bjjvb/slideshow/pkg/api"
-	"github.com/thavlik/bjjvb/slideshow/pkg/imgcache"
-	redis_markercache "github.com/thavlik/bjjvb/slideshow/pkg/markercache/redis"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
+	"github.com/thavlik/t4vd/slideshow/pkg/api"
+	"github.com/thavlik/t4vd/slideshow/pkg/imgcache"
+	redis_markercache "github.com/thavlik/t4vd/slideshow/pkg/markercache/redis"
 
-	"github.com/thavlik/bjjvb/slideshow/pkg/markercache"
-	sources "github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/slideshow/pkg/markercache"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
 

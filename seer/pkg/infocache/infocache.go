@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/thavlik/bjjvb/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/api"
 )
 
 var (

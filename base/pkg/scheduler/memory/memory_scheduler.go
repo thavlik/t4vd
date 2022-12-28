@@ -3,7 +3,7 @@ package memory
 import (
 	"sync"
 
-	"github.com/thavlik/bjjvb/base/pkg/scheduler"
+	"github.com/thavlik/t4vd/base/pkg/scheduler"
 )
 
 type memoryScheduler struct {

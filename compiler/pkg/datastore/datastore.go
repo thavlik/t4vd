@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/thavlik/bjjvb/compiler/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/api"
 )
 
 var (

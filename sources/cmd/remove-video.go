@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/sources/pkg/api"
 
 	"github.com/spf13/cobra"
 )

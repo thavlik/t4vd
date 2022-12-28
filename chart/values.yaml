@@ -73,7 +73,7 @@ iam:
         value: null
       password:
         value: null
-    image: thavlik/bjjv-keycloak:latest
+    image: thavlik/t4vd-keycloak:latest
     imagePullPolicy: Always
     replicas: 1
     resources: {}
@@ -101,7 +101,7 @@ redis:
 
 gateway:
   corsHeader: "*" # Access-Control-Allow-Origin value, e.g. https://app.mydomain.com
-  image: thavlik/bjjv-gateway:latest
+  image: thavlik/t4vd-gateway:latest
   imagePullPolicy: Always
   replicas: 1
   logLevel: debug
@@ -109,7 +109,7 @@ gateway:
 
 app:
   enabled: false
-  image: thavlik/bjjv-app:latest
+  image: thavlik/t4vd-app:latest
   imagePullPolicy: Always
   replicas: 1
   resources: {}
@@ -118,13 +118,13 @@ compiler:
   enabled: true
   concurrency: 2
   compileOnStart: false
-  image: thavlik/bjjv-compiler:latest
+  image: thavlik/t4vd-compiler:latest
   imagePullPolicy: Always
   logLevel: debug
   resources: {}
 
 sources:
-  image: thavlik/bjjv-sources:latest
+  image: thavlik/t4vd-sources:latest
   imagePullPolicy: Always
   replicas: 1
   logLevel: debug
@@ -132,7 +132,7 @@ sources:
 
 seer:
   format: webm # download format
-  image: thavlik/bjjv-seer:latest
+  image: thavlik/t4vd-seer:latest
   imagePullPolicy: Always
   replicas: 1
   logLevel: debug
@@ -144,7 +144,7 @@ seer:
 filter:
   stackSize: 5
   stackBufferSize: 5
-  image: thavlik/bjjv-filter:latest
+  image: thavlik/t4vd-filter:latest
   imagePullPolicy: Always
   replicas: 1
   logLevel: debug
@@ -152,7 +152,7 @@ filter:
 
 slideshow:
   enabled: false
-  image: thavlik/bjjv-slideshow:latest
+  image: thavlik/t4vd-slideshow:latest
   imagePullPolicy: Always
   replicas: 1
   logLevel: debug

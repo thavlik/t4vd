@@ -5,10 +5,10 @@ import 'api.dart' as api;
 
 // https://img.youtube.com/vi/e5YuPpbzBdo/maxresdefault.jpg
 
-const credStorageProjectId = 'bjjvp';
-const credStorageUsername = 'bjjvcu';
-const credStoragePassword = 'bjjvcp';
-const credStorageBrightness = 'bjjvdm';
+const credStorageProjectId = 't4vdp';
+const credStorageUsername = 't4vdcu';
+const credStoragePassword = 't4vdcp';
+const credStorageBrightness = 't4vddm';
 
 final List<api.VideoListItem> exampleVideos = [
   api.VideoListItem(

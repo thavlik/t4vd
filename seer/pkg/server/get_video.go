@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/seer/pkg/vidcache"
+	"github.com/thavlik/t4vd/seer/pkg/vidcache"
 	"go.uber.org/zap"
 )
 

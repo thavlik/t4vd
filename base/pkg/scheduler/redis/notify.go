@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 
-	"github.com/thavlik/bjjvb/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/base"
 )
 
 func (s *redisScheduler) Notify() <-chan struct{} {

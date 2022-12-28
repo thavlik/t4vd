@@ -1,7 +1,7 @@
 ARG KINDEST_REPOSITORY=""
 ARG KINDEST_TAG="latest"
 ARG RUNTIME_BASE_IMAGE="alpine:3.17.0"
-FROM ${KINDEST_REPOSITORY}thavlik/bjjv-base:${KINDEST_TAG} AS builder
+FROM ${KINDEST_REPOSITORY}thavlik/t4vd-base:${KINDEST_TAG} AS builder
 COPY base/cmd/iam base/cmd/iam
 COPY base/pkg base/pkg
 COPY sources/pkg/api sources/pkg/api
@@ -12,8 +12,8 @@ COPY compiler/pkg/datastore/datastore.go compiler/pkg/datastore/datastore.go
 COPY filter/pkg/api filter/pkg/api
 COPY slideshow/pkg/api slideshow/pkg/api
 COPY gateway gateway
-WORKDIR /go/src/github.com/thavlik/bjjvb/gateway/cmd
+WORKDIR /go/src/github.com/thavlik/t4vd/gateway/cmd
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o gateway
 FROM ${RUNTIME_BASE_IMAGE}
-COPY --from=builder /go/src/github.com/thavlik/bjjvb/gateway/cmd/gateway /usr/local/bin
+COPY --from=builder /go/src/github.com/thavlik/t4vd/gateway/cmd/gateway /usr/local/bin
 CMD ["gateway"]

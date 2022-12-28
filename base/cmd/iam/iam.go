@@ -6,10 +6,10 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
-	cognito_iam "github.com/thavlik/bjjvb/base/pkg/iam/cognito"
-	keycloak_iam "github.com/thavlik/bjjvb/base/pkg/iam/keycloak"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/iam"
+	cognito_iam "github.com/thavlik/t4vd/base/pkg/iam/cognito"
+	keycloak_iam "github.com/thavlik/t4vd/base/pkg/iam/keycloak"
 )
 
 var defaultTimeout = 10 * time.Second

@@ -1,5 +1,5 @@
 dependencies:
   - ../base
 build:
-  name: thavlik/bjjv-compiler
+  name: thavlik/t4vd-compiler
   context: ../

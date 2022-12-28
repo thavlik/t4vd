@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/sources/pkg/api"
 )
 
 var ErrProjectNotFound = errors.New("project does not exist")

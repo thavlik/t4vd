@@ -1,4 +1,4 @@
-import 'package:bjjv/filter/card_stack.dart';
+import 'package:t4vd/filter/card_stack.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:scoped_model/scoped_model.dart';

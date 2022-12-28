@@ -11,7 +11,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
+	"github.com/thavlik/t4vd/base/pkg/iam"
 )
 
 // accessTokenClaims describes the fields we need to look at to validate an access token

@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 
-	"github.com/thavlik/bjjvb/base/cmd/iam"
+	"github.com/thavlik/t4vd/base/cmd/iam"
 
 	"github.com/spf13/cobra"
 )

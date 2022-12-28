@@ -4,12 +4,12 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/thavlik/bjjvb/base/cmd/iam"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
-	filter "github.com/thavlik/bjjvb/filter/pkg/api"
-	"github.com/thavlik/bjjvb/gateway/pkg/server"
-	sources "github.com/thavlik/bjjvb/sources/pkg/api"
+	"github.com/thavlik/t4vd/base/cmd/iam"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
+	filter "github.com/thavlik/t4vd/filter/pkg/api"
+	"github.com/thavlik/t4vd/gateway/pkg/server"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 )
 
 var defaultTimeout = 10 * time.Second

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/api"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 

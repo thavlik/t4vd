@@ -4,7 +4,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/thavlik/bjjvb/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/base"
 	"go.uber.org/zap"
 )
 

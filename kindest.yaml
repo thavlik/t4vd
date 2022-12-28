@@ -13,10 +13,10 @@ env:
     resources:
       - secrets/
     charts:
-      bjjv:
+      t4vd:
         name: chart
-        releaseName: bjjv
-        namespace: bjjv
+        releaseName: t4vd
+        namespace: t4vd
         values:
           db:
             driver: postgres
@@ -130,7 +130,7 @@ env:
                     key: secretaccesskey
             keycloak:
               enabled: true
-              realm: bjjv
+              realm: t4vd
               clientId:
                   valueFrom:
                     secretKeyRef:

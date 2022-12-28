@@ -1,5 +1,5 @@
 dependencies:
   - ../base
 build:
-  name: thavlik/bjjv-slideshow
+  name: thavlik/t4vd-slideshow
   context: ../

@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-redis/redis/v9"
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/base"
 )
 
 func (s *redisScheduler) Rand() (string, error) {

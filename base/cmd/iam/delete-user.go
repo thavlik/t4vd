@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/thavlik/bjjvb/base/pkg/iam/api"
+	"github.com/thavlik/t4vd/base/pkg/iam/api"
 
 	"github.com/spf13/cobra"
 )

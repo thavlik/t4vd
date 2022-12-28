@@ -1,9 +1,9 @@
 package server
 
 import (
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
-	"github.com/thavlik/bjjvb/filter/pkg/labelstore"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
+	"github.com/thavlik/t4vd/filter/pkg/labelstore"
 	"go.uber.org/zap"
 )
 

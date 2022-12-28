@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/mroth/weightedrand/v2"
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 	"go.uber.org/zap"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/bjjvb/slideshow/pkg/api"
-	"github.com/thavlik/bjjvb/slideshow/pkg/imgcache"
+	"github.com/thavlik/t4vd/slideshow/pkg/api"
+	"github.com/thavlik/t4vd/slideshow/pkg/imgcache"
 )
 
 var frameTime time.Duration = 33333333

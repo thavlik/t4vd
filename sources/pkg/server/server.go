@@ -6,17 +6,17 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/thavlik/bjjvb/base/pkg/base"
-	"github.com/thavlik/bjjvb/base/pkg/iam"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/iam"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 
-	seer "github.com/thavlik/bjjvb/seer/pkg/api"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
 
 	"go.uber.org/zap"
 
 	"github.com/pacedotdev/oto/otohttp"
-	"github.com/thavlik/bjjvb/sources/pkg/api"
-	"github.com/thavlik/bjjvb/sources/pkg/store"
+	"github.com/thavlik/t4vd/sources/pkg/api"
+	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 var (

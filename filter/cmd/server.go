@@ -3,14 +3,14 @@ package main
 import (
 	"time"
 
-	"github.com/thavlik/bjjvb/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/base"
 
 	"github.com/spf13/cobra"
-	compiler "github.com/thavlik/bjjvb/compiler/pkg/api"
-	"github.com/thavlik/bjjvb/filter/pkg/labelstore"
-	mongo_labelstore "github.com/thavlik/bjjvb/filter/pkg/labelstore/mongo"
-	postgres_labelstore "github.com/thavlik/bjjvb/filter/pkg/labelstore/postgres"
-	"github.com/thavlik/bjjvb/filter/pkg/server"
+	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
+	"github.com/thavlik/t4vd/filter/pkg/labelstore"
+	mongo_labelstore "github.com/thavlik/t4vd/filter/pkg/labelstore/mongo"
+	postgres_labelstore "github.com/thavlik/t4vd/filter/pkg/labelstore/postgres"
+	"github.com/thavlik/t4vd/filter/pkg/server"
 )
 
 var serverArgs struct {
