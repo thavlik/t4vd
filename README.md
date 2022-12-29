@@ -6,9 +6,13 @@ This project is an entire platform for simplifying the creation of video dataset
 All of the modules use the [kindest](https://github.com/midcontinentcontrols/kindest/) toolchain to streamline building and deploying. Individual microservices can also be manually built with [Docker](https://www.docker.com/):
 
 ```bash
+# in this example, we're going to build the microservice
+# named 'seer', which is responsible for all communication
+# with YouTube and caching the results so we don't get
+# IP banned :)
 $ cd seer
 
-# build using the kindest toolchain
+# build seer using the kindest toolchain (easiest)
 $ kindest build
 
 # `kindest build` is shorthand for the following command:
@@ -16,9 +20,9 @@ $ docker build -t thavlik/t4vd-seer:latest -f Dockerfile ..
 ```
 
 ### Flutter App
-The [app/ directory](app/) contains a standard [Flutter](https://github.com/flutter/flutter) front end. Building it for any platform should be straightforward as the plugin dependencies are minimal. Please open an issue if you encounter any problems.
+The [app/ directory](app/) contains a [Flutter](https://github.com/flutter/flutter) front end. Building it for any platform should be straightforward as the plugin dependencies are minimal. Please open an issue if you encounter any problems.
 
-Note that the front end can also be built and deployed as a web app. This is the default behavior with `kindest`.
+Note that the front end can also be built and deployed as a web app. This is the default behavior when deploying with `kindest`.
 
 ## Deploying
 The kubernetes deployment is packaged as a [Helm](https://helm.sh/) chart and is located in the [chart/ directory](chart/). Like building, deploying can done with either `kindest` or `helm`:
@@ -26,10 +30,11 @@ The kubernetes deployment is packaged as a [Helm](https://helm.sh/) chart and is
 ```bash
 # the values.yaml file is embedded in the root
 # kindest.yaml for the repository, and is ideal
-# for development
+# for development as it will skip deploying when
+# the chart hasn't changed:
 $ kindest deploy
 
-# we can also install the chart manually:
+# you can also install the chart manually:
 $ export RELEASE_NAME=t4vd
 $ export NAMESPACE=t4vd
 $ helm install \
@@ -39,7 +44,7 @@ $ helm install \
     ./chart
 ```
 
-While not officially supported, the backend images should be compatible with [docker-compose](https://docs.docker.com/compose/). Porting would entail converting the chart to a `docker-compose.yaml` file. In any case, I strongly urge you to use kubernetes.
+While not officially supported, the backend images *should* be compatible with [docker-compose](https://docs.docker.com/compose/). Porting would entail converting the chart to a `docker-compose.yaml` file. In any case, I strongly urge you to use kubernetes.
 
 ## FAQ
 ### Why make this free?
