@@ -63,7 +63,7 @@ func ConvertPlaylistDetails(input map[string]interface{}) *PlaylistDetails {
 		Title:     input["title"].(string),
 		Channel:   input["channel"].(string),
 		ChannelID: input["channelid"].(string),
-		NumVideos: int(intField(input["numVideos"])),
+		NumVideos: int(intField(input["numvideos"])),
 	}
 }
 

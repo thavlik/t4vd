@@ -19,7 +19,7 @@ env:
         namespace: t4vd
         values:
           db:
-            driver: postgres
+            driver: mongo
             postgres:
               url:
                 valueFrom:
@@ -107,7 +107,7 @@ env:
           sources:
             replicas: 1
           iam:
-            driver: cognito
+            driver: keycloak
             cognito:
               region: us-east-1
               userPoolId:
