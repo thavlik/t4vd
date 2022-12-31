@@ -104,9 +104,7 @@ class _FilterPageState extends State<FilterPage> {
       loading = true;
       model.refreshMarkers(context).then((value) {
         if (!mounted) return;
-        setState(() {
-          loading = false;
-        });
+        setState(() => loading = false);
       });
     }
   }
