@@ -408,10 +408,12 @@ class BJJModel extends Model {
   Future<void> refreshMarkers(BuildContext context) async {
     await withAuth(context, () async {
       await ensureProject(context);
-      _markers = await api.getStack(
-        projectId: _project!.id,
-        creds: creds!,
-      );
+      _markers = [
+        await api.getRandomMarker(
+          projectId: _project!.id,
+          creds: creds!,
+        )
+      ];
       _markerIndex = 0;
       notifyListeners();
     });
