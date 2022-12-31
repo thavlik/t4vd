@@ -21,13 +21,14 @@ import (
 
 var serverArgs struct {
 	base.ServerOptions
-	redis           base.RedisOptions
-	db              base.DatabaseOptions
-	videoBucket     string
-	thumbnailBucket string
-	videoFormat     string
-	includeAudio    bool
-	concurrency     int
+	redis            base.RedisOptions
+	db               base.DatabaseOptions
+	videoBucket      string
+	thumbnailBucket  string
+	videoFormat      string
+	includeAudio     bool
+	concurrency      int
+	disableDownloads bool
 }
 
 var serverCmd = &cobra.Command{
@@ -54,6 +55,7 @@ var serverCmd = &cobra.Command{
 			serverArgs.videoFormat,
 			serverArgs.includeAudio,
 			serverArgs.concurrency,
+			serverArgs.disableDownloads,
 			log,
 		)
 	},
@@ -109,5 +111,6 @@ func init() {
 	serverCmd.PersistentFlags().StringVar(&serverArgs.thumbnailBucket, "thumbnail-bucket", "", "thumbnail cache bucket name")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.videoFormat, "video-format", "webm", "download video format")
 	serverCmd.PersistentFlags().BoolVar(&serverArgs.includeAudio, "include-audio", false, "download audio")
+	serverCmd.PersistentFlags().BoolVar(&serverArgs.disableDownloads, "disable-downloads", false, "disable all downloads from youtube (info queries still allowed)")
 	ConfigureCommand(serverCmd)
 }

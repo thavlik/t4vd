@@ -133,6 +133,11 @@ sources:
 seer:
   enabled: true
   format: webm # download format
+  
+  # prohibit all video downloads, but
+  # allow info queries from youtube
+  disableDownloads: false
+  
   image: thavlik/t4vd-seer:latest
   imagePullPolicy: Always
   replicas: 1

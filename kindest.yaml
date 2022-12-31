@@ -99,6 +99,7 @@ env:
             replicas: 1
           seer:
             enabled: true
+            disableDownloads: true
             replicas: 1
           slideshow:
             enabled: true

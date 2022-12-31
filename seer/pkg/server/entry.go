@@ -19,6 +19,7 @@ func Entry(
 	videoFormat string,
 	includeAudio bool,
 	concurrency int,
+	disableDownloads bool,
 	log *zap.Logger,
 ) error {
 	s := NewServer(
@@ -52,6 +53,7 @@ func Entry(
 		thumbCache,
 		videoFormat,
 		includeAudio,
+		disableDownloads,
 		stopPopDl,
 		log,
 	)

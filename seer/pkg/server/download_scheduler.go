@@ -19,6 +19,7 @@ func initDownloadWorkers(
 	thumbCache thumbcache.ThumbCache,
 	videoFormat string,
 	includeAudio bool,
+	disableDownloads bool,
 	stop <-chan struct{},
 	log *zap.Logger,
 ) {
@@ -32,6 +33,7 @@ func initDownloadWorkers(
 			thumbCache,
 			videoFormat,
 			includeAudio,
+			disableDownloads,
 			log,
 		)
 	}
@@ -80,6 +82,7 @@ func downloadWorker(
 	thumbCache thumbcache.ThumbCache,
 	videoFormat string,
 	includeAudio bool,
+	disableDownloads bool,
 	log *zap.Logger,
 ) {
 	for {
@@ -146,6 +149,7 @@ func downloadWorker(
 				vidCache,
 				videoFormat,
 				includeAudio,
+				disableDownloads,
 				onProgress,
 				videoLog,
 			); err != nil {

@@ -18,6 +18,7 @@ func downloadVideo(
 	vidCache vidcache.VidCache,
 	videoFormat string,
 	includeAudio bool,
+	disableDownloads bool,
 	onProgress chan<- struct{},
 	log *zap.Logger,
 ) error {
@@ -44,6 +45,10 @@ func downloadVideo(
 		} else if err != vidcache.ErrVideoNotCached {
 			return errors.Wrap(err, "cache.Get")
 		}
+	}
+	if disableDownloads {
+		log.Warn("video would be downloaded from youtube but --disable-downloads was specified")
+		return nil
 	}
 	log.Debug("downloading video from youtube")
 	rp, wp := io.Pipe()

@@ -28,6 +28,9 @@ spec:
         command:
           - seer
           - server
+        {{- if .Values.seer.disableDownloads }}
+          - --disable-downloads
+        {{- end }}
           - --db-driver
           - {{ required "missing db.driver" .Values.db.driver }}
           - --video-bucket
