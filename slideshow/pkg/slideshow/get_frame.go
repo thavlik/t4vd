@@ -1,6 +1,7 @@
 package slideshow
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -15,6 +16,7 @@ var defaultReadAhead = 8192 // 8kb
 // GetFrameFromReader reads a webm file, seeks to the time,
 // and returns the next decoded frame.
 func GetSingleFrameFromReader(
+	ctx context.Context,
 	r io.ReadSeeker,
 	t time.Duration,
 ) (*Frame, error) {
@@ -22,7 +24,7 @@ func GetSingleFrameFromReader(
 	stop := make(chan struct{}, 1)
 	done := make(chan error, 1)
 	go func() {
-		done <- GetFramesFromReader(r, t, frames, stop)
+		done <- GetFramesFromReader(ctx, r, t, frames, stop)
 	}()
 	frame, ok := <-frames
 	stop <- struct{}{}
@@ -36,6 +38,7 @@ func GetSingleFrameFromReader(
 }
 
 func GetSingleFrameFromBucket(
+	ctx context.Context,
 	bucket string,
 	key string,
 	t time.Duration,
@@ -48,12 +51,14 @@ func GetSingleFrameFromBucket(
 		return nil, errors.Wrap(err, "NewS3ReadSeeker")
 	}
 	return GetSingleFrameFromReader(
+		ctx,
 		NewReadAhead(s3r, defaultReadAhead),
 		t,
 	)
 }
 
 func GetSingleFrameFromFile(
+	ctx context.Context,
 	path string,
 	t time.Duration,
 ) (*Frame, error) {
@@ -62,15 +67,17 @@ func GetSingleFrameFromFile(
 		return nil, errors.Wrap(err, "os.Open")
 	}
 	defer f.Close()
-	return GetSingleFrameFromReader(f, t)
+	return GetSingleFrameFromReader(ctx, f, t)
 }
 
 func GetFramesFromReader(
+	ctx context.Context,
 	r io.ReadSeeker,
 	t time.Duration,
 	frame chan<- Frame,
 	stop <-chan struct{},
 ) (err error) {
+	done := ctx.Done()
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("recovered from panic: %v", r)
@@ -92,8 +99,8 @@ func GetFramesFromReader(
 		return errors.Wrap(err, "NewVDecoder")
 	}
 	stopDec := make(chan struct{}, 1)
-	d0 := make(chan struct{}, 1)
-	d1 := make(chan error, 1)
+	d0 := make(chan struct{})
+	d1 := make(chan error)
 	go func() { // demuxer
 		defer func() {
 			stopDec <- struct{}{}
@@ -103,6 +110,8 @@ func GetFramesFromReader(
 		}()
 		for {
 			select {
+			case <-done:
+				return
 			case <-stop:
 				return
 			case pkt, ok := <-pr.Chan:
@@ -111,6 +120,8 @@ func GetFramesFromReader(
 				}
 				if pkt.TrackNumber == vtrack.TrackNumber {
 					select {
+					case <-done:
+						return
 					case <-stop:
 						return
 					case vPackets <- pkt:
@@ -122,13 +133,15 @@ func GetFramesFromReader(
 	go func() {
 		d1 <- vdec.Process(frame, stopDec)
 	}()
-	if _, err = <-d0, <-d1; err != nil {
-		return errors.Wrap(err, "Process")
+	<-d0
+	if err := <-d1; err != nil {
+		return errors.Wrap(err, "vdecoder.Process")
 	}
 	return nil
 }
 
 func GetFramesFromFile(
+	ctx context.Context,
 	path string,
 	t time.Duration,
 	frame chan<- Frame,
@@ -139,10 +152,11 @@ func GetFramesFromFile(
 		return errors.Wrap(err, "os.Open")
 	}
 	defer f.Close()
-	return GetFramesFromReader(f, t, frame, stop)
+	return GetFramesFromReader(ctx, f, t, frame, stop)
 }
 
 func GetFramesFromBucket(
+	ctx context.Context,
 	bucket string,
 	key string,
 	t time.Duration,
@@ -157,6 +171,7 @@ func GetFramesFromBucket(
 		return errors.Wrap(err, "NewS3ReadSeeker")
 	}
 	return GetFramesFromReader(
+		ctx,
 		NewReadAhead(s3r, defaultReadAhead),
 		t,
 		frame,

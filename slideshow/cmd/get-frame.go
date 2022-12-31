@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"image/jpeg"
 	"image/png"
@@ -52,7 +53,11 @@ var getFrameCmd = &cobra.Command{
 		} else {
 			r = slideshow.NewReadAhead(s3r, getFrameArgs.readAhead)
 		}
-		frame, err := slideshow.GetSingleFrameFromReader(r, getFrameArgs.time)
+		frame, err := slideshow.GetSingleFrameFromReader(
+			context.Background(),
+			r,
+			getFrameArgs.time,
+		)
 		if err != nil {
 			return errors.Wrap(err, "GetSingleFrameFromFile")
 		}

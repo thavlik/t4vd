@@ -36,6 +36,7 @@ func getFrame(
 		// Get frame from bucket
 		log.Debug("extracting frame from bucket")
 		frame, err := slideshow.GetSingleFrameFromBucket(
+			ctx,
 			bucket,
 			videoID+".webm",
 			t,
