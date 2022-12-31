@@ -28,8 +28,8 @@ RUN git clone -q \
     https://github.com/flutter/flutter.git \
     /flutter \
     && flutter channel master \
-    && flutter upgrade \
     && flutter config --enable-web \
+    && flutter upgrade \
     && flutter doctor -v
 WORKDIR /app
 COPY pubspec.lock .

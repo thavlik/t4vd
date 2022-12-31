@@ -1,5 +1,5 @@
 # t4vd (Tool for Video Data)
-This project is an entire platform for simplifying the creation of video datasets. The core functionality is currently centered around labeling individual frames as "keep" or "discard", facilitating the training of models that filter "junk" frames. There are plans to implement a variety of other labeling strategies.
+This project is an open source platform for simplifying the creation of video datasets. The core functionality is currently centered around labeling individual frames as "keep" or "discard", facilitating the training of models that filter "junk" frames. There are plans to implement a variety of other labeling strategies.
 
 ## Building
 ### Docker Images
