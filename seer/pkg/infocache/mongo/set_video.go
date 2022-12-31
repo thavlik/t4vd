@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/seer/pkg/api"
@@ -23,5 +24,16 @@ func (c *mongoInfoCache) SetVideo(video *api.VideoDetails) error {
 	); err != nil {
 		return errors.Wrap(err, "mongo")
 	}
-	return nil
+	return c.videoRefreshed(video.ID, time.Now())
+}
+
+func (c *mongoInfoCache) videoRefreshed(
+	videoID string,
+	timestamp time.Time,
+) error {
+	return refreshCache(
+		c.videoRecencyCollection,
+		videoID,
+		timestamp,
+	)
 }

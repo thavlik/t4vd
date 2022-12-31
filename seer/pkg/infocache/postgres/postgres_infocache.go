@@ -10,6 +10,7 @@ import (
 var (
 	channelRecencyTable  = "channelrecency"  // tracks how recent the channel cache is
 	playlistRecencyTable = "playlistrecency" // tracks how recent the playlist cache is
+	videoRecencyTable    = "videorecency"    // tracks how recent the video cache is
 	channelJoinTable     = "channeljoins"    // tracks which videos are in which channels
 	playlistJoinTable    = "playlistjoins"   // tracks which videos are in which playlists
 	cachedVideosTable    = "cachedvideos"    // cache of video info
@@ -42,6 +43,9 @@ func NewPostgresInfoCache(db *sql.DB) infocache.InfoCache {
 		id TEXT PRIMARY KEY,
 		updated BIGINT NOT NULL`)
 	table(db, playlistRecencyTable, `
+		id TEXT PRIMARY KEY,
+		updated BIGINT NOT NULL`)
+	table(db, videoRecencyTable, `
 		id TEXT PRIMARY KEY,
 		updated BIGINT NOT NULL`)
 	table(db, channelJoinTable, fmt.Sprintf(`

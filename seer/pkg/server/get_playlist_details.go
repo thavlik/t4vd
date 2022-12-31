@@ -7,6 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"go.uber.org/zap"
 )
 
@@ -39,17 +40,17 @@ func (s *Server) GetPlaylistDetails(ctx context.Context, req api.GetPlaylistDeta
 		return nil, errors.Wrap(err, "ExtractPlaylistID")
 	}
 	log = log.With(zap.String("playlistID", playlistID))
-	if req.Force {
+	cached, err := s.infoCache.GetPlaylist(ctx, playlistID)
+	if req.Force || err == infocache.ErrCacheUnavailable {
 		if err := s.schedulePlaylistQuery(playlistID); err != nil {
 			return nil, err
 		}
 	}
-	cached, err := s.infoCache.GetPlaylist(ctx, playlistID)
 	if err == nil {
 		log.Debug("playlist details were cached")
 		return &api.GetPlaylistDetailsResponse{
 			Details: *cached,
 		}, nil
 	}
-	return nil, err
+	return nil, errors.Wrap(err, "infocache.GetPlaylist")
 }

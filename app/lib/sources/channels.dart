@@ -3,6 +3,7 @@ import 'package:t4vd/model.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:t4vd/sources/channel_details.dart';
 
 import '../api.dart';
 
@@ -28,7 +29,9 @@ class InputChannelListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      key: Key('channel-${model.id}'),
+      onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => ChannelDetailsPage(model))),
       child: Listener(
         onPointerDown: (PointerDownEvent event) {
           if (event.kind != PointerDeviceKind.mouse ||
@@ -189,6 +192,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
                   ),
                 ),
                 TextButton(
+                  key: const Key('confirmAddChannel'),
                   onPressed: () {
                     if (addChannelController.text.isEmpty) {
                       focusNode.requestFocus();
@@ -214,6 +218,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
                 child: Column(
                   children: [
                     TextField(
+                      key: const Key('addChannelInput'),
                       decoration: const InputDecoration(
                         labelText: "Please enter a channel URL or ID.",
                       ),
@@ -257,6 +262,11 @@ class InputChannelsPageState extends State<InputChannelsPage> {
         title: Text(
           "Input Channels",
           style: Theme.of(context).textTheme.headline6,
+        ),
+        leading: IconButton(
+          key: const Key('channelsNavBack'),
+          icon: const Icon(Icons.navigate_before),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
@@ -340,6 +350,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
               bottom: 16,
               right: 16,
               child: FloatingActionButton(
+                key: const Key('addChannel'),
                 onPressed: () => showAddChannelDialog(context),
                 child: const Icon(Icons.add),
               )),

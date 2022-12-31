@@ -3,6 +3,7 @@ import 'package:t4vd/model.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+import 'package:t4vd/sources/playlist_details.dart';
 
 import '../api.dart';
 
@@ -32,7 +33,9 @@ class InputPlaylistListItem extends StatelessWidget {
     final s = secs - m * 60;
     final duration = "${m}m${s}s";
     return InkWell(
-      onTap: () {},
+      key: Key('playlist-${model.id}'),
+      onTap: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => PlaylistDetailsPage(model))),
       child: Listener(
         onPointerDown: (PointerDownEvent event) {
           if (event.kind != PointerDeviceKind.mouse ||
@@ -196,6 +199,7 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
                   ),
                 ),
                 TextButton(
+                  key: const Key('confirmAddPlaylist'),
                   onPressed: () {
                     if (addPlaylistController.text.isEmpty) {
                       focusNode.requestFocus();
@@ -221,6 +225,7 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
                 child: Column(
                   children: [
                     TextField(
+                      key: const Key('addPlaylistInput'),
                       decoration: const InputDecoration(
                         labelText: "Please enter a playlist URL or ID.",
                       ),
@@ -264,6 +269,11 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
         title: Text(
           "Input Playlists",
           style: Theme.of(context).textTheme.headline6,
+        ),
+        leading: IconButton(
+          key: const Key('playlistsNavBack'),
+          icon: const Icon(Icons.navigate_before),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
           IconButton(
@@ -350,6 +360,7 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
               bottom: 16,
               right: 16,
               child: FloatingActionButton(
+                key: const Key('addPlaylist'),
                 onPressed: () => showAddPlaylistDialog(context),
                 child: const Icon(Icons.add),
               )),

@@ -464,8 +464,10 @@ class BJJModel extends Model {
         input: input,
         blacklist: blacklist,
       );
-      _channels.add(item);
-      notifyListeners();
+      if (item != null) {
+        _channels.add(item);
+        notifyListeners();
+      }
     });
   }
 
@@ -482,8 +484,10 @@ class BJJModel extends Model {
         input: input,
         blacklist: blacklist,
       );
-      _playlists.add(item);
-      notifyListeners();
+      if (item != null) {
+        _playlists.add(item);
+        notifyListeners();
+      }
     });
   }
 
@@ -500,8 +504,10 @@ class BJJModel extends Model {
         input: input,
         blacklist: blacklist,
       );
-      _videos.add(item);
-      notifyListeners();
+      if (item != null) {
+        _videos.add(item);
+        notifyListeners();
+      }
     });
   }
 

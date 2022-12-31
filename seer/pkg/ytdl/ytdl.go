@@ -32,12 +32,13 @@ func Query(
 	if limit != 0 {
 		command += fmt.Sprintf(" --max-downloads %d", limit)
 	}
-	command += fmt.Sprintf(` -- "%s"`, input)
+	command += fmt.Sprintf(` -- %s`, input)
 	cmd := exec.Command("bash", "-c", command)
 	r, w := io.Pipe()
 	cmd.Stdout = w
 	cmd.Stderr = os.Stderr
 	fmt.Printf("> %s\n", command)
+	start := time.Now()
 	if err := cmd.Start(); err != nil {
 		return errors.Wrap(err, "start")
 	}
@@ -56,7 +57,12 @@ func Query(
 					continue
 				}
 				video := api.ConvertVideoDetails(output)
-				videos <- video
+				log.Debug("got video", zap.String("videoID", video.ID))
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case videos <- video:
+				}
 			}
 			if err := scanner.Err(); err != nil {
 				log.Error("scanner error", zap.Error(err))
@@ -66,8 +72,20 @@ func Query(
 		}()
 	}()
 	log.Debug("waiting on youtube-dl termination")
-	done := make(chan error)
-	go func() { done <- cmd.Wait() }()
+	done := make(chan error, 1)
+	go func() {
+		err := cmd.Wait()
+		if err != nil && limit != 0 {
+			if exiterr, ok := err.(*exec.ExitError); ok {
+				if exiterr.ExitCode() == 101 {
+					// standard exit code for MaxDownloadsReached
+					done <- nil
+					return
+				}
+			}
+		}
+		done <- err
+	}()
 	select {
 	case <-ctx.Done():
 		_ = cmd.Process.Kill()
@@ -82,6 +100,7 @@ func Query(
 	if err := <-stdoutDone; err != nil {
 		return errors.Wrap(err, "stdout")
 	}
+	log.Debug("youtube-dl completed", base.Elapsed(start))
 	return nil
 }
 

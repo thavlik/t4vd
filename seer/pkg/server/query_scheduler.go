@@ -126,10 +126,16 @@ func queryWorker(
 		entityLog.Debug("processing query item")
 		func() {
 			defer lock.Release()
-			gotVideo := make(chan *api.VideoDetails)
+			onProgress := make(chan *api.VideoDetails)
+			stopped := make(chan struct{})
+			defer func() {
+				close(onProgress)
+				<-stopped
+			}()
 			go func() {
+				defer func() { stopped <- struct{}{} }()
 				for {
-					_, ok := <-gotVideo
+					_, ok := <-onProgress
 					if !ok {
 						return
 					}
@@ -140,31 +146,65 @@ func queryWorker(
 			}()
 			switch e.Type {
 			case playlist:
+				if recent, err := infoCache.IsPlaylistRecent(e.ID); err != nil {
+					entityLog.Error("infocache.IsPlaylistRecent", zap.Error(err))
+					return
+				} else if !recent {
+					details := &api.PlaylistDetails{}
+					if err := queryPlaylist(e.ID, details); err != nil {
+						entityLog.Error("failed to query playlist", zap.Error(err))
+						return
+					}
+					if err := infoCache.SetPlaylist(details); err != nil {
+						entityLog.Error("infocache.SetPlaylist", zap.Error(err))
+						return
+					}
+					if _, err := retrievePlaylistVideos(
+						infoCache,
+						e.ID,
+						onProgress,
+						entityLog,
+					); err != nil {
+						entityLog.Warn("failed to retrieve playlist videos", zap.Error(err))
+					}
+				}
 				if err := cachePlaylistThumbnail(
 					context.Background(),
 					e.ID,
 					thumbCache,
 					entityLog,
 				); err != nil {
-					entityLog.Warn("failed to download video thumbnail", zap.Error(err))
-				}
-				if recent, err := infoCache.IsPlaylistRecent(e.ID); err != nil {
-					entityLog.Warn("infocache.IsPlaylistRecent", zap.Error(err))
-				} else if !recent {
-					if _, err := retrievePlaylistVideos(
-						infoCache,
-						e.ID,
-						gotVideo,
-						entityLog,
-					); err != nil {
-						entityLog.Warn("failed to retrieve playlist videos", zap.Error(err))
-					}
+					entityLog.Warn("failed to download playlist thumbnail", zap.Error(err))
 				}
 			case channel:
-				details, err := infoCache.GetChannel(context.Background(), e.ID)
-				if err != nil {
-					entityLog.Warn("failed to retrieve playlist details", zap.Error(err))
+				var details *api.ChannelDetails
+				if recent, err := infoCache.IsChannelRecent(e.ID); err != nil {
+					entityLog.Error("infocache.IsChannelRecent", zap.Error(err))
 					return
+				} else if recent {
+					details, err = infoCache.GetChannel(context.Background(), e.ID)
+					if err != nil {
+						entityLog.Error("infocache.GetChannel", zap.Error(err))
+						return
+					}
+				} else {
+					details = &api.ChannelDetails{}
+					if err := queryChannel(e.ID, details); err != nil {
+						entityLog.Error("failed to query channel", zap.Error(err))
+						return
+					}
+					if err := infoCache.SetChannel(details); err != nil {
+						entityLog.Error("infocache.SetChannel", zap.Error(err))
+						return
+					}
+					if _, err := retrieveChannelVideos(
+						infoCache,
+						e.ID,
+						onProgress,
+						entityLog,
+					); err != nil {
+						entityLog.Warn("failed to retrieve channel videos", zap.Error(err))
+					}
 				}
 				if err := cacheChannelAvatar(
 					context.Background(),
@@ -175,19 +215,21 @@ func queryWorker(
 				); err != nil {
 					entityLog.Warn("failed to download video thumbnail", zap.Error(err))
 				}
-				if recent, err := infoCache.IsChannelRecent(e.ID); err != nil {
-					entityLog.Warn("infocache.IsChannelRecent", zap.Error(err))
+			case video:
+				if recent, err := infoCache.IsVideoRecent(e.ID); err != nil {
+					entityLog.Error("infocache.IsVideoRecent", zap.Error(err))
+					return
 				} else if !recent {
-					if _, err := retrieveChannelVideos(
-						infoCache,
-						e.ID,
-						gotVideo,
-						entityLog,
-					); err != nil {
-						entityLog.Warn("failed to retrieve channel videos", zap.Error(err))
+					video, err := queryVideoDetails(e.ID, log)
+					if err != nil {
+						entityLog.Error("queryVideoDetails", zap.Error(err))
+						return
+					}
+					if err := infoCache.SetVideo(video); err != nil {
+						entityLog.Error("infocache.SetVideo", zap.Error(err))
+						return
 					}
 				}
-			case video:
 				if err := cacheVideoThumbnail(
 					context.Background(),
 					e.ID,

@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	sources "github.com/thavlik/t4vd/sources/pkg/api"
 )
 
@@ -23,7 +25,11 @@ func (s *Server) handleAddChannel() http.HandlerFunc {
 			req.SubmitterID = userID
 			resp, err := s.sources.AddChannel(context.Background(), req)
 			if err != nil {
-				return errors.Wrap(err, "sources")
+				if strings.Contains(err.Error(), infocache.ErrCacheUnavailable.Error()) {
+					w.WriteHeader(http.StatusAccepted)
+					return nil
+				}
+				return errors.Wrap(err, "sources.AddChannel")
 			}
 			w.Header().Set("Content-Type", "application/json")
 			if err := json.NewEncoder(w).Encode(resp); err != nil {

@@ -48,7 +48,15 @@ func getVideoIDs(
 	value string,
 	db *sql.DB,
 ) ([]string, error) {
-	rows, err := db.QueryContext(ctx, fmt.Sprintf("SELECT v FROM %s", joinsTable))
+	rows, err := db.QueryContext(
+		ctx,
+		fmt.Sprintf(
+			"SELECT v FROM %s WHERE %s = $1",
+			joinsTable,
+			keyName,
+		),
+		value,
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "postgres")
 	}

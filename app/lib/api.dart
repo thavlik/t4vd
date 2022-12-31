@@ -199,7 +199,7 @@ void checkHttpStatus(Response response) {
     throw InvalidCredentialsError();
   } else if (response.statusCode == 404) {
     throw ResourceNotFoundError();
-  } else if (response.statusCode != 200) {
+  } else if (response.statusCode != 200 && response.statusCode != 202) {
     throw ErrorSummary("status ${response.statusCode}: ${response.body}");
   }
 }
@@ -234,7 +234,7 @@ Future<Project> getProject({
   return Project.fromMap(decodedResponse);
 }
 
-Future<ChannelListItem> addChannel({
+Future<ChannelListItem?> addChannel({
   required String projectId,
   required String input,
   required bool blacklist,
@@ -249,11 +249,15 @@ Future<ChannelListItem> addChannel({
         'blacklist': blacklist,
       }));
   checkHttpStatus(response);
+  if (response.statusCode == 202) {
+    // channel info was not cached but the query was scheduled
+    return null;
+  }
   final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
   return ChannelListItem.fromMap(decodedResponse);
 }
 
-Future<PlaylistListItem> addPlaylist({
+Future<PlaylistListItem?> addPlaylist({
   required String projectId,
   required String input,
   required bool blacklist,
@@ -268,11 +272,15 @@ Future<PlaylistListItem> addPlaylist({
         'blacklist': blacklist,
       }));
   checkHttpStatus(response);
+  if (response.statusCode == 202) {
+    // channel info was not cached but the query was scheduled
+    return null;
+  }
   final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
   return PlaylistListItem.fromMap(decodedResponse);
 }
 
-Future<VideoListItem> addVideo({
+Future<VideoListItem?> addVideo({
   required String projectId,
   required String input,
   required bool blacklist,
@@ -287,6 +295,10 @@ Future<VideoListItem> addVideo({
         'blacklist': blacklist,
       }));
   checkHttpStatus(response);
+  if (response.statusCode == 202) {
+    // channel info was not cached but the query was scheduled
+    return null;
+  }
   final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
   return VideoListItem.fromMap(decodedResponse);
 }

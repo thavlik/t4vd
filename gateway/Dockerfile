@@ -6,6 +6,7 @@ COPY base/cmd/iam base/cmd/iam
 COPY base/pkg base/pkg
 COPY sources/pkg/api sources/pkg/api
 COPY seer/pkg/api seer/pkg/api
+COPY seer/pkg/infocache/infocache.go seer/pkg/infocache/infocache.go
 COPY sources/pkg/store/store.go sources/pkg/store/store.go
 COPY compiler/pkg/api compiler/pkg/api
 COPY compiler/pkg/datastore/datastore.go compiler/pkg/datastore/datastore.go

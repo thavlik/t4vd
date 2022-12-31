@@ -6,6 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"go.uber.org/zap"
 )
 
@@ -33,12 +34,12 @@ func (s *Server) GetChannelDetails(ctx context.Context, req api.GetChannelDetail
 		return nil, errors.Wrap(err, "ExtractChannelID")
 	}
 	log = log.With(zap.String("channelID", channelID))
-	if req.Force {
+	cached, err := s.infoCache.GetChannel(ctx, channelID)
+	if req.Force || err == infocache.ErrCacheUnavailable {
 		if err := s.scheduleChannelQuery(channelID); err != nil {
 			return nil, err
 		}
 	}
-	cached, err := s.infoCache.GetChannel(ctx, channelID)
 	if err == nil {
 		log.Debug("channel details were cached")
 		return &api.GetChannelDetailsResponse{

@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/seer/pkg/api"
@@ -63,5 +64,17 @@ func (c *postgresInfoCache) SetVideo(video *api.VideoDetails) error {
 	); err != nil {
 		return errors.Wrap(err, "postgres")
 	}
-	return nil
+	return c.videoRefreshed(video.ID, time.Now())
+}
+
+func (c *postgresInfoCache) videoRefreshed(
+	videoID string,
+	timestamp time.Time,
+) error {
+	return refreshCache(
+		videoRecencyTable,
+		videoID,
+		timestamp,
+		c.db,
+	)
 }

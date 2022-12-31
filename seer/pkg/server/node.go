@@ -8,12 +8,6 @@ import (
 	"os/exec"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/t4vd/seer/pkg/api"
-)
-
-const (
-	queryChannelScriptPath  = "/scripts/query-channel.js"
-	queryPlaylistScriptPath = "/scripts/query-playlist.js"
 )
 
 // INPUT_URL=https://www.youtube.com/@weshammer runuser -pptruser -- node -e "$(cat /scripts/query-channel.js)"
@@ -38,12 +32,4 @@ func nodeQuery(scriptPath string, input string, dest interface{}) error {
 		return errors.Wrap(err, "unmarshal")
 	}
 	return nil
-}
-
-func queryPlaylist(input string, dest *api.PlaylistDetails) error {
-	return nodeQuery(queryPlaylistScriptPath, input, dest)
-}
-
-func queryChannel(input string, dest *api.ChannelDetails) error {
-	return nodeQuery(queryChannelScriptPath, input, dest)
 }

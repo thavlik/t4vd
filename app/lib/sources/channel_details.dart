@@ -2,17 +2,17 @@ import 'package:flutter/material.dart';
 
 import '../api.dart';
 
-class VideoDetailsPage extends StatelessWidget {
-  const VideoDetailsPage(this.model, {super.key});
+class ChannelDetailsPage extends StatelessWidget {
+  const ChannelDetailsPage(this.model, {super.key});
 
-  final VideoListItem model;
+  final ChannelListItem model;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          "Video Details",
+          "Channel Details",
           style: Theme.of(context).textTheme.headline6,
         ),
         actions: [
@@ -26,14 +26,7 @@ class VideoDetailsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           infoSection(context, "ID", model.id),
-          infoSection(context, "Title", model.title),
-          infoSection(context, "Channel", model.channel),
-          infoSection(context, "Channel ID", model.channelId),
-          infoSection(context, "Upload Date", model.uploadDate),
-          infoSection(context, "Resolution", "${model.width}x${model.height}"),
-          infoSection(context, "FPS", model.fps.toString()),
-          infoSection(context, "Duration", model.duration.toString()),
-          infoSection(context, "Blacklisted", model.blacklist.toString()),
+          infoSection(context, "Name", model.name),
         ],
       ),
     );

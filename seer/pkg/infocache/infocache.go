@@ -17,6 +17,7 @@ var (
 type InfoCache interface {
 	GetVideo(ctx context.Context, videoID string) (*api.VideoDetails, error)
 	SetVideo(video *api.VideoDetails) error
+	IsVideoRecent(videoID string) (bool, error)
 
 	GetChannel(ctx context.Context, channelID string) (*api.ChannelDetails, error)
 	SetChannel(*api.ChannelDetails) error
