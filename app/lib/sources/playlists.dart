@@ -61,16 +61,19 @@ class InputPlaylistListItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                AspectRatio(
-                  aspectRatio: 1280.0 / 720.0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(8.0)),
-                      image: DecorationImage(
-                        image: NetworkImage(playlistThumbnail(model.id)),
-                        alignment: const Alignment(0, 0),
-                        fit: BoxFit.cover,
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 120),
+                  child: AspectRatio(
+                    aspectRatio: 1280.0 / 720.0,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8.0)),
+                        image: DecorationImage(
+                          image: NetworkImage(playlistThumbnail(model.id)),
+                          alignment: const Alignment(0, 0),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   ),
