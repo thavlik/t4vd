@@ -77,5 +77,4 @@ Laselva logo is property of [Laselva MMA & Fitness](http://www.laselvamma.com/).
 
 This project's code is released under [MIT](LICENSE-MIT) / [Apache 2.0](LICENSE-Apache) dual license, which is extremely permissive.
 
-You are encouraged to fork this project and use it for your own purposes, even commercial.
 
