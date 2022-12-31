@@ -22,9 +22,11 @@ type InfoCache interface {
 	SetChannel(*api.ChannelDetails) error
 	GetChannelVideoIDs(ctx context.Context, channelID string) (videoIDs []string, timestamp time.Time, err error)
 	SetChannelVideoIDs(channelID string, videoIDs []string, timestamp time.Time) error
+	IsChannelRecent(channelID string) (bool, error)
 
 	GetPlaylist(ctx context.Context, playlistID string) (*api.PlaylistDetails, error)
 	SetPlaylist(*api.PlaylistDetails) error
 	GetPlaylistVideoIDs(ctx context.Context, channelID string) (videoIDs []string, timestamp time.Time, err error)
 	SetPlaylistVideoIDs(channelID string, videoIDs []string, timestamp time.Time) error
+	IsPlaylistRecent(playlistID string) (bool, error)
 }

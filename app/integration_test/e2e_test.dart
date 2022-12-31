@@ -238,7 +238,6 @@ void main() {
 
   testWidgets('add video to project', (WidgetTester tester) async {
     app.main();
-    //await doSelectProject(tester, env.projects[0].name);
     final findVideos = find.byKey(const Key('videos'));
     await pumpUntilFound(tester, findVideos);
     await tester.tap(findVideos);
@@ -258,6 +257,46 @@ void main() {
     await pumpUntilFound(tester, findOutputTab);
     await tester.tap(findOutputTab);
     await pumpUntilFound(tester, findVideo);
+  });
+
+  testWidgets('add playlist to project', (WidgetTester tester) async {
+    app.main();
+    final findPlaylists = find.byKey(const Key('playlists'));
+    await pumpUntilFound(tester, findPlaylists);
+    await tester.tap(findPlaylists);
+    final findAddPlaylist = find.byKey(const Key('addPlaylist'));
+    await pumpUntilFound(tester, findAddPlaylist);
+    await tester.tap(findAddPlaylist);
+    final findAddPlaylistInput = find.byKey(const Key('addPlaylistInput'));
+    await pumpUntilFound(tester, findAddPlaylistInput);
+    await tester.enterText(
+        findAddPlaylistInput, env.projects[0].inputPlaylists[0]);
+    final findConfirmAddPlaylist = find.byKey(const Key('confirmAddPlaylist'));
+    await tester.tap(findConfirmAddPlaylist);
+    final findPlaylist =
+        find.byKey(Key('playlist-${env.projects[0].inputPlaylists[0]}'));
+    await pumpUntilFound(tester, findPlaylist);
+    await tester.tap(find.byKey(const Key('playlistsNavBack')));
+  });
+
+  testWidgets('add channel to project', (WidgetTester tester) async {
+    app.main();
+    final findChannels = find.byKey(const Key('channels'));
+    await pumpUntilFound(tester, findChannels);
+    await tester.tap(findChannels);
+    final findAddChannel = find.byKey(const Key('addChannel'));
+    await pumpUntilFound(tester, findAddChannel);
+    await tester.tap(findAddChannel);
+    final findAddChannelInput = find.byKey(const Key('addChannelInput'));
+    await pumpUntilFound(tester, findAddChannelInput);
+    await tester.enterText(
+        findAddChannelInput, env.projects[0].inputChannels[0]);
+    final findConfirmAddChannel = find.byKey(const Key('confirmAddChannel'));
+    await tester.tap(findConfirmAddChannel);
+    final findChannel =
+        find.byKey(Key('channel-${env.projects[0].inputChannels[0]}'));
+    await pumpUntilFound(tester, findChannel);
+    await tester.tap(find.byKey(const Key('channelsNavBack')));
     await doSignOut(tester);
   });
 

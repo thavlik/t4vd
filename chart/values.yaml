@@ -131,6 +131,7 @@ sources:
   resources: {}
 
 seer:
+  enabled: true
   format: webm # download format
   image: thavlik/t4vd-seer:latest
   imagePullPolicy: Always

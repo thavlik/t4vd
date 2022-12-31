@@ -16,6 +16,19 @@ import (
 
 type entityType int
 
+func (e entityType) String() string {
+	switch e {
+	case playlist:
+		return "playlist"
+	case channel:
+		return "channel"
+	case video:
+		return "video"
+	default:
+		panic("unreachable branch detected")
+	}
+}
+
 const (
 	playlist entityType = 1
 	channel  entityType = 2
@@ -25,17 +38,6 @@ const (
 type entity struct {
 	Type entityType `json:"t"`
 	ID   string     `json:"_"`
-}
-
-func (e *entity) typeString() string {
-	switch e.Type {
-	case playlist:
-		return "playlist"
-	case channel:
-		return "channel"
-	default:
-		panic("unreachable branch detected")
-	}
 }
 
 func initQueryWorkers(
@@ -111,7 +113,7 @@ func queryWorker(
 			continue
 		}
 		entityLog := log.With(
-			zap.String("type", e.typeString()),
+			zap.String("type", e.Type.String()),
 			zap.String("id", e.ID))
 		lock, err := querySched.Lock(e.ID)
 		if err == scheduler.ErrLocked {
@@ -121,7 +123,7 @@ func queryWorker(
 		} else if err != nil {
 			panic(errors.Wrap(err, "scheduler.Lock"))
 		}
-		entityLog.Debug("processing item")
+		entityLog.Debug("processing query item")
 		func() {
 			defer lock.Release()
 			gotVideo := make(chan *api.VideoDetails)
@@ -146,13 +148,17 @@ func queryWorker(
 				); err != nil {
 					entityLog.Warn("failed to download video thumbnail", zap.Error(err))
 				}
-				if _, err := retrievePlaylistVideos(
-					infoCache,
-					e.ID,
-					gotVideo,
-					entityLog,
-				); err != nil {
-					entityLog.Warn("failed to retrieve playlist videos", zap.Error(err))
+				if recent, err := infoCache.IsPlaylistRecent(e.ID); err != nil {
+					entityLog.Warn("infocache.IsPlaylistRecent", zap.Error(err))
+				} else if !recent {
+					if _, err := retrievePlaylistVideos(
+						infoCache,
+						e.ID,
+						gotVideo,
+						entityLog,
+					); err != nil {
+						entityLog.Warn("failed to retrieve playlist videos", zap.Error(err))
+					}
 				}
 			case channel:
 				details, err := infoCache.GetChannel(context.Background(), e.ID)
@@ -169,13 +175,17 @@ func queryWorker(
 				); err != nil {
 					entityLog.Warn("failed to download video thumbnail", zap.Error(err))
 				}
-				if _, err := retrieveChannelVideos(
-					infoCache,
-					e.ID,
-					gotVideo,
-					entityLog,
-				); err != nil {
-					entityLog.Warn("failed to retrieve channel videos", zap.Error(err))
+				if recent, err := infoCache.IsChannelRecent(e.ID); err != nil {
+					entityLog.Warn("infocache.IsChannelRecent", zap.Error(err))
+				} else if !recent {
+					if _, err := retrieveChannelVideos(
+						infoCache,
+						e.ID,
+						gotVideo,
+						entityLog,
+					); err != nil {
+						entityLog.Warn("failed to retrieve channel videos", zap.Error(err))
+					}
 				}
 			case video:
 				if err := cacheVideoThumbnail(
@@ -189,9 +199,10 @@ func queryWorker(
 			default:
 				panic("unreachable branch detected")
 			}
-
 			if err := querySched.Remove(rawEnt); err != nil {
 				entityLog.Warn("failed to remove entity from query scheduler, this will result in multiple repeated requests to youtube")
+			} else {
+				entityLog.Debug("removed entity from query schedule")
 			}
 		}()
 	}

@@ -30,8 +30,10 @@ func (m *redisMarkerCache) Pop(
 			value, err := lpop.Result()
 			if err == redis.Nil {
 				// no cached markers available, try again after waiting
+				m.log.Debug("no cached markers available")
 				select {
 				case <-done:
+					m.log.Warn("timed out waiting for cached marker")
 					return nil, ctx.Err()
 				case <-time.After(delay):
 					continue

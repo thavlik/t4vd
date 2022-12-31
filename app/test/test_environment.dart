@@ -57,15 +57,27 @@ String extractPod(String service, List<String> pods) {
 class TestProject {
   final String name;
   final List<String> inputVideos;
+  final List<String> inputPlaylists;
+  final List<String> inputChannels;
 
   TestProject({
     required this.name,
     required this.inputVideos,
+    required this.inputPlaylists,
+    required this.inputChannels,
   });
 
   static TestProject fromMap(Map<dynamic, dynamic> m) => TestProject(
         name: m['name'],
         inputVideos: (m['inputVideos'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            [],
+        inputPlaylists: (m['inputPlaylists'] as List<dynamic>?)
+                ?.map((e) => e as String)
+                .toList() ??
+            [],
+        inputChannels: (m['inputChannels'] as List<dynamic>?)
                 ?.map((e) => e as String)
                 .toList() ??
             [],

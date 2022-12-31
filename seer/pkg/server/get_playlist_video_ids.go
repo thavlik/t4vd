@@ -100,7 +100,7 @@ func (s *Server) GetPlaylistVideoIDs(ctx context.Context, req api.GetPlaylistVid
 }
 
 func (s *Server) schedulePlaylistQuery(id string) error {
-	s.log.Debug("asynchronously querying playlist details")
+	s.log.Debug("asynchronously querying playlist details", zap.String("id", id))
 	body, err := json.Marshal(&entity{
 		Type: playlist,
 		ID:   id,

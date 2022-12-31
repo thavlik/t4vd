@@ -39,7 +39,7 @@ class _CardStackState extends State<CardStack> {
         }
       }
       if (!mounted) return;
-      model.precacheFrames(context);
+      //model.precacheFrames(context);
     });
   }
 
@@ -50,7 +50,7 @@ class _CardStackState extends State<CardStack> {
       label: label,
     );
     if (!mounted) return;
-    model.precacheFrames(context);
+    //model.precacheFrames(context);
   }
 
   void onPanUpdate(DragUpdateDetails details) {}
@@ -66,22 +66,18 @@ class _CardStackState extends State<CardStack> {
         onPanEnd: onPanEnd,
         child: Stack(
           children: [
-            Visibility(
-              visible: marker != null,
-              child: Stack(
+            if (marker != null)
+              Stack(
                 children: [
-                  Expanded(
-                    child: Align(
-                      child: AspectRatio(
-                        aspectRatio: 1920.0 / 1080.0,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            image: DecorationImage(
-                              image: NetworkImage(marker?.imageUrl ??
-                                  ""), // FIXME: create missing img placeholder
-                              alignment: const Alignment(0, 0),
-                              fit: BoxFit.cover,
-                            ),
+                  Align(
+                    child: AspectRatio(
+                      aspectRatio: 1920.0 / 1080.0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                            image: NetworkImage(marker.imageUrl),
+                            alignment: const Alignment(0, 0),
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
@@ -104,7 +100,6 @@ class _CardStackState extends State<CardStack> {
                       )),
                 ],
               ),
-            ),
             Visibility(
               visible: model.markerIndex > 0,
               child: Positioned(

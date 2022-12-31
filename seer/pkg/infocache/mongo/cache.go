@@ -37,7 +37,9 @@ func checkCacheRecency(
 	id string,
 ) (bool, error) {
 	updated, err := getRecency(col, id)
-	if err != nil {
+	if err == infocache.ErrCacheUnavailable {
+		return false, nil
+	} else if err != nil {
 		return false, errors.Wrap(err, "getCacheRecency")
 	}
 	return time.Since(updated) < infocache.CacheRecency, nil

@@ -19,7 +19,7 @@ import (
 var ErrNoVideoID = errors.New("url query is missing video id")
 
 func ExtractVideoID(input string) (string, error) {
-	if strings.Contains(input, "youtube.com") || strings.Contains(input, "youtu.be") {
+	if strings.Contains(input, ".") {
 		u, err := url.Parse(input)
 		if err != nil {
 			return "", errors.Wrap(err, "url.Parse")

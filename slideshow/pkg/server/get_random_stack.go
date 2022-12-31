@@ -13,7 +13,8 @@ func (s *Server) GetRandomStack(ctx context.Context, req api.GetRandomStack) (*a
 		return nil, ErrMissingProjectID
 	}
 	s.log.Debug("GetRandomStack",
-		zap.String("projectID", req.ProjectID))
+		zap.String("projectID", req.ProjectID),
+		zap.Int("size", req.Size))
 	var markers []*api.Marker
 	for i := 0; i < req.Size; i++ {
 		marker, err := s.markerCache.Pop(ctx, req.ProjectID)

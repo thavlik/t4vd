@@ -3,12 +3,9 @@ package server
 import (
 	"context"
 	"strings"
-	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/seer/pkg/api"
-	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"go.uber.org/zap"
 )
 
@@ -16,7 +13,13 @@ func ExtractChannelID(input string) (string, error) {
 	input = strings.ReplaceAll(input, "https://", "")
 	input = strings.ReplaceAll(input, "http://", "")
 	input = strings.ReplaceAll(input, "www.", "")
-	input = strings.ReplaceAll(input, "youtube.com/", "")
+	input = strings.ReplaceAll(input, "m.", "")
+	if i := strings.Index(input, "/"); i != -1 {
+		input = input[i+1:]
+	}
+	if !strings.HasPrefix(input, "@") {
+		return "", errors.New("username is missing @ prefix")
+	}
 	return input, nil
 }
 
@@ -29,30 +32,18 @@ func (s *Server) GetChannelDetails(ctx context.Context, req api.GetChannelDetail
 	if err != nil {
 		return nil, errors.Wrap(err, "ExtractChannelID")
 	}
-	if !req.Force {
-		cached, err := s.infoCache.GetChannel(ctx, channelID)
-		if err == nil {
-			log.Debug("channel details cached")
-			return &api.GetChannelDetailsResponse{
-				Details: *cached,
-			}, nil
-		} else if err != infocache.ErrCacheUnavailable {
-			return nil, errors.Wrap(err, "infocache.GetChannel")
+	log = log.With(zap.String("channelID", channelID))
+	if req.Force {
+		if err := s.scheduleChannelQuery(channelID); err != nil {
+			return nil, err
 		}
 	}
-	start := time.Now()
-	var details api.ChannelDetails
-	if err := queryChannel(req.Input, &details); err != nil {
-		return nil, err
+	cached, err := s.infoCache.GetChannel(ctx, channelID)
+	if err == nil {
+		log.Debug("channel details were cached")
+		return &api.GetChannelDetailsResponse{
+			Details: *cached,
+		}, nil
 	}
-	if err := s.infoCache.SetChannel(&details); err != nil {
-		return nil, errors.Wrap(err, "infocache.SetChannel")
-	}
-	if err := s.scheduleChannelQuery(details.ID); err != nil {
-		return nil, err
-	}
-	log.Debug("queried channel details", base.Elapsed(start))
-	return &api.GetChannelDetailsResponse{
-		Details: details,
-	}, nil
+	return nil, errors.Wrap(err, "infocache.GetChannel")
 }

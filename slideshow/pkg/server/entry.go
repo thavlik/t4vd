@@ -30,10 +30,8 @@ func Entry(
 	markerCache := markerCacheClient(
 		redis,
 		func(projectID string) (*api.Marker, error) {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
 			return genRandomMarker(
-				ctx,
+				context.Background(),
 				imgCache,
 				compiler,
 				projectID,

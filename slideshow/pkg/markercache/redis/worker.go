@@ -27,7 +27,7 @@ func (m *redisMarkerCache) worker() {
 				panic(base.Unreachable)
 			}
 			projectID := msg.Payload
-			m.log.Debug("received notification", zap.String("projectID", projectID))
+			m.log.Debug("populating cache with marker", zap.String("projectID", projectID))
 			if err := m.populate(projectID); err != nil {
 				m.log.Warn("failed to populate project cache", zap.Error(err))
 				continue

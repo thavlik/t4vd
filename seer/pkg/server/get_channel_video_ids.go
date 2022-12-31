@@ -102,7 +102,7 @@ func (s *Server) GetChannelVideoIDs(ctx context.Context, req api.GetChannelVideo
 }
 
 func (s *Server) scheduleChannelQuery(id string) error {
-	s.log.Debug("asynchronously querying channel details")
+	s.log.Debug("asynchronously querying channel details", zap.String("id", id))
 	body, err := json.Marshal(&entity{
 		Type: channel,
 		ID:   id,

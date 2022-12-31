@@ -4,19 +4,16 @@ import (
 	"context"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/seer/pkg/api"
-	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"go.uber.org/zap"
 )
 
 var ErrNoPlaylistID = errors.New("url query is missing playlist id")
 
 func ExtractPlaylistID(input string) (string, error) {
-	if strings.Contains(input, "youtube.com") || strings.Contains(input, "youtu.be") {
+	if strings.Contains(input, ".") {
 		u, err := url.Parse(input)
 		if err != nil {
 			return "", errors.Wrap(err, "url.Parse")
@@ -25,8 +22,10 @@ func ExtractPlaylistID(input string) (string, error) {
 		if v == "" {
 			return "", ErrNoPlaylistID
 		}
-		return v, nil
 	}
+	// further verification may be more difficult
+	// than simply reaching out to youtube and
+	// seeing what we get
 	return input, nil
 }
 
@@ -39,29 +38,18 @@ func (s *Server) GetPlaylistDetails(ctx context.Context, req api.GetPlaylistDeta
 	if err != nil {
 		return nil, errors.Wrap(err, "ExtractPlaylistID")
 	}
-	if !req.Force {
-		cached, err := s.infoCache.GetPlaylist(ctx, playlistID)
-		if err == nil {
-			return &api.GetPlaylistDetailsResponse{
-				Details: *cached,
-			}, nil
-		} else if err != infocache.ErrCacheUnavailable {
-			return nil, errors.Wrap(err, "infocache.GetPlaylist")
+	log = log.With(zap.String("playlistID", playlistID))
+	if req.Force {
+		if err := s.schedulePlaylistQuery(playlistID); err != nil {
+			return nil, err
 		}
 	}
-	start := time.Now()
-	var details api.PlaylistDetails
-	if err := queryPlaylist(req.Input, &details); err != nil {
-		return nil, err
+	cached, err := s.infoCache.GetPlaylist(ctx, playlistID)
+	if err == nil {
+		log.Debug("playlist details were cached")
+		return &api.GetPlaylistDetailsResponse{
+			Details: *cached,
+		}, nil
 	}
-	if err := s.infoCache.SetPlaylist(&details); err != nil {
-		return nil, errors.Wrap(err, "infocache.SetPlaylist")
-	}
-	if err := s.schedulePlaylistQuery(details.ID); err != nil {
-		return nil, err
-	}
-	log.Debug("queried playlist details", base.Elapsed(start))
-	return &api.GetPlaylistDetailsResponse{
-		Details: details,
-	}, nil
+	return nil, err
 }
