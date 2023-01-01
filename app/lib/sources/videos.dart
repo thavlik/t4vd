@@ -14,6 +14,97 @@ class InputVideosPage extends StatefulWidget {
   State<InputVideosPage> createState() => InputVideosPageState();
 }
 
+class PendingVideoListItem extends StatelessWidget {
+  const PendingVideoListItem({
+    super.key,
+    required this.id,
+    required this.message,
+    this.title,
+    this.showProgressIndicator = false,
+  });
+
+  final String id;
+  final String? title;
+  final String message;
+  final bool showProgressIndicator;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: () {},
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: Theme.of(context).dividerColor,
+            ),
+          ),
+        ),
+        height: 100,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AspectRatio(
+                aspectRatio: 1280.0 / 720.0,
+                child: Stack(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8.0)),
+                        image: DecorationImage(
+                          image: NetworkImage(videoThumbnail(id)),
+                          alignment: const Alignment(0, 0),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: showProgressIndicator
+                          ? const CircularProgressIndicator()
+                          : const Icon(
+                              Icons.question_mark,
+                              color: Colors.black,
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        title ?? id,
+                        style: Theme.of(context).textTheme.headline6,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(message,
+                              style: Theme.of(context).textTheme.caption),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class InputVideoListItem extends StatefulWidget {
   const InputVideoListItem({
     super.key,
@@ -317,6 +408,21 @@ class InputVideosPageState extends State<InputVideosPage> {
           ScopedModelDescendant<BJJModel>(builder: (context, child, model) {
             return ListView(
               children: [
+                const PendingVideoListItem(
+                  id: 'ExqT2SwW1qQ',
+                  message: '320 MiB downloaded • 1.2 MiB/sec',
+                  showProgressIndicator: true,
+                  title:
+                      'I Survived The Highest Rated Jiu Jitsu Gyms In Las Vegas',
+                ),
+                const PendingVideoListItem(
+                  id: '4t_Nvijf75w',
+                  message: 'Pending download • #2 in queue',
+                ),
+                const PendingVideoListItem(
+                  id: 'morD58OZmy0',
+                  message: 'Pending download • #3 in queue',
+                ),
                 ...model.videos
                     .where((vid) => !vid.blacklist)
                     .map((vid) => InputVideoListItem(

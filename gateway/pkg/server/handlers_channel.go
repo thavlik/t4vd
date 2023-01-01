@@ -102,6 +102,9 @@ func (s *Server) handleGetChannelAvatar() http.HandlerFunc {
 			); err == seer.ErrNotCached {
 				w.WriteHeader(http.StatusNotFound)
 				return nil
+				//w.Header().Set("Content-Type", "image/svg+xml")
+				//_, err := w.Write(pendingSvg)
+				//return err
 			} else if err != nil {
 				return errors.Wrap(err, "seer.GetChannelAvatar")
 			}
