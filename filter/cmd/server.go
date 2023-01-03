@@ -54,7 +54,7 @@ func initLabelStore() labelstore.LabelStore {
 		return postgres_labelstore.NewPostgresLabelStore(
 			base.ConnectPostgres(&serverArgs.db.Postgres))
 	default:
-		panic("unreachable branch detected")
+		panic(base.Unreachable)
 	}
 }
 

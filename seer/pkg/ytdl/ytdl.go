@@ -109,7 +109,7 @@ func LogWriter(
 	log *zap.Logger,
 	printBytes int,
 	ctx context.Context,
-	onProgress chan<- struct{},
+	onProgress chan<- *base.DownloadProgress,
 ) io.Writer {
 	return &logWriter{
 		ctx:        ctx,
@@ -125,14 +125,14 @@ type logWriter struct {
 	ctx        context.Context
 	w          io.Writer
 	log        *zap.Logger
-	total      int
+	total      int64
 	start      time.Time
 	pcur       int
 	printBytes int
-	onProgress chan<- struct{}
+	onProgress chan<- *base.DownloadProgress
 }
 
-func mb(b int) string {
+func mb(b int64) string {
 	v := float64(b) / (1000.0 * 1000.0)
 	return fmt.Sprintf("%.2f MiB", v)
 }
@@ -146,20 +146,23 @@ func (t *logWriter) Write(p []byte) (int, error) {
 		return 0, err
 	}
 	first := t.total == 0
-	t.total += n
+	t.total += int64(n)
 	t.pcur += n
 	if first || t.pcur > t.printBytes {
 		t.pcur = 0
 		t.log.Debug("still downloading video",
 			zap.String("total", mb(t.total)),
-			zap.String("elapsed", time.Since(t.start).
-				Round(time.Second).
-				String()))
+			base.Elapsed(t.start))
 		if t.onProgress != nil {
+			elapsed := time.Since(t.start)
 			select {
 			case <-t.ctx.Done():
 				return 0, t.ctx.Err()
-			case t.onProgress <- struct{}{}:
+			case t.onProgress <- &base.DownloadProgress{
+				Total:   int64(t.total),
+				Rate:    float64(t.total) / float64(elapsed) / float64(time.Second), // TODO: calculate a more temporally local rate
+				Elapsed: elapsed,
+			}:
 			}
 		}
 	}
@@ -172,11 +175,11 @@ func Download(
 	w io.WriteCloser,
 	videoFormat string,
 	includeAudio bool,
-	onProgress chan<- struct{},
+	onProgress chan<- *base.DownloadProgress,
 	log *zap.Logger,
 ) error {
-	base.Progress(ctx, onProgress)
-	defer base.Progress(ctx, onProgress)
+	base.ProgressDownload(ctx, onProgress)
+	defer base.ProgressDownload(ctx, onProgress)
 	command := fmt.Sprintf(
 		`youtube-dl -f "bestvideo[ext=webm]/webm" -o - -- "%s"`,
 		input,

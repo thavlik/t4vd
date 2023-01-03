@@ -37,6 +37,8 @@ spec:
           - "http://{{ .Release.Name }}-seer:80"
           - --compiler-endpoint
           - "http://{{ .Release.Name }}-compiler:80"
+          - --gateway-endpoint
+          - "http://{{ .Release.Name }}-gateway:8080"
         {{- if .Values.prometheus.enabled }}
           - --metrics-port
           - "2112"

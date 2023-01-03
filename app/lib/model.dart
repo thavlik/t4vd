@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'api.dart' as api;
+import 'package:sse_channel/sse_channel.dart';
 
 // https://img.youtube.com/vi/e5YuPpbzBdo/maxresdefault.jpg
 
@@ -10,52 +11,60 @@ const credStorageUsername = 't4vdcu';
 const credStoragePassword = 't4vdcp';
 const credStorageBrightness = 't4vddm';
 
-final List<api.VideoListItem> exampleVideos = [
-  api.VideoListItem(
+final List<api.Video> exampleVideos = [
+  api.Video(
     id: "6wrYM8KzBRU",
-    channel: "Tyler Spangler",
-    channelId: "TylerSpangler",
-    title: "I Tried Using Jiu Jitsu Versus A Knife",
-    uploadDate: "20221128",
-    fps: 60,
-    duration: 495,
-    width: 1920,
-    height: 1080,
-    thumbnail: "assets/tylerspangler.jpg",
-    uploader: "Tyler Spangler",
-    uploaderId: "@tylerspanger",
+    info: api.VideoInfo(
+      channel: "Tyler Spangler",
+      channelId: "TylerSpangler",
+      title: "I Tried Using Jiu Jitsu Versus A Knife",
+      uploadDate: "20221128",
+      fps: 60,
+      duration: 495,
+      width: 1920,
+      height: 1080,
+      thumbnail: "assets/tylerspangler.jpg",
+      uploader: "Tyler Spangler",
+      uploaderId: "@tylerspanger",
+    ),
   ),
-  api.VideoListItem(
+  api.Video(
     id: "e5YuPpbzBdo",
-    channel: "Tyler Spangler",
-    channelId: "TylerSpangler",
-    title: "I Tore My Knee At A New Gym",
-    uploadDate: "20221122",
-    fps: 60,
-    duration: 495,
-    width: 1920,
-    height: 1080,
-    thumbnail: "assets/tylerspangler.jpg",
-    uploader: "Tyler Spangler",
-    uploaderId: "@tylerspanger",
+    info: api.VideoInfo(
+      channel: "Tyler Spangler",
+      channelId: "TylerSpangler",
+      title: "I Tore My Knee At A New Gym",
+      uploadDate: "20221122",
+      fps: 60,
+      duration: 495,
+      width: 1920,
+      height: 1080,
+      thumbnail: "assets/tylerspangler.jpg",
+      uploader: "Tyler Spangler",
+      uploaderId: "@tylerspanger",
+    ),
   ),
 ];
 
-final List<api.PlaylistListItem> examplePlaylists = [
-  api.PlaylistListItem(
+final List<api.Playlist> examplePlaylists = [
+  api.Playlist(
     id: "PLuWwmKO5nQLtJ7aczfnESU3Wvetw-N12I",
-    channel: "ROYDEAN",
-    channelId: "ROYDEAN",
-    title: "Costa Rica 2021",
-    numVideos: 6,
+    info: api.PlaylistInfo(
+      channel: "ROYDEAN",
+      channelId: "ROYDEAN",
+      title: "Costa Rica 2021",
+      numVideos: 6,
+    ),
   ),
 ];
 
-final List<api.ChannelListItem> exampleChannels = [
-  api.ChannelListItem(
+final List<api.Channel> exampleChannels = [
+  api.Channel(
     id: "tylerspangler",
-    name: "Tyler Spangler",
-    avatarUrl: "assets/tylerspangler.jpg",
+    info: api.ChannelInfo(
+      name: "Tyler Spangler",
+      avatarUrl: "assets/tylerspangler.jpg",
+    ),
   )
 ];
 
@@ -73,6 +82,15 @@ final List<api.Project> exampleProjects = [
     name: 'Quake Vision',
   )
 ];
+
+Future<void> testSSE() async {
+  final channel =
+      SseChannel.connect(Uri.parse('http://127.0.0.1:8080/sseHandler'));
+
+  channel.stream.listen((message) {
+    print(message);
+  });
+}
 
 class UserCredentials {
   final String id;
@@ -130,10 +148,9 @@ class BJJModel extends Model {
   }
 
   List<api.Project> get projects => _projects;
-  List<api.PlaylistListItem> get playlists => _playlists;
-  List<api.ChannelListItem> get channels => _channels;
-  List<api.VideoListItem> get videos => _videos;
-  api.Dataset? get dataset => _dataset;
+  List<api.Playlist> get playlists => _playlists;
+  List<api.Channel> get channels => _channels;
+  List<api.Video> get videos => _videos;
   List<api.Marker> get markers => _markers;
   int get markerIndex => _markerIndex;
   String? get loginErr => _loginErr;
@@ -145,12 +162,13 @@ class BJJModel extends Model {
   bool get isLoggedIn => _creds != null;
   bool get hasProject => _project != null;
   String? get projectId => _project?.id;
+  api.Dataset? get dataset => _dataset;
   api.Project? get project => _project;
 
   List<api.Project> _projects = [];
-  List<api.PlaylistListItem> _playlists = [];
-  List<api.ChannelListItem> _channels = [];
-  List<api.VideoListItem> _videos = [];
+  List<api.Playlist> _playlists = [];
+  List<api.Channel> _channels = [];
+  List<api.Video> _videos = [];
   List<api.Marker> _markers = [];
   int _markerIndex = 0;
   api.Dataset? _dataset;

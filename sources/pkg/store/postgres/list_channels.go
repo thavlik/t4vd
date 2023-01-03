@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -19,9 +18,6 @@ func (s *postgresStore) ListChannels(
 		fmt.Sprintf(`
 			SELECT
 				id,
-				name,
-				subs,
-				avatar,
 				blacklist
 			FROM %s WHERE project = $1`,
 			channelsTable,
@@ -34,21 +30,18 @@ func (s *postgresStore) ListChannels(
 	defer rows.Close()
 	var channels []*api.Channel
 	for rows.Next() {
-		channel := &api.Channel{}
 		var id string
-		var blacklist sql.NullBool
+		var blacklist bool
 		if err := rows.Scan(
 			&id,
-			&channel.Name,
-			&channel.Subs,
-			&channel.Avatar,
 			&blacklist,
 		); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}
-		channel.ID = store.ExtractResourceID(id)
-		channel.Blacklist = blacklist.Valid && blacklist.Bool
-		channels = append(channels, channel)
+		channels = append(channels, &api.Channel{
+			ID:        store.ExtractResourceID(id),
+			Blacklist: blacklist,
+		})
 	}
 	return channels, nil
 }

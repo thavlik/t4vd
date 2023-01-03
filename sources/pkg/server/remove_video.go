@@ -19,6 +19,7 @@ func (s *Server) RemoveVideo(ctx context.Context, req api.RemoveVideoRequest) (*
 	); err != nil {
 		return nil, errors.Wrap(err, "store.RemoveVideo")
 	}
+	// TODO: determine which downloads need to be cancelled
 	go s.triggerRecompile(req.ProjectID)
 	s.log.Debug("video removed",
 		zap.String("projectID", req.ProjectID),

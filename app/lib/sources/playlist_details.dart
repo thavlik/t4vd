@@ -5,7 +5,7 @@ import '../api.dart';
 class PlaylistDetailsPage extends StatelessWidget {
   const PlaylistDetailsPage(this.model, {super.key});
 
-  final PlaylistListItem model;
+  final Playlist model;
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +26,10 @@ class PlaylistDetailsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           infoSection(context, "ID", model.id),
-          infoSection(context, "Title", model.title),
-          infoSection(context, "Channel", model.channel),
-          infoSection(context, "Channel ID", model.channelId),
-          infoSection(context, "# Videos", model.numVideos.toString()),
+          //infoSection(context, "Title", model.title),
+          //infoSection(context, "Channel", model.channel),
+          //infoSection(context, "Channel ID", model.channelId),
+          //infoSection(context, "# Videos", model.numVideos.toString()),
         ],
       ),
     );

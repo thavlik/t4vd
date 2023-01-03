@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/sources/pkg/api"
-	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *mongoStore) ListPlaylists(
@@ -37,20 +36,18 @@ func (s *mongoStore) ListPlaylistIDs(
 	projectID string,
 	blacklist bool,
 ) ([]string, error) {
-	ids, err := getDocIDs(ctx, projectID, s.playlists, blacklist)
-	if err != nil {
-		return nil, err
-	}
-	return ids, nil
+	return getFieldFromDocs(
+		ctx,
+		projectID,
+		s.playlists,
+		"p",
+		blacklist,
+	)
 }
 
 func convertPlaylistDoc(m map[string]interface{}) *api.Playlist {
 	return &api.Playlist{
-		ID:        store.ExtractResourceID(m["_id"].(string)),
-		Title:     m["title"].(string),
-		Channel:   m["channel"].(string),
-		ChannelID: m["channelId"].(string),
-		NumVideos: int(m["numVideos"].(int32)),
+		ID:        m["p"].(string),
 		Blacklist: m["blacklist"].(bool),
 	}
 }

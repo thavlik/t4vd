@@ -6,6 +6,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/pubsub"
+	memory_pubsub "github.com/thavlik/t4vd/base/pkg/pubsub/memory"
+	redis_pubsub "github.com/thavlik/t4vd/base/pkg/pubsub/redis"
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	memory_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/memory"
 	redis_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/redis"
@@ -17,12 +20,15 @@ import (
 	s3_thumbcache "github.com/thavlik/t4vd/seer/pkg/thumbcache/s3"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
 	s3_vidcache "github.com/thavlik/t4vd/seer/pkg/vidcache/s3"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
+	"go.uber.org/zap"
 )
 
 var serverArgs struct {
 	base.ServerOptions
 	redis            base.RedisOptions
 	db               base.DatabaseOptions
+	sources          base.ServiceOptions
 	videoBucket      string
 	thumbnailBucket  string
 	videoFormat      string
@@ -37,6 +43,7 @@ var serverCmd = &cobra.Command{
 		base.ServerEnv(&serverArgs.ServerOptions)
 		base.DatabaseEnv(&serverArgs.db, true)
 		base.RedisEnv(&serverArgs.redis, false)
+		base.ServiceEnv("sources", &serverArgs.sources)
 		base.CheckEnv("VIDEO_BUCKET", &serverArgs.videoBucket)
 		base.CheckEnv("VIDEO_FORMAT", &serverArgs.videoFormat)
 		base.CheckEnvBool("INCLUDE_AUDIO", &serverArgs.includeAudio)
@@ -47,11 +54,13 @@ var serverCmd = &cobra.Command{
 		go base.RunMetrics(serverArgs.MetricsPort, log)
 		return server.Entry(
 			serverArgs.Port,
+			initPubSub(log),
 			initScheduler("dlsched"),
 			initScheduler("qrysched"),
 			initInfoCache(&serverArgs.db),
 			initVidCache(),
 			initThumbCache(),
+			sources.NewSourcesClientFromOptions(serverArgs.sources),
 			serverArgs.videoFormat,
 			serverArgs.includeAudio,
 			serverArgs.concurrency,
@@ -59,6 +68,17 @@ var serverCmd = &cobra.Command{
 			log,
 		)
 	},
+}
+
+func initPubSub(log *zap.Logger) pubsub.PubSub {
+	if serverArgs.redis.IsSet() {
+		return redis_pubsub.NewRedisPubSub(
+			base.ConnectRedis(&serverArgs.redis),
+			"seer",
+			log,
+		)
+	}
+	return memory_pubsub.NewMemoryPubSub(log)
 }
 
 func initScheduler(name string) scheduler.Scheduler {
@@ -106,6 +126,7 @@ func init() {
 	base.AddRedisFlags(serverCmd, &serverArgs.redis)
 	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	base.AddDatabaseFlags(serverCmd, &serverArgs.db)
+	base.AddServiceFlags(serverCmd, "sources", &serverArgs.sources, 10*time.Second)
 	serverCmd.PersistentFlags().IntVar(&serverArgs.concurrency, "concurrency", 1, "number of concurrent youtube queries (best set to 1 and increase # replicas)")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.videoBucket, "video-bucket", "", "full length video cache bucket name")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.thumbnailBucket, "thumbnail-bucket", "", "thumbnail cache bucket name")

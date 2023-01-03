@@ -9,14 +9,17 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
 
 func initDownloadWorkers(
 	concurrency int,
 	dlSched scheduler.Scheduler,
+	cancelVideoDownload <-chan []byte,
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
+	sources sources.Sources,
 	videoFormat string,
 	includeAudio bool,
 	disableDownloads bool,
@@ -25,18 +28,34 @@ func initDownloadWorkers(
 ) {
 	popVideoID := make(chan string)
 	go downloadPopper(popVideoID, dlSched, stop, log)
+	cancels := make([]chan []byte, concurrency)
 	for i := 0; i < concurrency; i++ {
+		cancel := make(chan []byte, 8)
+		cancels[i] = cancel
 		go downloadWorker(
 			popVideoID,
+			cancel,
 			dlSched,
 			vidCache,
 			thumbCache,
+			sources,
 			videoFormat,
 			includeAudio,
 			disableDownloads,
 			log,
 		)
 	}
+	go func() {
+		for {
+			videoID, ok := <-cancelVideoDownload
+			if !ok {
+				return
+			}
+			for _, cancel := range cancels {
+				cancel <- videoID
+			}
+		}
+	}()
 }
 
 func downloadPopper(
@@ -77,9 +96,11 @@ func downloadPopper(
 
 func downloadWorker(
 	popVideoID <-chan string,
+	cancelVideoDownload <-chan []byte,
 	dlSched scheduler.Scheduler,
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
+	sourcesClient sources.Sources,
 	videoFormat string,
 	includeAudio bool,
 	disableDownloads bool,
@@ -110,17 +131,24 @@ func downloadWorker(
 				_ = lock.Release()
 				cancel()
 			}()
-			onProgress := make(chan struct{}, 1)
+			onProgress := make(chan *base.DownloadProgress, 1)
+			defer close(onProgress)
 			go func() {
 				defer func() { stopped <- struct{}{} }()
 				done := ctx.Done()
 				for {
 					select {
+					case cancelID := <-cancelVideoDownload:
+						if string(cancelID) == videoID {
+							cancel()
+							videoLog.Debug("download was intentionally cancelled prematurely")
+							return
+						}
 					case <-stop:
 						return
 					case <-done:
 						return
-					case _, ok := <-onProgress:
+					case progress, ok := <-onProgress:
 						if !ok {
 							return
 						}
@@ -128,6 +156,15 @@ func downloadWorker(
 							videoLog.Warn("failed to extend video download lock", zap.Error(err))
 							cancel()
 							return
+						}
+						if progress != nil {
+							go reportDownloadProgress(
+								ctx,
+								videoID,
+								progress,
+								sourcesClient,
+								videoLog,
+							)
 						}
 					}
 				}
@@ -141,11 +178,10 @@ func downloadWorker(
 				videoLog.Error("error downloading thumbnail", zap.Error(err))
 				return
 			}
-			base.Progress(ctx, onProgress)
+			base.ProgressDownload(ctx, onProgress)
 			if err := downloadVideo(
 				ctx,
 				videoID,
-				nil,
 				vidCache,
 				videoFormat,
 				includeAudio,
@@ -156,10 +192,29 @@ func downloadWorker(
 				videoLog.Error("error downloading video", zap.Error(err))
 				return
 			}
-			base.Progress(ctx, onProgress)
 			if err := dlSched.Remove(videoID); err != nil {
 				videoLog.Warn("failed to remove videoID from download scheduler, this will result in multiple repeated requests to youtube")
 			}
 		}()
+	}
+}
+
+func reportDownloadProgress(
+	ctx context.Context,
+	videoID string,
+	progress *base.DownloadProgress,
+	sourcesClient sources.Sources,
+	log *zap.Logger,
+) {
+	if _, err := sourcesClient.ReportVideoDownloadProgress(
+		ctx,
+		sources.VideoDownloadProgress{
+			ID:      videoID,
+			Total:   progress.Total,
+			Rate:    progress.Rate,
+			Elapsed: int64(progress.Elapsed),
+		},
+	); err != nil {
+		log.Warn("failed to report download progress", zap.Error(err))
 	}
 }

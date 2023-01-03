@@ -11,3 +11,5 @@ spec:
   ports:
   - name: http
     port: 80
+  - name: admin
+    port: 8080

@@ -19,6 +19,7 @@ func (s *Server) RemovePlaylist(ctx context.Context, req api.RemovePlaylistReque
 	); err != nil {
 		return nil, errors.Wrap(err, "store.RemovePlaylist")
 	}
+	// TODO: determine which downloads need to be cancelled
 	go s.triggerRecompile(req.ProjectID)
 	s.log.Debug("playlist removed",
 		zap.String("projectID", req.ProjectID),

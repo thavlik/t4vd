@@ -68,7 +68,7 @@ class Marker {
 
 class Dataset {
   final String id;
-  final List<VideoListItem> videos;
+  final List<Video> videos;
   final DateTime timestamp;
 
   Dataset({
@@ -80,13 +80,30 @@ class Dataset {
   static Dataset fromMap(Map m) => Dataset(
         id: m['id'],
         timestamp: DateTime.fromMicrosecondsSinceEpoch(m['timestamp'] ~/ 1000),
-        videos:
-            (m['videos'] as List).map((o) => VideoListItem.fromMap(o)).toList(),
+        videos: (m['videos'] as List).map((o) => Video.fromMap(o)).toList(),
       );
 }
 
-class VideoListItem {
-  final String id;
+enum VideoProgressState {
+  pendingQuery,
+  querying,
+  pendingDownload,
+  downloading,
+}
+
+class VideoProgress {
+  VideoProgressState state;
+
+  VideoProgress({
+    required this.state,
+  });
+
+  static VideoProgress fromMap(Map<dynamic, dynamic> m) => VideoProgress(
+      state:
+          VideoProgressState.values.firstWhere((state) => state == m['state']));
+}
+
+class VideoInfo {
   final String title;
   final String uploader;
   final String uploaderId;
@@ -98,13 +115,11 @@ class VideoListItem {
   final int height;
   final String uploadDate;
   final int fps;
-  bool blacklist;
 
-  VideoListItem({
+  VideoInfo({
     required this.uploader,
     required this.uploaderId,
     required this.thumbnail,
-    required this.id,
     required this.title,
     required this.channel,
     required this.channelId,
@@ -113,11 +128,9 @@ class VideoListItem {
     required this.height,
     required this.uploadDate,
     required this.fps,
-    this.blacklist = false,
   });
 
-  static VideoListItem fromMap(Map m) => VideoListItem(
-        id: m['id'],
+  static VideoInfo fromMap(Map m) => VideoInfo(
         title: m['title'],
         channel: m['channel'],
         channelId: m['channelID'],
@@ -129,67 +142,130 @@ class VideoListItem {
         height: m['height'],
         uploadDate: m['uploadDate'],
         fps: m['fPS'],
-        blacklist: m['blacklist'] ?? false,
       );
 }
 
-class PlaylistListItem {
+class Video {
   final String id;
+  bool blacklist;
+  VideoInfo? info;
+  VideoProgress? progress;
+
+  Video({
+    required this.id,
+    this.blacklist = false,
+    this.info,
+    this.progress,
+  });
+
+  static Video fromMap(Map m) => Video(
+        id: m['id'],
+        blacklist: m['blacklist'] ?? false,
+        info: m.containsKey('info') ? VideoInfo.fromMap(m['info']) : null,
+        progress: m.containsKey('progress')
+            ? VideoProgress.fromMap(m['progress'])
+            : null,
+      );
+}
+
+class PlaylistInfo {
   final String title;
   final String channel;
   final String channelId;
   final int numVideos;
 
-  bool blacklist;
-
-  PlaylistListItem({
-    required this.id,
+  PlaylistInfo({
     required this.title,
     required this.channel,
     required this.channelId,
     required this.numVideos,
-    this.blacklist = false,
   });
 
-  static PlaylistListItem fromMap(Map m) => PlaylistListItem(
-        id: m['id'],
+  static PlaylistInfo fromMap(Map m) => PlaylistInfo(
         title: m['title'],
         channel: m['channel'],
         channelId: m['channelID'],
         numVideos: m['numVideos'],
-        blacklist: m['blacklist'],
       );
 }
 
-class ChannelListItem {
-  final String id;
-  final String name;
-  final String avatarUrl;
-  bool blacklist;
+class PlaylistProgress {
+  static PlaylistProgress fromMap(Map m) => PlaylistProgress();
+}
 
-  ChannelListItem({
+class Playlist {
+  final String id;
+  bool blacklist;
+  PlaylistInfo? info;
+  PlaylistProgress? progress;
+
+  Playlist({
     required this.id,
-    required this.name,
-    required this.avatarUrl,
     this.blacklist = false,
+    this.info,
+    this.progress,
   });
 
-  static ChannelListItem fromMap(Map m) => ChannelListItem(
+  static Playlist fromMap(Map m) => Playlist(
         id: m['id'],
+        blacklist: m['blacklist'],
+        info: m.containsKey('info') ? PlaylistInfo.fromMap(m['info']) : null,
+        progress: m.containsKey('progress')
+            ? PlaylistProgress.fromMap(m['progress'])
+            : null,
+      );
+}
+
+class ChannelProgress {
+  static ChannelProgress fromMap(Map m) => ChannelProgress();
+}
+
+class ChannelInfo {
+  final String name;
+  final String avatarUrl;
+
+  ChannelInfo({
+    required this.name,
+    required this.avatarUrl,
+  });
+
+  static ChannelInfo fromMap(Map m) => ChannelInfo(
         name: m['name'],
         avatarUrl: m['avatar'],
+      );
+}
+
+class Channel {
+  final String id;
+  bool blacklist;
+  ChannelInfo? info;
+  ChannelProgress? progress;
+
+  Channel({
+    required this.id,
+    this.blacklist = false,
+    this.info,
+    this.progress,
+  });
+
+  static Channel fromMap(Map m) => Channel(
+        id: m['id'],
         blacklist: m['blacklist'],
+        info: m.containsKey('info') ? ChannelInfo.fromMap(m['info']) : null,
+        progress: m.containsKey('progress')
+            ? ChannelProgress.fromMap(m['progress'])
+            : null,
       );
 }
 
 class SourceInput {
-  List<VideoListItem> videos = [];
-  List<PlaylistListItem> playlists = [];
-  List<ChannelListItem> channels = [];
+  List<Video> videos = [];
+  List<Playlist> playlists = [];
+  List<Channel> channels = [];
 }
 
 class SourceOutput {
-  List<VideoListItem> videos = [];
+  List<Video> videos = [];
 }
 
 // https://img.youtube.com/vi/e5YuPpbzBdo/maxresdefault.jpg
@@ -234,7 +310,7 @@ Future<Project> getProject({
   return Project.fromMap(decodedResponse);
 }
 
-Future<ChannelListItem?> addChannel({
+Future<Channel?> addChannel({
   required String projectId,
   required String input,
   required bool blacklist,
@@ -254,10 +330,10 @@ Future<ChannelListItem?> addChannel({
     return null;
   }
   final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-  return ChannelListItem.fromMap(decodedResponse);
+  return Channel.fromMap(decodedResponse);
 }
 
-Future<PlaylistListItem?> addPlaylist({
+Future<Playlist?> addPlaylist({
   required String projectId,
   required String input,
   required bool blacklist,
@@ -277,10 +353,10 @@ Future<PlaylistListItem?> addPlaylist({
     return null;
   }
   final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-  return PlaylistListItem.fromMap(decodedResponse);
+  return Playlist.fromMap(decodedResponse);
 }
 
-Future<VideoListItem?> addVideo({
+Future<Video?> addVideo({
   required String projectId,
   required String input,
   required bool blacklist,
@@ -300,10 +376,10 @@ Future<VideoListItem?> addVideo({
     return null;
   }
   final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-  return VideoListItem.fromMap(decodedResponse);
+  return Video.fromMap(decodedResponse);
 }
 
-Future<List<ChannelListItem>> listChannels({
+Future<List<Channel>> listChannels({
   required String projectId,
   required UserCredentials creds,
 }) async {
@@ -316,10 +392,10 @@ Future<List<ChannelListItem>> listChannels({
   checkHttpStatus(response);
   final decodedResponse =
       jsonDecode(utf8.decode(response.bodyBytes)) as List? ?? [];
-  return decodedResponse.map((e) => ChannelListItem.fromMap(e)).toList();
+  return decodedResponse.map((e) => Channel.fromMap(e)).toList();
 }
 
-Future<List<PlaylistListItem>> listPlaylists({
+Future<List<Playlist>> listPlaylists({
   required String projectId,
   required UserCredentials creds,
 }) async {
@@ -332,10 +408,10 @@ Future<List<PlaylistListItem>> listPlaylists({
   checkHttpStatus(response);
   final decodedResponse =
       jsonDecode(utf8.decode(response.bodyBytes)) as List? ?? [];
-  return decodedResponse.map((e) => PlaylistListItem.fromMap(e)).toList();
+  return decodedResponse.map((e) => Playlist.fromMap(e)).toList();
 }
 
-Future<List<VideoListItem>> listVideos({
+Future<List<Video>> listVideos({
   required String projectId,
   required UserCredentials creds,
 }) async {
@@ -348,7 +424,7 @@ Future<List<VideoListItem>> listVideos({
   checkHttpStatus(response);
   final decodedResponse =
       jsonDecode(utf8.decode(response.bodyBytes)) as List? ?? [];
-  return decodedResponse.map((e) => VideoListItem.fromMap(e)).toList();
+  return decodedResponse.map((e) => Video.fromMap(e)).toList();
 }
 
 Future<void> removeChannel({

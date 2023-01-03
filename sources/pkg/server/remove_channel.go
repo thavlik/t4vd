@@ -19,6 +19,7 @@ func (s *Server) RemoveChannel(ctx context.Context, req api.RemoveChannelRequest
 	); err != nil {
 		return nil, errors.Wrap(err, "store.RemoveChannel")
 	}
+	// TODO: determine which downloads need to be cancelled
 	go s.triggerRecompile(req.ProjectID)
 	s.log.Debug("channel removed",
 		zap.String("projectID", req.ProjectID),

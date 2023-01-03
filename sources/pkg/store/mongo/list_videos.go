@@ -5,7 +5,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/sources/pkg/api"
-	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *mongoStore) ListVideos(
@@ -36,29 +35,18 @@ func (s *mongoStore) ListVideoIDs(
 	projectID string,
 	blacklist bool,
 ) ([]string, error) {
-	ids, err := getDocIDs(ctx, projectID, s.videos, blacklist)
-	if err != nil {
-		return nil, err
-	}
-	return ids, nil
+	return getFieldFromDocs(
+		ctx,
+		projectID,
+		s.videos,
+		"v",
+		blacklist,
+	)
 }
 
 func convertVideoDoc(m map[string]interface{}) *api.Video {
 	return &api.Video{
-		ID:          store.ExtractResourceID(m["_id"].(string)),
-		Blacklist:   m["blacklist"].(bool),
-		Title:       m["title"].(string),
-		Channel:     m["channel"].(string),
-		ChannelID:   m["channelId"].(string),
-		Description: m["description"].(string),
-		Duration:    m["duration"].(int64),
-		FPS:         int(m["fps"].(int32)),
-		Height:      int(m["height"].(int32)),
-		Width:       int(m["width"].(int32)),
-		Thumbnail:   m["thumbnail"].(string),
-		Uploader:    m["uploader"].(string),
-		UploaderID:  m["uploaderId"].(string),
-		UploadDate:  m["uploadDate"].(string),
-		ViewCount:   m["viewCount"].(int64),
+		ID:        m["v"].(string),
+		Blacklist: m["blacklist"].(bool),
 	}
 }

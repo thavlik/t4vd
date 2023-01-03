@@ -18,22 +18,16 @@ func (s *postgresStore) AddChannel(
 		fmt.Sprintf(`
 			INSERT INTO %s (
 				id,
-				name,
-				subs,
-				avatar,
 				blacklist,
 				project,
 				submitter
 			)
-			VALUES ($1, $2, $3, $4, $5, $6, $7)
+			VALUES ($1, $2, $3, $4)
 			ON CONFLICT (id) DO UPDATE
-			SET (name, subs, avatar, blacklist, submitter) = (EXCLUDED.name, EXCLUDED.subs, EXCLUDED.avatar, EXCLUDED.blacklist, EXCLUDED.submitter)`,
+			SET (blacklist, submitter) = (EXCLUDED.blacklist, EXCLUDED.submitter)`,
 			channelsTable,
 		),
 		store.ScopedResourceID(projectID, channel.ID),
-		channel.Name,
-		channel.Subs,
-		channel.Avatar,
 		channel.Blacklist,
 		projectID,
 		submitterID,

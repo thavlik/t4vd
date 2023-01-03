@@ -9,6 +9,7 @@ import (
 
 	"github.com/pacedotdev/oto/otohttp"
 	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/pubsub"
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	"github.com/thavlik/t4vd/seer/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
@@ -19,6 +20,7 @@ import (
 type Server struct {
 	querySched   scheduler.Scheduler
 	dlSched      scheduler.Scheduler
+	pub          pubsub.Publisher
 	infoCache    infocache.InfoCache
 	vidCache     vidcache.VidCache
 	thumbCache   thumbcache.ThumbCache
@@ -30,6 +32,7 @@ type Server struct {
 func NewServer(
 	querySched scheduler.Scheduler,
 	dlSched scheduler.Scheduler,
+	pub pubsub.Publisher,
 	infoCache infocache.InfoCache,
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
@@ -40,6 +43,7 @@ func NewServer(
 	return &Server{
 		querySched,
 		dlSched,
+		pub,
 		infoCache,
 		vidCache,
 		thumbCache,

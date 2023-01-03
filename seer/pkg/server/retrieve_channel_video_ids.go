@@ -22,6 +22,7 @@ func retrieveChannelVideos(
 	onVideo chan<- *api.VideoDetails,
 	log *zap.Logger,
 ) ([]string, error) {
+	defer close(onVideo)
 	input := fmt.Sprintf("https://youtube.com/%s", channelID)
 	log.Debug("retrieving channel videos from youtube",
 		zap.String("input", input))
@@ -42,6 +43,9 @@ func retrieveChannelVideos(
 		videoIDs = append(videoIDs, video.ID)
 		numVids := len(videoIDs)
 		l.Unlock()
+		if err := infoCache.SetVideo(video); err != nil {
+			return nil, errors.Wrap(err, "infocache.SetVideo")
+		}
 		if onVideo != nil {
 			onVideo <- video
 		}

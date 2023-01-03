@@ -18,47 +18,16 @@ func (s *postgresStore) AddVideo(
 		fmt.Sprintf(`
 			INSERT INTO %s (
 				id,
-				title,
-				description,
-				channel,
-				channelid,
-				duration,
-				viewcount,
-				width,
-				height,
-				fps,
-				uploaddate,
-				uploader,
-				uploaderid,
-				thumbnail,
 				blacklist,
 				project,
 				submitter
 			)
-			VALUES (
-				$1, $2, $3, $4, $5,
-				$6, $7, $8, $9, $10,
-				$11, $12, $13, $14, $15,
-				$16, $17
-			)
+			VALUES ($1, $2, $3, $4)
 			ON CONFLICT (id) DO UPDATE
-			SET (channel, uploader, viewcount, blacklist) = (EXCLUDED.channel, EXCLUDED.uploader, EXCLUDED.viewcount, EXCLUDED.blacklist)`,
+			SET (blacklist, submitter) = (EXCLUDED.blacklist, EXCLUDED.submitter)`,
 			videosTable,
 		),
 		store.ScopedResourceID(projectID, video.ID),
-		video.Title,
-		video.Description,
-		video.Channel,
-		video.ChannelID,
-		video.Duration,
-		video.ViewCount,
-		video.Width,
-		video.Height,
-		video.FPS,
-		video.UploadDate,
-		video.Uploader,
-		video.UploaderID,
-		video.Thumbnail,
 		video.Blacklist,
 		projectID,
 		submitterID,

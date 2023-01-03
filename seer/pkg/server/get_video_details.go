@@ -3,35 +3,13 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"net/url"
-	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/seer/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"go.uber.org/zap"
 )
-
-var ErrNoVideoID = errors.New("url query is missing video id")
-
-func ExtractVideoID(input string) (string, error) {
-	if strings.Contains(input, ".") {
-		u, err := url.Parse(input)
-		if err != nil {
-			return "", errors.Wrap(err, "url.Parse")
-		}
-		v := u.Query().Get("v")
-		if v == "" {
-			return "", ErrNoVideoID
-		}
-		return v, nil
-	}
-	if n := len(input); n != 11 {
-		return "", fmt.Errorf("video ID '%s' has invalid length %d", input, n)
-	}
-	return input, nil
-}
 
 func (s *Server) GetVideoDetails(
 	ctx context.Context,
@@ -41,7 +19,7 @@ func (s *Server) GetVideoDetails(
 	if req.Input == "" {
 		return nil, errors.New("missing input")
 	}
-	videoID, err := ExtractVideoID(req.Input)
+	videoID, err := base.ExtractVideoID(req.Input)
 	if err != nil {
 		return nil, errors.Wrap(err, "ExtractVideoID")
 	}

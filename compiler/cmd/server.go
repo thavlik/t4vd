@@ -3,9 +3,11 @@ package main
 import (
 	"time"
 
+	"github.com/go-redis/redis/v9"
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	slideshow "github.com/thavlik/t4vd/slideshow/pkg/api"
 	sources "github.com/thavlik/t4vd/sources/pkg/api"
+	"go.uber.org/zap"
 
 	"github.com/thavlik/t4vd/base/pkg/base"
 
@@ -13,6 +15,8 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	memory_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/memory"
 	redis_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/redis"
+	"github.com/thavlik/t4vd/compiler/pkg/datacache"
+	redis_datacache "github.com/thavlik/t4vd/compiler/pkg/datacache/redis"
 	"github.com/thavlik/t4vd/compiler/pkg/datastore"
 	mongo_datastore "github.com/thavlik/t4vd/compiler/pkg/datastore/mongo"
 	postgres_datastore "github.com/thavlik/t4vd/compiler/pkg/datastore/postgres"
@@ -44,28 +48,48 @@ var serverCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
+		log := base.Log
+		var redis *redis.Client
+		if serverArgs.redis.IsSet() {
+			redis = base.ConnectRedis(&serverArgs.redis)
+		}
 		go base.RunMetrics(serverArgs.MetricsPort, base.Log)
 		return server.Entry(
 			serverArgs.Port,
-			initScheduler(),
+			initScheduler(redis),
 			initDataStore(seer.NewSeerClientFromOptions(serverArgs.seer)),
+			initDataCache(redis, log),
 			sources.NewSourcesClientFromOptions(serverArgs.sources),
 			serverArgs.seer,
 			slideshow.NewSlideShowClientFromOptions(serverArgs.slideshow),
 			serverArgs.saveInterval,
 			serverArgs.compileOnStart,
 			serverArgs.concurrency,
-			base.Log,
+			log,
 		)
 	},
 }
 
-func initScheduler() scheduler.Scheduler {
-	if serverArgs.redis.IsSet() {
+func initDataCache(
+	redis *redis.Client,
+	log *zap.Logger,
+) datacache.DataCache {
+	if redis != nil {
+		return redis_datacache.NewRedisDataCache(
+			redis,
+			log,
+		)
+	}
+	panic("only redis datacache is currently supported")
+}
+
+func initScheduler(redis *redis.Client) scheduler.Scheduler {
+	if redis != nil {
 		return redis_scheduler.NewRedisScheduler(
-			base.ConnectRedis(&serverArgs.redis),
+			redis,
 			"compsched",
-			10*time.Second)
+			10*time.Second,
+		)
 	}
 	return memory_scheduler.NewMemoryScheduler()
 }

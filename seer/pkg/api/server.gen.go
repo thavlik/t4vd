@@ -23,6 +23,15 @@ var (
 		Help: "Auto-generated metric incremented on every call to Seer.BulkScheduleVideoDownloads that does not return with an error",
 	})
 
+	seerCancelVideoDownloadTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_cancel_video_download_total",
+		Help: "Auto-generated metric incremented on every call to Seer.CancelVideoDownload",
+	})
+	seerCancelVideoDownloadSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_cancel_video_download_success_total",
+		Help: "Auto-generated metric incremented on every call to Seer.CancelVideoDownload that does not return with an error",
+	})
+
 	seerGetChannelDetailsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "seer_get_channel_details_total",
 		Help: "Auto-generated metric incremented on every call to Seer.GetChannelDetails",
@@ -77,6 +86,15 @@ var (
 		Help: "Auto-generated metric incremented on every call to Seer.ListCache that does not return with an error",
 	})
 
+	seerListVideoDownloadsTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_list_video_downloads_total",
+		Help: "Auto-generated metric incremented on every call to Seer.ListVideoDownloads",
+	})
+	seerListVideoDownloadsSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_list_video_downloads_success_total",
+		Help: "Auto-generated metric incremented on every call to Seer.ListVideoDownloads that does not return with an error",
+	})
+
 	seerPurgeVideoTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "seer_purge_video_total",
 		Help: "Auto-generated metric incremented on every call to Seer.PurgeVideo",
@@ -98,12 +116,14 @@ var (
 
 type Seer interface {
 	BulkScheduleVideoDownloads(context.Context, BulkScheduleVideoDownloads) (*Void, error)
+	CancelVideoDownload(context.Context, CancelVideoDownload) (*Void, error)
 	GetChannelDetails(context.Context, GetChannelDetailsRequest) (*GetChannelDetailsResponse, error)
 	GetChannelVideoIDs(context.Context, GetChannelVideoIDsRequest) (*GetChannelVideoIDsResponse, error)
 	GetPlaylistDetails(context.Context, GetPlaylistDetailsRequest) (*GetPlaylistDetailsResponse, error)
 	GetPlaylistVideoIDs(context.Context, GetPlaylistVideoIDsRequest) (*GetPlaylistVideoIDsResponse, error)
 	GetVideoDetails(context.Context, GetVideoDetailsRequest) (*GetVideoDetailsResponse, error)
 	ListCache(context.Context, ListCacheRequest) (*ListCacheResponse, error)
+	ListVideoDownloads(context.Context, Void) (*VideoDownloads, error)
 	PurgeVideo(context.Context, PurgeVideo) (*Void, error)
 	ScheduleVideoDownload(context.Context, ScheduleVideoDownload) (*Void, error)
 }
@@ -119,12 +139,14 @@ func RegisterSeer(server *otohttp.Server, seer Seer) {
 		seer:   seer,
 	}
 	server.Register("Seer", "BulkScheduleVideoDownloads", handler.handleBulkScheduleVideoDownloads)
+	server.Register("Seer", "CancelVideoDownload", handler.handleCancelVideoDownload)
 	server.Register("Seer", "GetChannelDetails", handler.handleGetChannelDetails)
 	server.Register("Seer", "GetChannelVideoIDs", handler.handleGetChannelVideoIDs)
 	server.Register("Seer", "GetPlaylistDetails", handler.handleGetPlaylistDetails)
 	server.Register("Seer", "GetPlaylistVideoIDs", handler.handleGetPlaylistVideoIDs)
 	server.Register("Seer", "GetVideoDetails", handler.handleGetVideoDetails)
 	server.Register("Seer", "ListCache", handler.handleListCache)
+	server.Register("Seer", "ListVideoDownloads", handler.handleListVideoDownloads)
 	server.Register("Seer", "PurgeVideo", handler.handlePurgeVideo)
 	server.Register("Seer", "ScheduleVideoDownload", handler.handleScheduleVideoDownload)
 }
@@ -147,6 +169,26 @@ func (s *seerServer) handleBulkScheduleVideoDownloads(w http.ResponseWriter, r *
 		return
 	}
 	seerBulkScheduleVideoDownloadsSuccessTotal.Inc()
+}
+
+func (s *seerServer) handleCancelVideoDownload(w http.ResponseWriter, r *http.Request) {
+	seerCancelVideoDownloadTotal.Inc()
+	var request CancelVideoDownload
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.seer.CancelVideoDownload(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	seerCancelVideoDownloadSuccessTotal.Inc()
 }
 
 func (s *seerServer) handleGetChannelDetails(w http.ResponseWriter, r *http.Request) {
@@ -269,6 +311,26 @@ func (s *seerServer) handleListCache(w http.ResponseWriter, r *http.Request) {
 	seerListCacheSuccessTotal.Inc()
 }
 
+func (s *seerServer) handleListVideoDownloads(w http.ResponseWriter, r *http.Request) {
+	seerListVideoDownloadsTotal.Inc()
+	var request Void
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.seer.ListVideoDownloads(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	seerListVideoDownloadsSuccessTotal.Inc()
+}
+
 func (s *seerServer) handlePurgeVideo(w http.ResponseWriter, r *http.Request) {
 	seerPurgeVideoTotal.Inc()
 	var request PurgeVideo
@@ -311,6 +373,10 @@ func (s *seerServer) handleScheduleVideoDownload(w http.ResponseWriter, r *http.
 
 type BulkScheduleVideoDownloads struct {
 	VideoIDs []string `json:"videoIDs"`
+}
+
+type CancelVideoDownload struct {
+	VideoID string `json:"videoID"`
 }
 
 type ChannelDetails struct {
@@ -414,4 +480,9 @@ type ScheduleVideoDownload struct {
 
 type Void struct {
 	Error string `json:"error,omitempty"`
+}
+
+type VideoDownloads struct {
+	VideoIDs []string `json:"videoIDs"`
+	Error    string   `json:"error,omitempty"`
 }

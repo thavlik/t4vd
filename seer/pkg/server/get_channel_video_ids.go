@@ -12,11 +12,11 @@ import (
 )
 
 func (s *Server) GetChannelVideoIDs(ctx context.Context, req api.GetChannelVideoIDsRequest) (*api.GetChannelVideoIDsResponse, error) {
-	log := s.log.With(zap.String("channelID", req.ID))
-	log.Debug("querying channel videos")
 	if req.ID == "" {
 		return nil, errors.New("missing id")
 	}
+	log := s.log.With(zap.String("channelID", req.ID))
+	log.Debug("querying channel videos")
 	videoIDs, recency, err := s.infoCache.GetChannelVideoIDs(ctx, req.ID)
 	if err == infocache.ErrCacheUnavailable {
 		log.Debug("cached channel info not available")

@@ -3,10 +3,13 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/pacedotdev/oto/otohttp"
-	"github.com/thavlik/t4vd/base/pkg/iam/api"
+	remoteiam "github.com/thavlik/t4vd/base/pkg/iam/api"
+	"github.com/thavlik/t4vd/base/pkg/pubsub"
+	gateway "github.com/thavlik/t4vd/gateway/pkg/api"
 
 	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/iam"
@@ -25,6 +28,9 @@ type Server struct {
 	filter     filter.Filter
 	slideshow  base.ServiceOptions
 	corsHeader string
+	subsL      sync.Mutex
+	subs       map[*Subscription]struct{}
+	pub        pubsub.Publisher
 	log        *zap.Logger
 }
 
@@ -35,6 +41,7 @@ func NewServer(
 	compiler compiler.Compiler,
 	filter filter.Filter,
 	slideshow base.ServiceOptions,
+	pub pubsub.Publisher,
 	corsHeader string,
 	log *zap.Logger,
 ) *Server {
@@ -46,13 +53,17 @@ func NewServer(
 		filter,
 		slideshow,
 		corsHeader,
+		sync.Mutex{},
+		make(map[*Subscription]struct{}),
+		pub,
 		log,
 	}
 }
 
 func (s *Server) AdminListenAndServe(port int) error {
 	otoServer := otohttp.NewServer()
-	api.RegisterRemoteIAM(otoServer, s)
+	remoteiam.RegisterRemoteIAM(otoServer, s)
+	gateway.RegisterGateway(otoServer, s)
 	mux := http.NewServeMux()
 	mux.Handle("/", otoServer)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
@@ -92,6 +103,7 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.HandleFunc("/filter/classify", s.handleFilterClassify())
 	mux.HandleFunc("/randmarker", s.handleGetRandomMarker())
 	mux.HandleFunc("/frame", s.handleGetFrame())
+	mux.HandleFunc("/events", s.handleEvents())
 	if s.iam != nil {
 		mux.HandleFunc("/user/login", s.handleLogin())
 		mux.HandleFunc("/user/search", s.handleUserSearch())

@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -19,8 +18,6 @@ func (s *postgresStore) ListPlaylists(
 		fmt.Sprintf(`
 			SELECT
 				id,
-				title,
-				numvideos,
 				blacklist
 			FROM %s WHERE project = $1`,
 			playlistsTable,
@@ -33,20 +30,18 @@ func (s *postgresStore) ListPlaylists(
 	defer rows.Close()
 	var playlists []*api.Playlist
 	for rows.Next() {
-		playlist := &api.Playlist{}
 		var id string
-		var blacklist sql.NullBool
+		var blacklist bool
 		if err := rows.Scan(
 			&id,
-			&playlist.Title,
-			&playlist.NumVideos,
 			&blacklist,
 		); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}
-		playlist.ID = store.ExtractResourceID(id)
-		playlist.Blacklist = blacklist.Valid && blacklist.Bool
-		playlists = append(playlists, playlist)
+		playlists = append(playlists, &api.Playlist{
+			ID:        store.ExtractResourceID(id),
+			Blacklist: blacklist,
+		})
 	}
 	return playlists, nil
 }

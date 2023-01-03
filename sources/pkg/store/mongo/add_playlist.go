@@ -20,14 +20,11 @@ func (s *mongoStore) AddPlaylist(
 		context.Background(),
 		map[string]interface{}{
 			"_id":     store.ScopedResourceID(projectID, playlist.ID),
+			"p":       playlist.ID,
 			"project": projectID,
 		},
 		map[string]interface{}{
 			"$set": map[string]interface{}{
-				"channel":   playlist.Channel,
-				"channelId": playlist.ChannelID,
-				"title":     playlist.Title,
-				"numVideos": playlist.NumVideos,
 				"blacklist": blacklist,
 				"submitter": submitterID,
 			},

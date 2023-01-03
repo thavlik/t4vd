@@ -11,6 +11,7 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	"github.com/thavlik/t4vd/compiler/pkg/api"
 	"github.com/thavlik/t4vd/compiler/pkg/compiler"
+	"github.com/thavlik/t4vd/compiler/pkg/datacache"
 	"github.com/thavlik/t4vd/compiler/pkg/datastore"
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	sources "github.com/thavlik/t4vd/sources/pkg/api"
@@ -21,6 +22,7 @@ func Entry(
 	port int,
 	sched scheduler.Scheduler,
 	ds datastore.DataStore,
+	dc datacache.DataCache,
 	sourcesClient sources.Sources,
 	seerOpts base.ServiceOptions,
 	slideshow slideshow.SlideShow,
@@ -31,6 +33,7 @@ func Entry(
 ) error {
 	s := NewServer(
 		ds,
+		dc,
 		sched,
 		sourcesClient,
 		seerOpts,
@@ -55,9 +58,10 @@ func Entry(
 		stopped := make(chan struct{})
 		stoppedCompile[i] = stopped
 		go func(stopped chan<- struct{}) {
-			compile(
+			compileWorker(
 				sched,
 				ds,
+				dc,
 				sourcesClient,
 				seer.NewSeerClientFromOptions(seerOpts),
 				pop,
@@ -126,9 +130,10 @@ func popper(
 	}
 }
 
-func compile(
+func compileWorker(
 	sched scheduler.Scheduler,
 	ds datastore.DataStore,
+	dc datacache.DataCache,
 	sourcesClient sources.Sources,
 	seerClient seer.Seer,
 	pop <-chan string,
@@ -220,6 +225,7 @@ func compile(
 				sourcesClient,
 				seerClient,
 				ds,
+				dc,
 				saveInterval,
 				saved,
 				onProgress,

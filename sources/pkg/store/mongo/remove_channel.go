@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *mongoStore) RemoveChannel(
@@ -12,12 +11,12 @@ func (s *mongoStore) RemoveChannel(
 	channelID string,
 	blacklist bool,
 ) error {
-	if _, err := s.channels.DeleteOne(
+	if _, err := s.channels.DeleteMany(
 		context.Background(),
 		map[string]interface{}{
-			"_id":       store.ScopedResourceID(projectID, channelID),
 			"blacklist": blacklist,
 			"project":   projectID,
+			"c":         channelID,
 		},
 	); err != nil {
 		return errors.Wrap(err, "mongo")

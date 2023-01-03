@@ -20,6 +20,7 @@ func retrievePlaylistVideos(
 	onVideo chan<- *api.VideoDetails,
 	log *zap.Logger,
 ) ([]string, error) {
+	defer close(onVideo)
 	input := fmt.Sprintf("https://youtube.com/watch?list=%s", playlistID)
 	log.Debug("retrieving playlist videos from youtube",
 		zap.String("input", input))
@@ -40,6 +41,9 @@ func retrievePlaylistVideos(
 		videoIDs = append(videoIDs, video.ID)
 		numVids := len(videoIDs)
 		l.Unlock()
+		if err := infoCache.SetVideo(video); err != nil {
+			return nil, errors.Wrap(err, "infocache.SetVideo")
+		}
 		if onVideo != nil {
 			onVideo <- video
 		}

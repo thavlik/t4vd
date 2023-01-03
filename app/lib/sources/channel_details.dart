@@ -5,7 +5,7 @@ import '../api.dart';
 class ChannelDetailsPage extends StatelessWidget {
   const ChannelDetailsPage(this.model, {super.key});
 
-  final ChannelListItem model;
+  final Channel model;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,8 @@ class ChannelDetailsPage extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           infoSection(context, "ID", model.id),
-          infoSection(context, "Name", model.name),
+          infoSection(
+              context, "Name", model.info?.name ?? '<currently unavailable>'),
         ],
       ),
     );

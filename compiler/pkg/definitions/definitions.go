@@ -3,6 +3,15 @@ package definitions
 type Compiler interface {
 	Compile(Compile) Void
 	GetDataset(GetDatasetRequest) Dataset
+	ResolveProjectsForVideo(ResolveProjectsForVideoRequest) ResolveProjectsForVideoResponse
+}
+
+type ResolveProjectsForVideoRequest struct {
+	VideoID string `json:"videoID"`
+}
+
+type ResolveProjectsForVideoResponse struct {
+	ProjectIDs []string `json:"projectIDs"`
 }
 
 type Compile struct {

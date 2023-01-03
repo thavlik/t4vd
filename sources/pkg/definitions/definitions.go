@@ -22,9 +22,67 @@ type Sources interface {
 	RemoveChannel(RemoveChannelRequest) Void
 	RemovePlaylist(RemovePlaylistRequest) Void
 	RemoveVideo(RemoveVideoRequest) Void
+
+	ReportChannelVideo(ChannelVideo) Void
+	ReportPlaylistVideo(PlaylistVideo) Void
+	ReportVideoDetails(VideoDetails) Void
+	ReportChannelDetails(ChannelDetails) Void
+	ReportPlaylistDetails(PlaylistDetails) Void
+	ReportVideoDownloadProgress(VideoDownloadProgress) Void
+}
+
+type ChannelVideo struct {
+	ChannelID string       `json:"channelID"`
+	NumVideos int          `json:"numVideos"`
+	Video     VideoDetails `json:"video"`
+}
+
+type PlaylistVideo struct {
+	PlaylistID string       `json:"playlistID"`
+	NumVideos  int          `json:"numVideos"`
+	Video      VideoDetails `json:"video"`
+}
+
+type VideoDetails struct {
+	ID          string `json:"id"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Thumbnail   string `json:"thumbnail"`
+	UploadDate  string `json:"uploadDate"`
+	Uploader    string `json:"uploader"`
+	UploaderID  string `json:"uploaderID"`
+	Channel     string `json:"channel"`
+	ChannelID   string `json:"channelID"`
+	Duration    int64  `json:"duration"`
+	ViewCount   int64  `json:"viewCount"`
+	Width       int    `json:"width"`
+	Height      int    `json:"height"`
+	FPS         int    `json:"fps"`
+}
+
+type ChannelDetails struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
+	Subs   string `json:"subs"`
+}
+
+type PlaylistDetails struct {
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Channel   string `json:"channel"`
+	ChannelID string `json:"channelID"`
+	NumVideos int    `json:"numVideos"`
 }
 
 type Void struct{}
+
+type VideoDownloadProgress struct {
+	ID      string  `json:"id"`
+	Total   int64   `json:"total"`
+	Rate    float64 `json:"rate"`
+	Elapsed int64   `json:"elapsed"`
+}
 
 type GetProject struct {
 	ID string `json:"id"`
@@ -106,9 +164,6 @@ type ListChannelsRequest struct {
 
 type Channel struct {
 	ID        string `json:"id"`
-	Name      string `json:"name"`
-	Avatar    string `json:"avatar"`
-	Subs      string `json:"subs"`
 	Blacklist bool   `json:"blacklist"`
 }
 
@@ -123,10 +178,6 @@ type ListPlaylistsRequest struct {
 
 type Playlist struct {
 	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Channel   string `json:"channel"`
-	ChannelID string `json:"channelID"`
-	NumVideos int    `json:"numVideos"`
 	Blacklist bool   `json:"blacklist"`
 }
 
@@ -140,21 +191,8 @@ type ListVideosRequest struct {
 }
 
 type Video struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Blacklist   bool   `json:"blacklist"`
-	Channel     string `json:"channel"`
-	ChannelID   string `json:"channelID"`
-	Description string `json:"description"`
-	Duration    int64  `json:"duration"`
-	FPS         int    `json:"fps"`
-	Height      int    `json:"height"`
-	Width       int    `json:"width"`
-	Thumbnail   string `json:"thumbnail"`
-	Uploader    string `json:"uploader"`
-	UploaderID  string `json:"uploaderID"`
-	ViewCount   int64  `json:"viewCount"`
-	UploadDate  string `json:"uploadDate"`
+	ID        string `json:"id"`
+	Blacklist bool   `json:"blacklist"`
 }
 
 type ListVideosResponse struct {

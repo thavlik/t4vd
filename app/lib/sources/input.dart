@@ -89,7 +89,7 @@ class PlaylistsSection extends StatelessWidget {
 class VideosSection extends StatelessWidget {
   const VideosSection(this.videos, {super.key});
 
-  final List<VideoListItem> videos;
+  final List<Video> videos;
 
   @override
   Widget build(BuildContext context) {
@@ -121,21 +121,21 @@ class VideosSection extends StatelessWidget {
                           TableCell(child: Text(video.id)),
                           TableCell(
                             child: Text(
-                              video.title,
+                              video.info?.title ?? video.id,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           TableCell(
                             child: Text(
-                              video.channel,
+                              video.info?.channel ?? '<unknown channel>',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          TableCell(child: Text(video.duration.toString())),
-                          //TableCell(child: Text(video.uploadDate)),
-                          TableCell(child: Text(video.width.toString())),
-                          TableCell(child: Text(video.height.toString())),
-                          TableCell(child: Text(video.fps.toString())),
+                          //TableCell(child: Text(video.duration.toString())),
+                          ////TableCell(child: Text(video.uploadDate)),
+                          //TableCell(child: Text(video.width.toString())),
+                          //TableCell(child: Text(video.height.toString())),
+                          //TableCell(child: Text(video.fps.toString())),
                         ],
                       ))
                   .toList(),

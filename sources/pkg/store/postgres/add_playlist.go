@@ -18,24 +18,16 @@ func (s *postgresStore) AddPlaylist(
 		fmt.Sprintf(`
 			INSERT INTO %s (
 				id,
-				channel,
-				channelid,
-				title,
-				numvideos,
 				blacklist,
 				project,
 				submitter
 			)
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+			VALUES ($1, $2, $3, $4)
 			ON CONFLICT (id) DO UPDATE
-			SET (channel, title, numvideos, blacklist, submitter) = (EXCLUDED.channel, EXCLUDED.title, EXCLUDED.numvideos, EXCLUDED.blacklist, EXCLUDED.submitter)`,
+			SET (blacklist, submitter) = (EXCLUDED.blacklist, EXCLUDED.submitter)`,
 			playlistsTable,
 		),
 		store.ScopedResourceID(projectID, playlist.ID),
-		playlist.Channel,
-		playlist.ChannelID,
-		playlist.Title,
-		playlist.NumVideos,
 		playlist.Blacklist,
 		projectID,
 		submitterID,

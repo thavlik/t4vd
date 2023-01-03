@@ -19,13 +19,11 @@ func (s *mongoStore) AddChannel(
 		context.Background(),
 		map[string]interface{}{
 			"_id":     store.ScopedResourceID(projectID, channel.ID),
+			"c":       channel.ID,
 			"project": projectID,
 		},
 		map[string]interface{}{
 			"$set": map[string]interface{}{
-				"name":      channel.Name,
-				"subs":      channel.Subs,
-				"avatar":    channel.Avatar,
 				"blacklist": blacklist,
 				"submitter": submitterID,
 			},

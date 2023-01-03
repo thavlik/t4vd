@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *mongoStore) RemovePlaylist(
@@ -12,12 +11,12 @@ func (s *mongoStore) RemovePlaylist(
 	playlistID string,
 	blacklist bool,
 ) error {
-	if _, err := s.playlists.DeleteOne(
+	if _, err := s.playlists.DeleteMany(
 		context.Background(),
 		map[string]interface{}{
-			"_id":       store.ScopedResourceID(projectID, playlistID),
 			"blacklist": blacklist,
 			"project":   projectID,
+			"p":         playlistID,
 		},
 	); err != nil {
 		return errors.Wrap(err, "mongo")

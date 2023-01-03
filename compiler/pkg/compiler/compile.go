@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/compiler/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/datacache"
 	"github.com/thavlik/t4vd/compiler/pkg/datastore"
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	sources "github.com/thavlik/t4vd/sources/pkg/api"
@@ -21,6 +22,7 @@ func Compile(
 	sourcesClient sources.Sources,
 	seer seer.Seer,
 	ds datastore.DataStore,
+	dc datacache.DataCache,
 	saveInterval time.Duration,
 	saved chan<- *api.Dataset,
 	onProgress chan<- struct{},
@@ -158,6 +160,12 @@ func Compile(
 		zap.Int("numVideos", len(inputVideos.IDs)))
 	whitelist(videoIDs, inputVideos.IDs)
 	flattened := flatten(videoIDs)
+
+	// we can now cache the videos
+	if err := dc.Set(projectID, flattened); err != nil {
+		return nil, errors.Wrap(err, "datacache.Set")
+	}
+
 	log.Debug("resolving videos",
 		base.Elapsed(start),
 		zap.Int("count", len(flattened)))
@@ -188,6 +196,9 @@ func Compile(
 				case video, ok := <-resolvedVideo:
 					if !ok {
 						return
+					}
+					if err := dc.Add(projectID, video.ID); err != nil {
+						log.Warn("failed to add video to datacache", zap.Error(err))
 					}
 					videos = append(videos, video)
 					base.Progress(ctx, onProgress)

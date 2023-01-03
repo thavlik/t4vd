@@ -717,3 +717,225 @@ func (c *sourcesClient) RemoveVideo(ctx context.Context, req RemoveVideoRequest)
 	}
 	return &response, nil
 }
+
+func (c *sourcesClient) ReportChannelDetails(ctx context.Context, req ChannelDetails) (*Void, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Sources.ReportChannelDetails", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response Void
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
+func (c *sourcesClient) ReportChannelVideo(ctx context.Context, req ChannelVideo) (*Void, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Sources.ReportChannelVideo", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response Void
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
+func (c *sourcesClient) ReportPlaylistDetails(ctx context.Context, req PlaylistDetails) (*Void, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Sources.ReportPlaylistDetails", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response Void
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
+func (c *sourcesClient) ReportPlaylistVideo(ctx context.Context, req PlaylistVideo) (*Void, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Sources.ReportPlaylistVideo", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response Void
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
+func (c *sourcesClient) ReportVideoDetails(ctx context.Context, req VideoDetails) (*Void, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Sources.ReportVideoDetails", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response Void
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
+func (c *sourcesClient) ReportVideoDownloadProgress(ctx context.Context, req VideoDownloadProgress) (*Void, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Sources.ReportVideoDownloadProgress", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response Void
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}

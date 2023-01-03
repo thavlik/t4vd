@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"go.uber.org/zap"
 
+	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/sources/pkg/api"
 )
 
@@ -18,21 +18,12 @@ func (s *Server) AddPlaylist(ctx context.Context, req api.AddPlaylistRequest) (*
 	}
 	log := s.log.With(zap.String("projectID", req.ProjectID))
 	log.Debug("adding playlist", zap.String("input", req.Input))
-	resp, err := s.seer.GetPlaylistDetails(
-		context.Background(),
-		seer.GetPlaylistDetailsRequest{
-			Input: req.Input,
-		},
-	)
+	playlistID, err := base.ExtractPlaylistID(req.Input)
 	if err != nil {
-		return nil, errors.Wrap(err, "seer")
+		return nil, errors.Wrap(err, "ExtractPlaylistID")
 	}
 	playlist := &api.Playlist{
-		ID:        resp.Details.ID,
-		Channel:   resp.Details.Channel,
-		ChannelID: resp.Details.ChannelID,
-		Title:     resp.Details.Title,
-		NumVideos: resp.Details.NumVideos,
+		ID:        playlistID,
 		Blacklist: req.Blacklist,
 	}
 	if err := s.store.AddPlaylist(
@@ -45,8 +36,8 @@ func (s *Server) AddPlaylist(ctx context.Context, req api.AddPlaylistRequest) (*
 	}
 	go s.triggerRecompile(req.ProjectID)
 	log.Debug("playlist added",
-		zap.String("id", resp.Details.ID),
-		zap.String("title", resp.Details.Title),
-		zap.Bool("blacklist", req.Blacklist))
+		zap.String("id", playlistID),
+		zap.Bool("blacklist", req.Blacklist),
+		zap.String("submitterID", req.SubmitterID))
 	return playlist, nil
 }

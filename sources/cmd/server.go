@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
+	gateway "github.com/thavlik/t4vd/gateway/pkg/api"
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"github.com/thavlik/t4vd/sources/pkg/server"
 	"github.com/thavlik/t4vd/sources/pkg/store"
@@ -20,6 +21,7 @@ var serverArgs struct {
 	iam      base.IAMOptions
 	seer     base.ServiceOptions
 	compiler base.ServiceOptions
+	gateway  base.ServiceOptions
 	db       base.DatabaseOptions
 }
 
@@ -30,6 +32,7 @@ var serverCmd = &cobra.Command{
 		base.ServerEnv(&serverArgs.ServerOptions)
 		base.ServiceEnv("compiler", &serverArgs.compiler)
 		base.ServiceEnv("seer", &serverArgs.seer)
+		base.ServiceEnv("gateway", &serverArgs.gateway)
 		base.DatabaseEnv(&serverArgs.db, true)
 		return nil
 	},
@@ -42,6 +45,7 @@ var serverCmd = &cobra.Command{
 			initStore(&serverArgs.db),
 			seer.NewSeerClientFromOptions(serverArgs.seer),
 			compiler.NewCompilerClientFromOptions(serverArgs.compiler),
+			gateway.NewGatewayClientFromOptions(serverArgs.gateway),
 			log,
 		)
 	},
@@ -65,6 +69,7 @@ func init() {
 	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	base.AddServiceFlags(serverCmd, "seer", &serverArgs.seer, 15*time.Second)
 	base.AddServiceFlags(serverCmd, "compiler", &serverArgs.compiler, 8*time.Second)
+	base.AddServiceFlags(serverCmd, "gateway", &serverArgs.gateway, 8*time.Second)
 	base.AddDatabaseFlags(serverCmd, &serverArgs.db)
 	ConfigureCommand(serverCmd)
 }

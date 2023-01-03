@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
-	seer "github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
@@ -17,20 +17,12 @@ func (s *Server) AddChannel(ctx context.Context, req api.AddChannelRequest) (*ap
 	}
 	log := s.log.With(zap.String("projectID", req.ProjectID))
 	log.Debug("adding channel", zap.String("input", req.Input))
-	resp, err := s.seer.GetChannelDetails(
-		context.Background(),
-		seer.GetChannelDetailsRequest{
-			Input: req.Input,
-		},
-	)
+	channelID, err := base.ExtractChannelID(req.Input)
 	if err != nil {
-		return nil, errors.Wrap(err, "seer")
+		return nil, errors.Wrap(err, "ExtractChannelID")
 	}
 	channel := &api.Channel{
-		ID:        resp.Details.ID,
-		Name:      resp.Details.Name,
-		Avatar:    resp.Details.Avatar,
-		Subs:      resp.Details.Subs,
+		ID:        channelID,
 		Blacklist: req.Blacklist,
 	}
 	if err := s.store.AddChannel(
@@ -43,8 +35,8 @@ func (s *Server) AddChannel(ctx context.Context, req api.AddChannelRequest) (*ap
 	}
 	go s.triggerRecompile(req.ProjectID)
 	log.Debug("channel added",
-		zap.String("id", resp.Details.ID),
-		zap.String("name", resp.Details.Name),
-		zap.Bool("blacklist", req.Blacklist))
+		zap.String("id", channelID),
+		zap.Bool("blacklist", req.Blacklist),
+		zap.String("submitterID", req.SubmitterID))
 	return channel, nil
 }

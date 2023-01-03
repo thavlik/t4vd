@@ -10,9 +10,19 @@ type Seer interface {
 	ListCache(ListCacheRequest) ListCacheResponse
 	ScheduleVideoDownload(ScheduleVideoDownload) Void
 	BulkScheduleVideoDownloads(BulkScheduleVideoDownloads) Void
+	ListVideoDownloads(Void) VideoDownloads
+	CancelVideoDownload(CancelVideoDownload) Void
 }
 
 type Void struct{}
+
+type VideoDownloads struct {
+	VideoIDs []string `json:"videoIDs"`
+}
+
+type CancelVideoDownload struct {
+	VideoID string `json:"videoID"`
+}
 
 type ScheduleVideoDownload struct {
 	VideoID string `json:"videoID"`

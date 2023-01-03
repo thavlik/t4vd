@@ -9,6 +9,7 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	"github.com/thavlik/t4vd/compiler/pkg/api"
+	"github.com/thavlik/t4vd/compiler/pkg/datacache"
 	"github.com/thavlik/t4vd/compiler/pkg/datastore"
 	slideshow "github.com/thavlik/t4vd/slideshow/pkg/api"
 	sources "github.com/thavlik/t4vd/sources/pkg/api"
@@ -17,6 +18,7 @@ import (
 
 type Server struct {
 	ds           datastore.DataStore
+	dc           datacache.DataCache
 	sched        scheduler.Scheduler
 	sources      sources.Sources
 	seer         base.ServiceOptions
@@ -27,6 +29,7 @@ type Server struct {
 
 func NewServer(
 	ds datastore.DataStore,
+	dc datacache.DataCache,
 	scheduler scheduler.Scheduler,
 	sources sources.Sources,
 	seer base.ServiceOptions,
@@ -36,6 +39,7 @@ func NewServer(
 ) *Server {
 	return &Server{
 		ds:           ds,
+		dc:           dc,
 		sched:        scheduler,
 		sources:      sources,
 		seer:         seer,

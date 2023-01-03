@@ -12,11 +12,11 @@ import (
 )
 
 func (s *Server) GetPlaylistVideoIDs(ctx context.Context, req api.GetPlaylistVideoIDsRequest) (*api.GetPlaylistVideoIDsResponse, error) {
-	log := s.log.With(zap.String("req.ID", req.ID))
-	log.Debug("querying playlist videos")
 	if req.ID == "" {
 		return nil, errors.New("missing id")
 	}
+	log := s.log.With(zap.String("req.ID", req.ID))
+	log.Debug("querying playlist videos")
 	videoIDs, recency, err := s.infoCache.GetPlaylistVideoIDs(ctx, req.ID)
 	if err == infocache.ErrCacheUnavailable {
 		log.Debug("cached playlist info not available")

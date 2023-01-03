@@ -21,12 +21,14 @@ class PendingVideoListItem extends StatelessWidget {
     required this.message,
     this.title,
     this.showProgressIndicator = false,
+    this.thumbnail = false,
   });
 
   final String id;
   final String? title;
   final String message;
   final bool showProgressIndicator;
+  final bool thumbnail;
 
   @override
   Widget build(BuildContext context) {
@@ -52,13 +54,16 @@ class PendingVideoListItem extends StatelessWidget {
                   children: [
                     Container(
                       decoration: BoxDecoration(
+                        color: Colors.white,
                         borderRadius:
                             const BorderRadius.all(Radius.circular(8.0)),
-                        image: DecorationImage(
-                          image: NetworkImage(videoThumbnail(id)),
-                          alignment: const Alignment(0, 0),
-                          fit: BoxFit.cover,
-                        ),
+                        image: thumbnail
+                            ? DecorationImage(
+                                image: NetworkImage(videoThumbnail(id)),
+                                alignment: const Alignment(0, 0),
+                                fit: BoxFit.cover,
+                              )
+                            : null,
                       ),
                     ),
                     Center(
@@ -115,7 +120,7 @@ class InputVideoListItem extends StatefulWidget {
 
   final bool editMode;
   final void Function()? onDelete;
-  final VideoListItem model;
+  final Video model;
 
   @override
   State<InputVideoListItem> createState() => _InputVideoListItemState();
@@ -127,7 +132,7 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
   @override
   Widget build(BuildContext context) {
     final model = widget.model;
-    final secs = model.duration;
+    final secs = 777; //model.duration;
     final m = (secs.toDouble() / 60.0).floor();
     final s = secs - m * 60;
     final duration = "${m}m${s}s";
@@ -199,12 +204,14 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          model.title,
+                          model.info?.title ?? model.id,
                           style: Theme.of(context).textTheme.headline6,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          "${model.channel} • $duration",
+                          model.info != null
+                              ? "${model.info!.channel} • $duration"
+                              : "<unknown channel>",
                           style: Theme.of(context).textTheme.bodySmall,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -410,18 +417,25 @@ class InputVideosPageState extends State<InputVideosPage> {
               children: [
                 const PendingVideoListItem(
                   id: 'ExqT2SwW1qQ',
-                  message: '320 MiB downloaded • 1.2 MiB/sec',
+                  message: 'Tyler Spangler • 320 MiB downloaded • 1.2 MiB/sec',
                   showProgressIndicator: true,
                   title:
                       'I Survived The Highest Rated Jiu Jitsu Gyms In Las Vegas',
+                  thumbnail: true,
                 ),
                 const PendingVideoListItem(
-                  id: '4t_Nvijf75w',
-                  message: 'Pending download • #2 in queue',
+                  id: 'hWg3ooN2ia0',
+                  message: 'Tyler Spangler • Pending download • #2 in queue',
+                  title: 'The Last Video Of Bath Salts Ben',
+                  thumbnail: true,
+                ),
+                const PendingVideoListItem(
+                  id: 'YZXXhpjCXiE',
+                  message: 'Querying • 4s elapsed',
                 ),
                 const PendingVideoListItem(
                   id: 'morD58OZmy0',
-                  message: 'Pending download • #3 in queue',
+                  message: 'Pending query • #2 in queue',
                 ),
                 ...model.videos
                     .where((vid) => !vid.blacklist)

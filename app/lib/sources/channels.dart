@@ -22,7 +22,7 @@ class InputChannelListItem extends StatelessWidget {
     required this.model,
   });
 
-  final ChannelListItem model;
+  final Channel model;
   final bool editMode;
   final void Function() onDelete;
 
@@ -75,7 +75,7 @@ class InputChannelListItem extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          model.name,
+                          model.info?.name ?? model.id,
                           style: Theme.of(context).textTheme.headline6,
                           overflow: TextOverflow.ellipsis,
                         ),

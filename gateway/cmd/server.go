@@ -6,10 +6,14 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/thavlik/t4vd/base/cmd/iam"
 	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/pubsub"
+	memory_pubsub "github.com/thavlik/t4vd/base/pkg/pubsub/memory"
+	redis_pubsub "github.com/thavlik/t4vd/base/pkg/pubsub/redis"
 	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 	filter "github.com/thavlik/t4vd/filter/pkg/api"
 	"github.com/thavlik/t4vd/gateway/pkg/server"
 	sources "github.com/thavlik/t4vd/sources/pkg/api"
+	"go.uber.org/zap"
 )
 
 var defaultTimeout = 10 * time.Second
@@ -23,6 +27,7 @@ var serverArgs struct {
 	filter     base.ServiceOptions
 	slideshow  base.ServiceOptions
 	seer       base.ServiceOptions
+	redis      base.RedisOptions
 	corsHeader string
 }
 
@@ -36,6 +41,7 @@ var serverCmd = &cobra.Command{
 		base.ServiceEnv("slide-show", &serverArgs.slideshow)
 		base.ServiceEnv("seer", &serverArgs.seer)
 		base.IAMEnv(&serverArgs.iam, false)
+		base.RedisEnv(&serverArgs.redis, false)
 		base.CheckEnv("CORS_HEADER", &serverArgs.corsHeader)
 		return nil
 	},
@@ -51,14 +57,27 @@ var serverCmd = &cobra.Command{
 			compiler.NewCompilerClientFromOptions(serverArgs.compiler),
 			filter.NewFilterClientFromOptions(serverArgs.filter),
 			serverArgs.slideshow,
+			initPubSub(log),
 			serverArgs.corsHeader,
 			log,
 		)
 	},
 }
 
+func initPubSub(log *zap.Logger) pubsub.PubSub {
+	if serverArgs.redis.IsSet() {
+		return redis_pubsub.NewRedisPubSub(
+			base.ConnectRedis(&serverArgs.redis),
+			"gateway",
+			log,
+		)
+	}
+	return memory_pubsub.NewMemoryPubSub(log)
+}
+
 func init() {
 	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
+	base.AddRedisFlags(serverCmd, &serverArgs.redis)
 	serverCmd.PersistentFlags().IntVar(&serverArgs.adminPort, "admin-port", 8080, "http service port")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.corsHeader, "cors-header", "", "Access-Control-Allow-Origin header")
 	base.AddServiceFlags(serverCmd, "compiler", &serverArgs.compiler, defaultTimeout)

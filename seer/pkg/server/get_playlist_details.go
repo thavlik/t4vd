@@ -2,40 +2,20 @@ package server
 
 import (
 	"context"
-	"net/url"
-	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/seer/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"go.uber.org/zap"
 )
-
-var ErrNoPlaylistID = errors.New("url query is missing playlist id")
-
-func ExtractPlaylistID(input string) (string, error) {
-	if strings.Contains(input, ".") {
-		u, err := url.Parse(input)
-		if err != nil {
-			return "", errors.Wrap(err, "url.Parse")
-		}
-		v := u.Query().Get("list")
-		if v == "" {
-			return "", ErrNoPlaylistID
-		}
-	}
-	// further verification may be more difficult
-	// than simply reaching out to youtube and
-	// seeing what we get
-	return input, nil
-}
 
 func (s *Server) GetPlaylistDetails(ctx context.Context, req api.GetPlaylistDetailsRequest) (*api.GetPlaylistDetailsResponse, error) {
 	log := s.log.With(zap.String("req.Input", req.Input))
 	if req.Input == "" {
 		return nil, errors.New("missing input")
 	}
-	playlistID, err := ExtractPlaylistID(req.Input)
+	playlistID, err := base.ExtractPlaylistID(req.Input)
 	if err != nil {
 		return nil, errors.Wrap(err, "ExtractPlaylistID")
 	}

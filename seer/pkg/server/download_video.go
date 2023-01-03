@@ -14,37 +14,22 @@ import (
 func downloadVideo(
 	ctx context.Context,
 	videoID string,
-	w io.Writer,
 	vidCache vidcache.VidCache,
 	videoFormat string,
 	includeAudio bool,
 	disableDownloads bool,
-	onProgress chan<- struct{},
+	onProgress chan<- *base.DownloadProgress,
 	log *zap.Logger,
 ) error {
-	defer base.Progress(ctx, onProgress)
-	noDownload := w == nil
-	if noDownload {
-		// we can get away with only checking the
-		// object's head to see if it exists
-		if has, err := vidCache.Has(ctx, videoID); err != nil {
-			return errors.Wrap(err, "cache.Has")
-		} else if has {
-			// cache already has the video and we don't
-			// want to download it here
-			log.Debug("cache has video")
-			return nil
-		} else {
-			log.Debug("video not cached")
-		}
-	} else {
-		// try and get the cached video
-		if err := vidCache.Get(ctx, videoID, w); err == nil {
-			log.Debug("served video from cache")
-			return nil
-		} else if err != vidcache.ErrVideoNotCached {
-			return errors.Wrap(err, "cache.Get")
-		}
+	// we can get away with only checking the
+	// object's head to see if it exists
+	if has, err := vidCache.Has(ctx, videoID); err != nil {
+		return errors.Wrap(err, "cache.Has")
+	} else if has {
+		// cache already has the video and we don't
+		// want to download it here
+		log.Debug("cache has video")
+		return nil
 	}
 	if disableDownloads {
 		log.Warn("video would be downloaded from youtube but --disable-downloads was specified")
@@ -56,40 +41,16 @@ func downloadVideo(
 	// we want the download to terminate when it's
 	// complete but we don't want to terminate if
 	// the request times out
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {
-		var onProg chan struct{}
-		if onProgress != nil {
-			stop := make(chan struct{}, 1)
-			stopped := make(chan struct{})
-			defer func() {
-				stop <- struct{}{}
-				<-stopped
-			}()
-			onProg = make(chan struct{})
-			go func() {
-				defer func() { stopped <- struct{}{} }()
-				for {
-					select {
-					case <-stop:
-						return
-					case _, ok := <-onProg:
-						if !ok {
-							return
-						}
-						base.Progress(ctx, onProgress)
-					}
-				}
-			}()
-		}
 		ytdlDone <- ytdl.Download(
 			ctx,
 			videoID,
 			wp,
 			videoFormat,
 			includeAudio,
-			onProg,
+			onProgress,
 			log,
 		)
 		close(ytdlDone)
@@ -104,15 +65,9 @@ func downloadVideo(
 	err = <-ytdlDone
 	log.Debug("finished video download")
 	if err != nil {
-		return errors.Wrap(err, "ytdl")
+		return errors.Wrap(err, "ytdl.Download")
 	}
 	log.Debug("cached video")
-	base.Progress(ctx, onProgress)
-	if !noDownload {
-		// finally download the video from the cache
-		if err := vidCache.Get(ctx, videoID, w); err != nil {
-			return errors.Wrap(err, "get cache")
-		}
-	}
+	base.ProgressDownload(ctx, onProgress)
 	return nil
 }

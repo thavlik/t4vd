@@ -31,11 +31,21 @@ var (
 		Name: "compiler_get_dataset_success_total",
 		Help: "Auto-generated metric incremented on every call to Compiler.GetDataset that does not return with an error",
 	})
+
+	compilerResolveProjectsForVideoTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "compiler_resolve_projects_for_video_total",
+		Help: "Auto-generated metric incremented on every call to Compiler.ResolveProjectsForVideo",
+	})
+	compilerResolveProjectsForVideoSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "compiler_resolve_projects_for_video_success_total",
+		Help: "Auto-generated metric incremented on every call to Compiler.ResolveProjectsForVideo that does not return with an error",
+	})
 )
 
 type Compiler interface {
 	Compile(context.Context, Compile) (*Void, error)
 	GetDataset(context.Context, GetDatasetRequest) (*Dataset, error)
+	ResolveProjectsForVideo(context.Context, ResolveProjectsForVideoRequest) (*ResolveProjectsForVideoResponse, error)
 }
 
 type compilerServer struct {
@@ -50,6 +60,7 @@ func RegisterCompiler(server *otohttp.Server, compiler Compiler) {
 	}
 	server.Register("Compiler", "Compile", handler.handleCompile)
 	server.Register("Compiler", "GetDataset", handler.handleGetDataset)
+	server.Register("Compiler", "ResolveProjectsForVideo", handler.handleResolveProjectsForVideo)
 }
 
 func (s *compilerServer) handleCompile(w http.ResponseWriter, r *http.Request) {
@@ -92,6 +103,26 @@ func (s *compilerServer) handleGetDataset(w http.ResponseWriter, r *http.Request
 	compilerGetDatasetSuccessTotal.Inc()
 }
 
+func (s *compilerServer) handleResolveProjectsForVideo(w http.ResponseWriter, r *http.Request) {
+	compilerResolveProjectsForVideoTotal.Inc()
+	var request ResolveProjectsForVideoRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.compiler.ResolveProjectsForVideo(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	compilerResolveProjectsForVideoSuccessTotal.Inc()
+}
+
 type Compile struct {
 	ProjectID string `json:"projectID"`
 	All       bool   `json:"all"`
@@ -112,6 +143,15 @@ type Dataset struct {
 	Complete  bool     `json:"complete"`
 	Videos    []*Video `json:"videos"`
 	Error     string   `json:"error,omitempty"`
+}
+
+type ResolveProjectsForVideoRequest struct {
+	VideoID string `json:"videoID"`
+}
+
+type ResolveProjectsForVideoResponse struct {
+	ProjectIDs []string `json:"projectIDs"`
+	Error      string   `json:"error,omitempty"`
 }
 
 type Video struct {

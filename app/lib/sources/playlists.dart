@@ -24,7 +24,7 @@ class InputPlaylistListItem extends StatelessWidget {
 
   final bool editMode;
   final void Function() onDelete;
-  final PlaylistListItem model;
+  final Playlist model;
 
   @override
   Widget build(BuildContext context) {
@@ -86,15 +86,15 @@ class InputPlaylistListItem extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          model.title,
+                          model.info?.title ?? model.id,
                           style: Theme.of(context).textTheme.headline6,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          "${model.channel} • ${model.numVideos} videos • $duration total",
-                          style: Theme.of(context).textTheme.bodySmall,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        //Text(
+                        //  "${model.channel} • ${model.numVideos} videos • $duration total",
+                        //  style: Theme.of(context).textTheme.bodySmall,
+                        //  overflow: TextOverflow.ellipsis,
+                        //),
                       ],
                     ),
                   ),
