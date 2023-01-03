@@ -32,7 +32,7 @@ This project hypothesizes that innumerable kata exist that have not yet been nam
 - The kata is a blend of other kata
 
 ## Submission Sequence Identification & Naming
-**Task:** identify submission sequences as loops in directed graphs yielded by the *Kata Stream Analysis* project.
+**Task:** identify and name submission sequences as loops in directed graphs yielded by the *Kata Stream Analysis* project.
 
 **Status:** backburner
 
