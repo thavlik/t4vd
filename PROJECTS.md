@@ -39,3 +39,23 @@ This project hypothesizes that innumerable kata exist that have not yet been nam
 At a higher level of analysis, individual techniques are strung together into a single, cohesive technique in what may be called a *submission sequence*. As opposed to detecting these sequences on video directly, which may transpire over the course of several minutes, they can be found by identifying loops in a directed graph formed by analyzing sequences of kata across all videos.
 
 Many of these loops should already been well known, such as *armbar-omoplata-triangle*.
+
+## Simple Belt Detection (Gi only)
+**Task**: given a single frame of two opponents in gi, determine their belt colors.
+
+**Status:** backburner
+
+## Landmark Detection
+**Task:** predict locations and orientation of opponents' joints a la [On-Device, Real-Time Hand Tracking with MediaPipe
+](https://ai.googleblog.com/2019/08/on-device-real-time-hand-tracking-with.html).
+
+**Status:** backburner
+
+This is believed to be an incredibly difficult task, but that solving it precipitate great progress on a variety of other tasks.
+
+## Area of Interest Detection
+**Task:** crop a frame to include only the grapplers
+
+**Status:** backburner
+
+There are plans to implement a cropping tool in the app to facilitate data creation for this task. Solving it should increase data efficiency on other tasks.
