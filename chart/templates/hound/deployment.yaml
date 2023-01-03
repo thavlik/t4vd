@@ -1,0 +1,57 @@
+{{- if .Values.hound.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-hound
+spec:
+  replicas: {{ .Values.hound.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-hound
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-hound
+    spec:
+    {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+{{ toYaml .Values.imagePullSecrets | indent 10 }}
+    {{- end }}
+      containers:
+      - name: hound
+        imagePullPolicy: {{ .Values.hound.imagePullPolicy }}
+        image: {{ .Values.hound.image }}
+    {{- if .Values.hound.resources }}
+        resources:
+{{ toYaml .Values.hound.resources | indent 10 }}
+    {{- end }}
+        command:
+          - hound
+          - server
+          - --compiler-endpoint
+          - "http://{{ .Release.Name }}-compiler:80"
+          - --gateway-endpoint
+          - "http://{{ .Release.Name }}-gateway:80"
+        {{- if .Values.prometheus.enabled }}
+          - --metrics-port
+          - "2112"
+        {{- end }}
+        ports:
+        - containerPort: 80
+          name: http
+      {{- if .Values.prometheus.enabled }}
+        - containerPort: 2112
+          protocol: TCP
+          name: metrics
+      {{- end }}
+        env:
+        - name: LOG_LEVEL
+          value: {{ .Values.hound.logLevel }}
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /etc/ready
+          initialDelaySeconds: 1
+          periodSeconds: 4
+{{- end }}

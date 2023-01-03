@@ -107,6 +107,13 @@ gateway:
   logLevel: debug
   resources: {}
 
+hound:
+  image: thavlik/t4vd-hound:latest
+  imagePullPolicy: Always
+  replicas: 1
+  logLevel: debug
+  resources: {}
+
 app:
   enabled: false
   image: thavlik/t4vd-app:latest

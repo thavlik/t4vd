@@ -1,0 +1,15 @@
+{{- if .Values.hound.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-hound
+  labels:
+    app: {{ .Release.Name }}-hound
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Release.Name }}-hound
+  ports:
+  - name: http
+    port: 80
+{{- end }}

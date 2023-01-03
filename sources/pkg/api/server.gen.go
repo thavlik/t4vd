@@ -166,60 +166,6 @@ var (
 		Name: "sources_remove_video_success_total",
 		Help: "Auto-generated metric incremented on every call to Sources.RemoveVideo that does not return with an error",
 	})
-
-	sourcesReportChannelDetailsTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_channel_details_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportChannelDetails",
-	})
-	sourcesReportChannelDetailsSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_channel_details_success_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportChannelDetails that does not return with an error",
-	})
-
-	sourcesReportChannelVideoTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_channel_video_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportChannelVideo",
-	})
-	sourcesReportChannelVideoSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_channel_video_success_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportChannelVideo that does not return with an error",
-	})
-
-	sourcesReportPlaylistDetailsTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_playlist_details_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportPlaylistDetails",
-	})
-	sourcesReportPlaylistDetailsSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_playlist_details_success_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportPlaylistDetails that does not return with an error",
-	})
-
-	sourcesReportPlaylistVideoTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_playlist_video_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportPlaylistVideo",
-	})
-	sourcesReportPlaylistVideoSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_playlist_video_success_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportPlaylistVideo that does not return with an error",
-	})
-
-	sourcesReportVideoDetailsTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_video_details_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportVideoDetails",
-	})
-	sourcesReportVideoDetailsSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_video_details_success_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportVideoDetails that does not return with an error",
-	})
-
-	sourcesReportVideoDownloadProgressTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_video_download_progress_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportVideoDownloadProgress",
-	})
-	sourcesReportVideoDownloadProgressSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "sources_report_video_download_progress_success_total",
-		Help: "Auto-generated metric incremented on every call to Sources.ReportVideoDownloadProgress that does not return with an error",
-	})
 )
 
 type Sources interface {
@@ -240,12 +186,6 @@ type Sources interface {
 	RemoveChannel(context.Context, RemoveChannelRequest) (*Void, error)
 	RemovePlaylist(context.Context, RemovePlaylistRequest) (*Void, error)
 	RemoveVideo(context.Context, RemoveVideoRequest) (*Void, error)
-	ReportChannelDetails(context.Context, ChannelDetails) (*Void, error)
-	ReportChannelVideo(context.Context, ChannelVideo) (*Void, error)
-	ReportPlaylistDetails(context.Context, PlaylistDetails) (*Void, error)
-	ReportPlaylistVideo(context.Context, PlaylistVideo) (*Void, error)
-	ReportVideoDetails(context.Context, VideoDetails) (*Void, error)
-	ReportVideoDownloadProgress(context.Context, VideoDownloadProgress) (*Void, error)
 }
 
 type sourcesServer struct {
@@ -275,12 +215,6 @@ func RegisterSources(server *otohttp.Server, sources Sources) {
 	server.Register("Sources", "RemoveChannel", handler.handleRemoveChannel)
 	server.Register("Sources", "RemovePlaylist", handler.handleRemovePlaylist)
 	server.Register("Sources", "RemoveVideo", handler.handleRemoveVideo)
-	server.Register("Sources", "ReportChannelDetails", handler.handleReportChannelDetails)
-	server.Register("Sources", "ReportChannelVideo", handler.handleReportChannelVideo)
-	server.Register("Sources", "ReportPlaylistDetails", handler.handleReportPlaylistDetails)
-	server.Register("Sources", "ReportPlaylistVideo", handler.handleReportPlaylistVideo)
-	server.Register("Sources", "ReportVideoDetails", handler.handleReportVideoDetails)
-	server.Register("Sources", "ReportVideoDownloadProgress", handler.handleReportVideoDownloadProgress)
 }
 
 func (s *sourcesServer) handleAddChannel(w http.ResponseWriter, r *http.Request) {
@@ -623,126 +557,6 @@ func (s *sourcesServer) handleRemoveVideo(w http.ResponseWriter, r *http.Request
 	sourcesRemoveVideoSuccessTotal.Inc()
 }
 
-func (s *sourcesServer) handleReportChannelDetails(w http.ResponseWriter, r *http.Request) {
-	sourcesReportChannelDetailsTotal.Inc()
-	var request ChannelDetails
-	if err := otohttp.Decode(r, &request); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	response, err := s.sources.ReportChannelDetails(r.Context(), request)
-	if err != nil {
-		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	sourcesReportChannelDetailsSuccessTotal.Inc()
-}
-
-func (s *sourcesServer) handleReportChannelVideo(w http.ResponseWriter, r *http.Request) {
-	sourcesReportChannelVideoTotal.Inc()
-	var request ChannelVideo
-	if err := otohttp.Decode(r, &request); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	response, err := s.sources.ReportChannelVideo(r.Context(), request)
-	if err != nil {
-		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	sourcesReportChannelVideoSuccessTotal.Inc()
-}
-
-func (s *sourcesServer) handleReportPlaylistDetails(w http.ResponseWriter, r *http.Request) {
-	sourcesReportPlaylistDetailsTotal.Inc()
-	var request PlaylistDetails
-	if err := otohttp.Decode(r, &request); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	response, err := s.sources.ReportPlaylistDetails(r.Context(), request)
-	if err != nil {
-		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	sourcesReportPlaylistDetailsSuccessTotal.Inc()
-}
-
-func (s *sourcesServer) handleReportPlaylistVideo(w http.ResponseWriter, r *http.Request) {
-	sourcesReportPlaylistVideoTotal.Inc()
-	var request PlaylistVideo
-	if err := otohttp.Decode(r, &request); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	response, err := s.sources.ReportPlaylistVideo(r.Context(), request)
-	if err != nil {
-		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	sourcesReportPlaylistVideoSuccessTotal.Inc()
-}
-
-func (s *sourcesServer) handleReportVideoDetails(w http.ResponseWriter, r *http.Request) {
-	sourcesReportVideoDetailsTotal.Inc()
-	var request VideoDetails
-	if err := otohttp.Decode(r, &request); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	response, err := s.sources.ReportVideoDetails(r.Context(), request)
-	if err != nil {
-		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	sourcesReportVideoDetailsSuccessTotal.Inc()
-}
-
-func (s *sourcesServer) handleReportVideoDownloadProgress(w http.ResponseWriter, r *http.Request) {
-	sourcesReportVideoDownloadProgressTotal.Inc()
-	var request VideoDownloadProgress
-	if err := otohttp.Decode(r, &request); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	response, err := s.sources.ReportVideoDownloadProgress(r.Context(), request)
-	if err != nil {
-		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	sourcesReportVideoDownloadProgressSuccessTotal.Inc()
-}
-
 type AddChannelRequest struct {
 	ProjectID   string `json:"projectID"`
 	Input       string `json:"input"`
@@ -768,36 +582,6 @@ type Channel struct {
 	ID        string `json:"id"`
 	Blacklist bool   `json:"blacklist"`
 	Error     string `json:"error,omitempty"`
-}
-
-type ChannelDetails struct {
-	ID     string `json:"id"`
-	Name   string `json:"name"`
-	Avatar string `json:"avatar"`
-	Subs   string `json:"subs"`
-}
-
-type VideoDetails struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Thumbnail   string `json:"thumbnail"`
-	UploadDate  string `json:"uploadDate"`
-	Uploader    string `json:"uploader"`
-	UploaderID  string `json:"uploaderID"`
-	Channel     string `json:"channel"`
-	ChannelID   string `json:"channelID"`
-	Duration    int64  `json:"duration"`
-	ViewCount   int64  `json:"viewCount"`
-	Width       int    `json:"width"`
-	Height      int    `json:"height"`
-	FPS         int    `json:"fPS"`
-}
-
-type ChannelVideo struct {
-	ChannelID string       `json:"channelID"`
-	NumVideos int          `json:"numVideos"`
-	Video     VideoDetails `json:"video"`
 }
 
 type Collaborator struct {
@@ -894,20 +678,6 @@ type Playlist struct {
 	Error     string `json:"error,omitempty"`
 }
 
-type PlaylistDetails struct {
-	ID        string `json:"id"`
-	Title     string `json:"title"`
-	Channel   string `json:"channel"`
-	ChannelID string `json:"channelID"`
-	NumVideos int    `json:"numVideos"`
-}
-
-type PlaylistVideo struct {
-	PlaylistID string       `json:"playlistID"`
-	NumVideos  int          `json:"numVideos"`
-	Video      VideoDetails `json:"video"`
-}
-
 type Project struct {
 	ID        string `json:"id"`
 	Name      string `json:"name"`
@@ -942,11 +712,4 @@ type Video struct {
 
 type Void struct {
 	Error string `json:"error,omitempty"`
-}
-
-type VideoDownloadProgress struct {
-	ID      string  `json:"id"`
-	Total   int64   `json:"total"`
-	Rate    float64 `json:"rate"`
-	Elapsed int64   `json:"elapsed"`
 }

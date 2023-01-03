@@ -12,6 +12,7 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	memory_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/memory"
 	redis_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/redis"
+	hound "github.com/thavlik/t4vd/hound/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	mongo_infocache "github.com/thavlik/t4vd/seer/pkg/infocache/mongo"
 	postgres_infocache "github.com/thavlik/t4vd/seer/pkg/infocache/postgres"
@@ -20,7 +21,6 @@ import (
 	s3_thumbcache "github.com/thavlik/t4vd/seer/pkg/thumbcache/s3"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
 	s3_vidcache "github.com/thavlik/t4vd/seer/pkg/vidcache/s3"
-	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
 
@@ -28,7 +28,7 @@ var serverArgs struct {
 	base.ServerOptions
 	redis            base.RedisOptions
 	db               base.DatabaseOptions
-	sources          base.ServiceOptions
+	hound            base.ServiceOptions
 	videoBucket      string
 	thumbnailBucket  string
 	videoFormat      string
@@ -43,7 +43,7 @@ var serverCmd = &cobra.Command{
 		base.ServerEnv(&serverArgs.ServerOptions)
 		base.DatabaseEnv(&serverArgs.db, true)
 		base.RedisEnv(&serverArgs.redis, false)
-		base.ServiceEnv("sources", &serverArgs.sources)
+		base.ServiceEnv("hound", &serverArgs.hound)
 		base.CheckEnv("VIDEO_BUCKET", &serverArgs.videoBucket)
 		base.CheckEnv("VIDEO_FORMAT", &serverArgs.videoFormat)
 		base.CheckEnvBool("INCLUDE_AUDIO", &serverArgs.includeAudio)
@@ -60,7 +60,7 @@ var serverCmd = &cobra.Command{
 			initInfoCache(&serverArgs.db),
 			initVidCache(),
 			initThumbCache(),
-			sources.NewSourcesClientFromOptions(serverArgs.sources),
+			hound.NewHoundClientFromOptions(serverArgs.hound),
 			serverArgs.videoFormat,
 			serverArgs.includeAudio,
 			serverArgs.concurrency,
@@ -126,7 +126,7 @@ func init() {
 	base.AddRedisFlags(serverCmd, &serverArgs.redis)
 	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	base.AddDatabaseFlags(serverCmd, &serverArgs.db)
-	base.AddServiceFlags(serverCmd, "sources", &serverArgs.sources, 10*time.Second)
+	base.AddServiceFlags(serverCmd, "hound", &serverArgs.hound, 10*time.Second)
 	serverCmd.PersistentFlags().IntVar(&serverArgs.concurrency, "concurrency", 1, "number of concurrent youtube queries (best set to 1 and increase # replicas)")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.videoBucket, "video-bucket", "", "full length video cache bucket name")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.thumbnailBucket, "thumbnail-bucket", "", "thumbnail cache bucket name")

@@ -28,8 +28,8 @@ spec:
         command:
           - seer
           - server
-          - --sources-endpoint
-          - "http://{{ .Release.Name }}-sources:80"
+          - --hound-endpoint
+          - "http://{{ .Release.Name }}-hound:80"
         {{- if .Values.seer.disableDownloads }}
           - --disable-downloads
         {{- end }}

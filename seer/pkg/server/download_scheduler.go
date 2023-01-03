@@ -7,9 +7,9 @@ import (
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
+	hound "github.com/thavlik/t4vd/hound/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
-	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
 
@@ -19,7 +19,7 @@ func initDownloadWorkers(
 	cancelVideoDownload <-chan []byte,
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
-	sources sources.Sources,
+	hound hound.Hound,
 	videoFormat string,
 	includeAudio bool,
 	disableDownloads bool,
@@ -38,7 +38,7 @@ func initDownloadWorkers(
 			dlSched,
 			vidCache,
 			thumbCache,
-			sources,
+			hound,
 			videoFormat,
 			includeAudio,
 			disableDownloads,
@@ -100,7 +100,7 @@ func downloadWorker(
 	dlSched scheduler.Scheduler,
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
-	sourcesClient sources.Sources,
+	houndClient hound.Hound,
 	videoFormat string,
 	includeAudio bool,
 	disableDownloads bool,
@@ -162,7 +162,7 @@ func downloadWorker(
 								ctx,
 								videoID,
 								progress,
-								sourcesClient,
+								houndClient,
 								videoLog,
 							)
 						}
@@ -203,12 +203,15 @@ func reportDownloadProgress(
 	ctx context.Context,
 	videoID string,
 	progress *base.DownloadProgress,
-	sourcesClient sources.Sources,
+	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
-	if _, err := sourcesClient.ReportVideoDownloadProgress(
+	if houndClient == nil {
+		return
+	}
+	if _, err := houndClient.ReportVideoDownloadProgress(
 		ctx,
-		sources.VideoDownloadProgress{
+		hound.VideoDownloadProgress{
 			ID:      videoID,
 			Total:   progress.Total,
 			Rate:    progress.Rate,

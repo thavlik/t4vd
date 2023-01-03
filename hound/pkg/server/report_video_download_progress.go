@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/pkg/errors"
-	"github.com/thavlik/t4vd/sources/pkg/api"
+	"github.com/thavlik/t4vd/hound/pkg/api"
 )
 
 func (s *Server) ReportVideoDownloadProgress(

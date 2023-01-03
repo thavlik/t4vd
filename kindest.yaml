@@ -3,6 +3,7 @@ dependencies:
   - keycloak
   - app
   - sources
+  - hound
   - seer
   - gateway
   - compiler

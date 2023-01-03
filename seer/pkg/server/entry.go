@@ -6,10 +6,10 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/pubsub"
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
+	hound "github.com/thavlik/t4vd/hound/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
-	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
 
@@ -21,7 +21,7 @@ func Entry(
 	infoCache infocache.InfoCache,
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
-	sources sources.Sources,
+	hound hound.Hound,
 	videoFormat string,
 	includeAudio bool,
 	concurrency int,
@@ -47,7 +47,7 @@ func Entry(
 		infoCache,
 		thumbCache,
 		querySched,
-		sources,
+		hound,
 		stopPopQuery,
 		log,
 	)
@@ -65,7 +65,7 @@ func Entry(
 		cancelVideoDownload,
 		vidCache,
 		thumbCache,
-		sources,
+		hound,
 		videoFormat,
 		includeAudio,
 		disableDownloads,

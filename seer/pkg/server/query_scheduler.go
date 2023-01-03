@@ -9,10 +9,10 @@ import (
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
+	hound "github.com/thavlik/t4vd/hound/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
-	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
 )
 
@@ -47,7 +47,7 @@ func initQueryWorkers(
 	infoCache infocache.InfoCache,
 	thumbCache thumbcache.ThumbCache,
 	querySched scheduler.Scheduler,
-	sources sources.Sources,
+	hound hound.Hound,
 	stop <-chan struct{},
 	log *zap.Logger,
 ) {
@@ -59,7 +59,7 @@ func initQueryWorkers(
 			thumbCache,
 			popQuery,
 			querySched,
-			sources,
+			hound,
 			log,
 		)
 	}
@@ -106,7 +106,7 @@ func queryWorker(
 	thumbCache thumbcache.ThumbCache,
 	popQuery <-chan string,
 	querySched scheduler.Scheduler,
-	sourcesClient sources.Sources,
+	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
 	for {
@@ -174,7 +174,7 @@ func queryWorker(
 						return errors.Wrap(err, "infocache.SetPlaylist")
 					}
 					base.Progress(ctx, onProgress)
-					go reportPlaylistDetails(playlist, sourcesClient, log)
+					go reportPlaylistDetails(playlist, houndClient, log)
 					onVideo := make(chan *api.VideoDetails, 4)
 					go func() {
 						numVideos := 0
@@ -191,7 +191,7 @@ func queryWorker(
 									e.ID,
 									video,
 									numVideos,
-									sourcesClient,
+									houndClient,
 									log,
 								)
 								base.Progress(ctx, onProgress)
@@ -234,7 +234,7 @@ func queryWorker(
 						return errors.Wrap(err, "infocache.SetChannel")
 					}
 					base.Progress(ctx, onProgress)
-					go reportChannelDetails(channel, sourcesClient, log)
+					go reportChannelDetails(channel, houndClient, log)
 					onVideo := make(chan *api.VideoDetails, 4)
 					go func() {
 						numVideos := 0
@@ -251,7 +251,7 @@ func queryWorker(
 									e.ID,
 									video,
 									numVideos,
-									sourcesClient,
+									houndClient,
 									log,
 								)
 								base.Progress(ctx, onProgress)
@@ -290,7 +290,7 @@ func queryWorker(
 					if err := infoCache.SetVideo(video); err != nil {
 						return errors.Wrap(err, "infocache.SetVideo")
 					}
-					go reportVideoDetails(video, sourcesClient, log)
+					go reportVideoDetails(video, houndClient, log)
 				}
 				base.Progress(ctx, onProgress)
 				if err := cacheVideoThumbnail(
@@ -316,10 +316,13 @@ func queryWorker(
 
 func reportVideoDetails(
 	details *api.VideoDetails,
-	sourcesClient sources.Sources,
+	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
-	if _, err := sourcesClient.ReportVideoDetails(
+	if houndClient == nil {
+		return
+	}
+	if _, err := houndClient.ReportVideoDetails(
 		context.TODO(),
 		*convertVideo(details),
 	); err != nil {
@@ -331,12 +334,15 @@ func reportPlaylistVideo(
 	playlistID string,
 	video *api.VideoDetails,
 	numVideos int,
-	sourcesClient sources.Sources,
+	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
-	if _, err := sourcesClient.ReportPlaylistVideo(
+	if houndClient == nil {
+		return
+	}
+	if _, err := houndClient.ReportPlaylistVideo(
 		context.TODO(),
-		sources.PlaylistVideo{
+		hound.PlaylistVideo{
 			PlaylistID: playlistID,
 			Video:      *convertVideo(video),
 			NumVideos:  numVideos,
@@ -350,12 +356,15 @@ func reportChannelVideo(
 	channelID string,
 	video *api.VideoDetails,
 	numVideos int,
-	sourcesClient sources.Sources,
+	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
-	if _, err := sourcesClient.ReportChannelVideo(
+	if houndClient == nil {
+		return
+	}
+	if _, err := houndClient.ReportChannelVideo(
 		context.TODO(),
-		sources.ChannelVideo{
+		hound.ChannelVideo{
 			ChannelID: channelID,
 			NumVideos: numVideos,
 			Video:     *convertVideo(video),
@@ -367,12 +376,15 @@ func reportChannelVideo(
 
 func reportChannelDetails(
 	details *api.ChannelDetails,
-	sourcesClient sources.Sources,
+	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
-	if _, err := sourcesClient.ReportChannelDetails(
+	if houndClient == nil {
+		return
+	}
+	if _, err := houndClient.ReportChannelDetails(
 		context.TODO(),
-		sources.ChannelDetails{
+		hound.ChannelDetails{
 			ID:     details.ID,
 			Name:   details.Name,
 			Avatar: details.Avatar,
@@ -385,12 +397,15 @@ func reportChannelDetails(
 
 func reportPlaylistDetails(
 	details *api.PlaylistDetails,
-	sourcesClient sources.Sources,
+	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
-	if _, err := sourcesClient.ReportPlaylistDetails(
+	if houndClient == nil {
+		return
+	}
+	if _, err := houndClient.ReportPlaylistDetails(
 		context.TODO(),
-		sources.PlaylistDetails{
+		hound.PlaylistDetails{
 			ID:        details.ID,
 			Title:     details.Title,
 			Channel:   details.Channel,
@@ -402,8 +417,8 @@ func reportPlaylistDetails(
 	}
 }
 
-func convertVideo(details *api.VideoDetails) *sources.VideoDetails {
-	return &sources.VideoDetails{
+func convertVideo(details *api.VideoDetails) *hound.VideoDetails {
+	return &hound.VideoDetails{
 		ID:          details.ID,
 		Title:       details.Title,
 		Description: details.Description,

@@ -3,12 +3,12 @@ package server
 import (
 	"context"
 
-	"github.com/thavlik/t4vd/sources/pkg/api"
+	"github.com/thavlik/t4vd/hound/pkg/api"
 )
 
-func (s *Server) ReportChannelVideo(
+func (s *Server) ReportVideoDetails(
 	ctx context.Context,
-	req api.ChannelVideo,
+	req api.VideoDetails,
 ) (*api.Void, error) {
 	return &api.Void{}, nil
 }
