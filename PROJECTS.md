@@ -1,3 +1,5 @@
+# List of Brazilian Jiu-jitsu Machine Learning Projects
+
 ## Static Kata Recognition
 **Task:** given a *single frame*, determine the particular technique being employed.
 
@@ -74,16 +76,57 @@ The ability to compare an individual's most recent kata sequence graph to one in
 ### Personalized Kata Graph Art
 **Task:** create a force-directed graph from an individual's kata sequence graph. Integrate said force directed graph into beautiful art that evolves over time in response to the changes observed in their kata sequences.
 
-**Status:** pipe dream
+**Status:** conceptual phase
 
-## Vector-embed Kata
+## Vector-embedded Kata
 **Task:** create a semantically rich, low-dimensional vector embedding for all kata.
 
 **Status:** conceptual phase
 
 As word tags can be applied to kata to assign them discrete categories, so too can they be unsupervisedly clustered. The resultant latent space can then be called "kata space", or **K**-space. A good K-space should have large areas dedicated to named kata.
 
+Analysis of K-space embeddings should illuminate variations in technique that make or break it.
+
+A specific instance of kata can then be analyzed to compare joint positions/orientations against an established model. 
+
+Features of certain kata, such as the switch between threading & choking arms in D'arce, should be appreciable in K-space.
+
 ## Searchable Kata Video Database
 **Task:** create a searchable database of technique videos, with unrestricted input terms (e.g. "closed guard into arm bar into scissor sweep")
+
+**Status:** conceptual phase
+
+## Automatic Keyframing
+**Task:** train a model to automatically impose the grapplers over a green screen background
+
+**Status:** conceptual phase
+
+The creation of supervised data for this task would most likely mirror that of [neurosurgery-video-dataset](https://github.com/thavlik/neurosurgery-video-dataset)'s.
+
+## Grappler Identity Detection
+**Task:** given a short video of two grapplers at the start of their roll, paint each grapplers' pixels with a unique color to separately identify them. 
+
+**Status:** conceptual phase
+
+Like *Automatic Keyframing*, the creation of supervised data for this task would most likely mirror that of [neurosurgery-video-dataset](https://github.com/thavlik/neurosurgery-video-dataset)'s. Creating labels for this task would thus create labels for both.
+
+## Dual-track Kata Sequence Streams
+**Task:** disambiguate a single stream of kata sequences for both grapplers into two grappler-specific kata sequence streams
+
+**Status:** conceptual phase
+
+Solving this task would allow for distinctions to be made between e.g. side control top vs. bottom, attacking the armbar vs. defending it. Kata sequence streams of this type are expected to be semantically richer. 
+
+Progress on this task would most likely require *Grappler Identity Detection* to be solved.
+
+## Animated 3D Models
+**Task:** use generative modeling to animate 3D characters performing techniques
+
+**Status:** conceptual phase
+
+An obvious improvement to a kata sequence visualization tool would be the inclusion of videos demonstrating the technique whenever it appears in the graph. As opposed to searching a database of existing videos, novel videos could be synthesized using a variety of methods. One such method utilizes skeleton and triangle mesh intermediates. The skeleton may be yielded by solving *Landmark Detection*.
+
+## BJJ Chess
+**Task:** derive a decision tree from kata sequence analysis and create a turn-based video game where the efficacy of each action is computed from the action's likelihood of success in the real world
 
 **Status:** conceptual phase
