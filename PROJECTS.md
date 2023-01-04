@@ -59,3 +59,21 @@ This is believed to be an incredibly difficult task, but that solving it precipi
 **Status:** backburner
 
 There are plans to implement a cropping tool in the app to facilitate data creation for this task. Solving it should increase data efficiency on other tasks.
+
+## Per-Athlete Kata Sequence Analysis & Comparison
+**Task:** compare kata sequences for an individual grappler to the average 
+
+**Status:** backburner
+
+The edges on the kata sequence graph represent likelihoods of observing the transition. Transitioning from one kata to another can then be modeled as a univariate gaussian, which can be generalized to multivariate gaussian as one kata can transition into many. The average overlap between an individual's transition distributions and the average grappler's can be computed as a proxy of how "unique" a grappler's techniques are.
+
+The overall complexity of an athlete's kata transition graph (as represented by the number of edges, loops, etc.) can then computed to objectively quantify how "complex" a grappler's techniques are.
+
+The ability to compare an individual's most recent kata sequence graph to one in their past may prove a useful training tool.
+
+### Personalized Kata Graph Art
+**Task:** create a force-directed graph from an individual's kata sequence graph. Integrate said force directed graph into beautiful art that evolves over time in response to the changes observed in their kata sequences.
+
+**Status:** pipe dream
+
+
