@@ -61,7 +61,7 @@ This is believed to be an incredibly difficult task, but that solving it precipi
 There are plans to implement a cropping tool in the app to facilitate data creation for this task. Solving it should increase data efficiency on other tasks.
 
 ## Per-Athlete Kata Sequence Analysis & Comparison
-**Task:** compare kata sequences for an individual grappler to the average 
+**Task:** compare a set/distribution of kata sequences to another set/distribution of kata sequences 
 
 **Status:** backburner
 
@@ -76,4 +76,14 @@ The ability to compare an individual's most recent kata sequence graph to one in
 
 **Status:** pipe dream
 
+## Vector-embed Kata
+**Task:** create a semantically rich, low-dimensional vector embedding for all kata.
 
+**Status:** conceptual phase
+
+As word tags can be applied to kata to assign them discrete categories, so too can they be unsupervisedly clustered. The resultant latent space can then be called "kata space", or **K**-space. A good K-space should have large areas dedicated to named kata.
+
+## Searchable Kata Video Database
+**Task:** create a searchable database of technique videos, with unrestricted input terms (e.g. "closed guard into arm bar into scissor sweep")
+
+**Status:** conceptual phase
