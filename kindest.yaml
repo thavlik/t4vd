@@ -1,7 +1,7 @@
 dependencies:
   - base
   - keycloak
-  - app
+  #- app
   - sources
   - hound
   - seer
@@ -89,6 +89,8 @@ env:
                     name: mongo-cred
                     key: password
           app:
+            enabled: true
+          mqtt:
             enabled: true
           compiler:
             enabled: true

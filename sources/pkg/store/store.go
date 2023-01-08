@@ -20,6 +20,10 @@ type Store interface {
 	GetProjectByName(ctx context.Context, name string) (*api.Project, error)
 	GetProjectIDForGroup(ctx context.Context, groupID string) (projectID string, err error)
 
+	GetProjectIDsForChannel(ctx context.Context, channelID string) ([]string, error)
+	GetProjectIDsForPlaylist(ctx context.Context, playlistID string) ([]string, error)
+	GetProjectIDsForVideo(ctx context.Context, videoID string) ([]string, error)
+
 	AddChannel(projectID string, channel *api.Channel, blacklist bool, submitterID string) error
 	AddPlaylist(projectID string, playlist *api.Playlist, blacklist bool, submitterID string) error
 	AddVideo(projectID string, video *api.Video, blacklist bool, submitterID string) error

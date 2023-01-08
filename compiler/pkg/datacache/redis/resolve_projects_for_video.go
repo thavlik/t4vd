@@ -30,6 +30,15 @@ func (d *redisDataCache) ResolveProjectsForVideo(
 			return nil, errors.Wrap(err, "redis.SIsMember")
 		} else if isMember {
 			projectIDs = append(projectIDs, projectID)
+		} else {
+			// remove the project from the set of potential projects
+			if _, err := d.redis.SRem(
+				ctx,
+				videoProjectsKey(videoID),
+				projectID,
+			).Result(); err != nil {
+				return nil, errors.Wrap(err, "redis.SRem")
+			}
 		}
 	}
 	return projectIDs, nil

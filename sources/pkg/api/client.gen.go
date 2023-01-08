@@ -348,6 +348,117 @@ func (c *sourcesClient) GetProjectByName(ctx context.Context, req GetProjectByNa
 	return &response, nil
 }
 
+func (c *sourcesClient) GetProjectIDsForChannel(ctx context.Context, req GetProjectIDsForChannelRequest) (*GetProjectIDsForChannelResponse, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Sources.GetProjectIDsForChannel", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response GetProjectIDsForChannelResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
+func (c *sourcesClient) GetProjectIDsForPlaylist(ctx context.Context, req GetProjectIDsForPlaylistRequest) (*GetProjectIDsForPlaylistResponse, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Sources.GetProjectIDsForPlaylist", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response GetProjectIDsForPlaylistResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
+func (c *sourcesClient) GetProjectIDsForVideo(ctx context.Context, req GetProjectIDsForVideoRequest) (*GetProjectIDsForVideoResponse, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Sources.GetProjectIDsForVideo", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response GetProjectIDsForVideoResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
 func (c *sourcesClient) ListChannelIDs(ctx context.Context, req ListChannelIDsRequest) (*ListChannelIDsResponse, error) {
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(&req); err != nil {

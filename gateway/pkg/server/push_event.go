@@ -29,15 +29,11 @@ func (s *Server) PushEvent(
 func (s *Server) getSubscriptions(projectIDs []string) (subs []*Subscription) {
 	s.subsL.Lock()
 	for sub := range s.subs {
-		found := false
 		for _, projectID := range projectIDs {
 			if sub.projectID == projectID {
-				found = true
+				subs = append(subs, sub)
 				break
 			}
-		}
-		if found {
-			subs = append(subs, sub)
 		}
 	}
 	s.subsL.Unlock()
@@ -51,7 +47,7 @@ func (s *Server) pushEventLocal(req api.Event) error {
 		case sub.ch <- []byte(req.Payload):
 			continue
 		default:
-			s.log.Warn("client event stream is full",
+			s.log.Warn("discarding event due to full stream",
 				zap.String("userID", sub.userID))
 		}
 	}

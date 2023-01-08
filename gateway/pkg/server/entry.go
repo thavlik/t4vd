@@ -39,22 +39,28 @@ func Entry(
 		corsHeader,
 		log,
 	)
-	ch, err := pubSub.Subscribe(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	ch, err := pubSub.Subscribe(ctx)
 	if err != nil {
 		return errors.Wrap(err, "pubsub.Subscrube")
 	}
 	go func() {
 		for {
-			msg, ok := <-ch
-			if !ok {
+			select {
+			case <-ctx.Done():
 				return
-			}
-			var event api.Event
-			if err := json.Unmarshal(msg, &event); err != nil {
-				panic(err)
-			}
-			if err := s.pushEventLocal(event); err != nil {
-				panic(err)
+			case msg, ok := <-ch:
+				if !ok {
+					return
+				}
+				var event api.Event
+				if err := json.Unmarshal(msg, &event); err != nil {
+					panic(errors.Wrap(err, "json.Unmarshal"))
+				}
+				if err := s.pushEventLocal(event); err != nil {
+					panic(errors.Wrap(err, "pushEventLocal"))
+				}
 			}
 		}
 	}()

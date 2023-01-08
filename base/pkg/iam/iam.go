@@ -50,4 +50,5 @@ type IAM interface {
 	RemoveUserFromGroup(userID string, groupID string) error
 	ListUserGroups(ctx context.Context, userID string) ([]*Group, error)
 	ListGroupMembers(ctx context.Context, groupID string) ([]*User, error)
+	IsUserInGroup(ctx context.Context, userID string, groupID string) (bool, error)
 }

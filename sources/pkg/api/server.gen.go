@@ -77,6 +77,33 @@ var (
 		Help: "Auto-generated metric incremented on every call to Sources.GetProjectByName that does not return with an error",
 	})
 
+	sourcesGetProjectIDsForChannelTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "sources_get_project_ids_for_channel_total",
+		Help: "Auto-generated metric incremented on every call to Sources.GetProjectIDsForChannel",
+	})
+	sourcesGetProjectIDsForChannelSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "sources_get_project_ids_for_channel_success_total",
+		Help: "Auto-generated metric incremented on every call to Sources.GetProjectIDsForChannel that does not return with an error",
+	})
+
+	sourcesGetProjectIDsForPlaylistTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "sources_get_project_ids_for_playlist_total",
+		Help: "Auto-generated metric incremented on every call to Sources.GetProjectIDsForPlaylist",
+	})
+	sourcesGetProjectIDsForPlaylistSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "sources_get_project_ids_for_playlist_success_total",
+		Help: "Auto-generated metric incremented on every call to Sources.GetProjectIDsForPlaylist that does not return with an error",
+	})
+
+	sourcesGetProjectIDsForVideoTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "sources_get_project_ids_for_video_total",
+		Help: "Auto-generated metric incremented on every call to Sources.GetProjectIDsForVideo",
+	})
+	sourcesGetProjectIDsForVideoSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "sources_get_project_ids_for_video_success_total",
+		Help: "Auto-generated metric incremented on every call to Sources.GetProjectIDsForVideo that does not return with an error",
+	})
+
 	sourcesListChannelIDsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "sources_list_channel_ids_total",
 		Help: "Auto-generated metric incremented on every call to Sources.ListChannelIDs",
@@ -176,6 +203,9 @@ type Sources interface {
 	DeleteProject(context.Context, DeleteProject) (*Void, error)
 	GetProject(context.Context, GetProject) (*Project, error)
 	GetProjectByName(context.Context, GetProjectByName) (*Project, error)
+	GetProjectIDsForChannel(context.Context, GetProjectIDsForChannelRequest) (*GetProjectIDsForChannelResponse, error)
+	GetProjectIDsForPlaylist(context.Context, GetProjectIDsForPlaylistRequest) (*GetProjectIDsForPlaylistResponse, error)
+	GetProjectIDsForVideo(context.Context, GetProjectIDsForVideoRequest) (*GetProjectIDsForVideoResponse, error)
 	ListChannelIDs(context.Context, ListChannelIDsRequest) (*ListChannelIDsResponse, error)
 	ListChannels(context.Context, ListChannelsRequest) (*ListChannelsResponse, error)
 	ListPlaylistIDs(context.Context, ListPlaylistIDsRequest) (*ListPlaylistIDsResponse, error)
@@ -205,6 +235,9 @@ func RegisterSources(server *otohttp.Server, sources Sources) {
 	server.Register("Sources", "DeleteProject", handler.handleDeleteProject)
 	server.Register("Sources", "GetProject", handler.handleGetProject)
 	server.Register("Sources", "GetProjectByName", handler.handleGetProjectByName)
+	server.Register("Sources", "GetProjectIDsForChannel", handler.handleGetProjectIDsForChannel)
+	server.Register("Sources", "GetProjectIDsForPlaylist", handler.handleGetProjectIDsForPlaylist)
+	server.Register("Sources", "GetProjectIDsForVideo", handler.handleGetProjectIDsForVideo)
 	server.Register("Sources", "ListChannelIDs", handler.handleListChannelIDs)
 	server.Register("Sources", "ListChannels", handler.handleListChannels)
 	server.Register("Sources", "ListPlaylistIDs", handler.handleListPlaylistIDs)
@@ -355,6 +388,66 @@ func (s *sourcesServer) handleGetProjectByName(w http.ResponseWriter, r *http.Re
 		return
 	}
 	sourcesGetProjectByNameSuccessTotal.Inc()
+}
+
+func (s *sourcesServer) handleGetProjectIDsForChannel(w http.ResponseWriter, r *http.Request) {
+	sourcesGetProjectIDsForChannelTotal.Inc()
+	var request GetProjectIDsForChannelRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.sources.GetProjectIDsForChannel(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	sourcesGetProjectIDsForChannelSuccessTotal.Inc()
+}
+
+func (s *sourcesServer) handleGetProjectIDsForPlaylist(w http.ResponseWriter, r *http.Request) {
+	sourcesGetProjectIDsForPlaylistTotal.Inc()
+	var request GetProjectIDsForPlaylistRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.sources.GetProjectIDsForPlaylist(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	sourcesGetProjectIDsForPlaylistSuccessTotal.Inc()
+}
+
+func (s *sourcesServer) handleGetProjectIDsForVideo(w http.ResponseWriter, r *http.Request) {
+	sourcesGetProjectIDsForVideoTotal.Inc()
+	var request GetProjectIDsForVideoRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.sources.GetProjectIDsForVideo(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	sourcesGetProjectIDsForVideoSuccessTotal.Inc()
 }
 
 func (s *sourcesServer) handleListChannelIDs(w http.ResponseWriter, r *http.Request) {
@@ -600,6 +693,33 @@ type GetProject struct {
 
 type GetProjectByName struct {
 	Name string `json:"name"`
+}
+
+type GetProjectIDsForChannelRequest struct {
+	ChannelID string `json:"channelID"`
+}
+
+type GetProjectIDsForChannelResponse struct {
+	ProjectIDs []string `json:"projectIDs"`
+	Error      string   `json:"error,omitempty"`
+}
+
+type GetProjectIDsForPlaylistRequest struct {
+	PlaylistID string `json:"playlistID"`
+}
+
+type GetProjectIDsForPlaylistResponse struct {
+	ProjectIDs []string `json:"projectIDs"`
+	Error      string   `json:"error,omitempty"`
+}
+
+type GetProjectIDsForVideoRequest struct {
+	VideoID string `json:"videoID"`
+}
+
+type GetProjectIDsForVideoResponse struct {
+	ProjectIDs []string `json:"projectIDs"`
+	Error      string   `json:"error,omitempty"`
 }
 
 type ListChannelIDsRequest struct {

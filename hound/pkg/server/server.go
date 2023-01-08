@@ -9,6 +9,7 @@ import (
 
 	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 	gateway "github.com/thavlik/t4vd/gateway/pkg/api"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 
 	"go.uber.org/zap"
 
@@ -18,17 +19,20 @@ import (
 
 type Server struct {
 	compiler compiler.Compiler
+	sources  sources.Sources
 	gateway  gateway.Gateway
 	log      *zap.Logger
 }
 
 func NewServer(
 	compiler compiler.Compiler,
+	sources sources.Sources,
 	gateway gateway.Gateway,
 	log *zap.Logger,
 ) *Server {
 	return &Server{
 		compiler,
+		sources,
 		gateway,
 		log,
 	}

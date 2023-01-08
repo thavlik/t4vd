@@ -121,6 +121,13 @@ app:
   replicas: 1
   resources: {}
 
+mqtt:
+  enabled: false
+  image: eclipse-mosquitto:latest
+  imagePullPolicy: Always
+  replicas: 1
+  resources: {}
+
 compiler:
   enabled: true
   concurrency: 2

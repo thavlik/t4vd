@@ -9,7 +9,6 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
-	gateway "github.com/thavlik/t4vd/gateway/pkg/api"
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
 
 	"go.uber.org/zap"
@@ -29,7 +28,6 @@ type Server struct {
 	store    store.Store
 	seer     seer.Seer
 	compiler compiler.Compiler
-	gateway  gateway.Gateway
 	log      *zap.Logger
 }
 
@@ -38,7 +36,6 @@ func NewServer(
 	store store.Store,
 	seer seer.Seer,
 	compiler compiler.Compiler,
-	gateway gateway.Gateway,
 	log *zap.Logger,
 ) *Server {
 	return &Server{
@@ -46,7 +43,6 @@ func NewServer(
 		store,
 		seer,
 		compiler,
-		gateway,
 		log,
 	}
 }

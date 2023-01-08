@@ -6,13 +6,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/cognitoidentityprovider"
 	"github.com/pkg/errors"
-	"github.com/thavlik/t4vd/base/pkg/iam"
 )
 
-func (i *cognitoIAM) ListGroupMembers(
+func (i *cognitoIAM) IsUserInGroup(
 	ctx context.Context,
+	userID string,
 	groupID string,
-) (users []*iam.User, err error) {
+) (bool, error) {
 	var nextToken *string
 	for {
 		result, err := i.cognito.ListUsersInGroup(
@@ -23,19 +23,16 @@ func (i *cognitoIAM) ListGroupMembers(
 			},
 		)
 		if err != nil {
-			return nil, errors.Wrap(err, "cognito.ListUsersInGroup")
+			return false, errors.Wrap(err, "cognito.ListUsersInGroup")
 		}
 		for _, user := range result.Users {
-			v := &iam.User{
-				ID:       aws.StringValue(user.Username),
-				Username: aws.StringValue(user.Username),
+			if aws.StringValue(user.Username) == userID {
+				return true, nil
 			}
-			applyUserAttributes(v, user.Attributes)
-			users = append(users, v)
 		}
 		nextToken = result.NextToken
 		if nextToken == nil {
-			return users, nil
+			return false, nil
 		}
 	}
 }

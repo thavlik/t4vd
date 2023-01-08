@@ -130,3 +130,11 @@ An obvious improvement to a kata sequence visualization tool would be the inclus
 **Task:** derive a decision tree from kata sequence analysis and create a turn-based video game where the efficacy of each action is computed from the action's likelihood of success in the real world
 
 **Status:** conceptual phase
+
+## Biomechanical Analysis
+**Task:** given a rich representation of limb motion/orientation, estimate the force vectors utilized by a particular technique.
+
+**Status:** conceptual phase
+
+Possible solutions include generative modeling where the force vectors predict the next frame.
+

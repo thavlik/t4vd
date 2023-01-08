@@ -7,6 +7,10 @@ type Sources interface {
 	GetProject(GetProject) Project
 	GetProjectByName(GetProjectByName) Project
 
+	GetProjectIDsForChannel(GetProjectIDsForChannelRequest) GetProjectIDsForChannelResponse
+	GetProjectIDsForPlaylist(GetProjectIDsForPlaylistRequest) GetProjectIDsForPlaylistResponse
+	GetProjectIDsForVideo(GetProjectIDsForVideoRequest) GetProjectIDsForVideoResponse
+
 	AddChannel(AddChannelRequest) Channel
 	AddPlaylist(AddPlaylistRequest) Playlist
 	AddVideo(AddVideoRequest) Video
@@ -25,6 +29,30 @@ type Sources interface {
 }
 
 type Void struct{}
+
+type GetProjectIDsForChannelRequest struct {
+	ChannelID string `json:"channelID"`
+}
+
+type GetProjectIDsForChannelResponse struct {
+	ProjectIDs []string `json:"projectIDs"`
+}
+
+type GetProjectIDsForPlaylistRequest struct {
+	PlaylistID string `json:"playlistID"`
+}
+
+type GetProjectIDsForPlaylistResponse struct {
+	ProjectIDs []string `json:"projectIDs"`
+}
+
+type GetProjectIDsForVideoRequest struct {
+	VideoID string `json:"videoID"`
+}
+
+type GetProjectIDsForVideoResponse struct {
+	ProjectIDs []string `json:"projectIDs"`
+}
 
 type GetProject struct {
 	ID string `json:"id"`

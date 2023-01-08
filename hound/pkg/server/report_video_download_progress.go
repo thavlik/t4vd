@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 	gateway "github.com/thavlik/t4vd/gateway/pkg/api"
 	"go.uber.org/zap"
 
@@ -12,20 +11,26 @@ import (
 	"github.com/thavlik/t4vd/hound/pkg/api"
 )
 
+type EventWrapper struct {
+	Type    string      `json:"type"`
+	Payload interface{} `json:"payload"`
+}
+
 func (s *Server) ReportVideoDownloadProgress(
 	ctx context.Context,
 	req api.VideoDownloadProgress,
 ) (*api.Void, error) {
 	projectIDs, err := s.GetProjectIDsForVideo(ctx, req.ID)
 	if err != nil {
-		return nil, err
-	}
-	if len(projectIDs) == 0 {
-		s.log.Warn("received download progress event for video that is not included in any project",
-			zap.String("videoID", req.ID))
+		return nil, errors.Wrap(err, "GetProjectIDsForVideo")
+	} else if len(projectIDs) == 0 {
+		// no projects are interested in this video
 		return &api.Void{}, nil
 	}
-	body, err := json.Marshal(&req)
+	body, err := json.Marshal(&EventWrapper{
+		Type:    "video_download_progress",
+		Payload: &req,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -38,20 +43,8 @@ func (s *Server) ReportVideoDownloadProgress(
 	); err != nil {
 		return nil, errors.Wrap(err, "gateway.PushEvent")
 	}
+	s.log.Debug("reported video download progress",
+		zap.String("videoID", req.ID),
+		zap.Strings("projectIDs", projectIDs))
 	return &api.Void{}, nil
-}
-
-func (s *Server) GetProjectIDsForVideo(
-	ctx context.Context,
-	videoID string,
-) ([]string, error) {
-	resp, err := s.compiler.ResolveProjectsForVideo(
-		ctx,
-		compiler.ResolveProjectsForVideoRequest{
-			VideoID: videoID,
-		})
-	if err != nil {
-		return nil, errors.Wrap(err, "compiler.ResolveProjectsForVideo")
-	}
-	return resp.ProjectIDs, nil
 }

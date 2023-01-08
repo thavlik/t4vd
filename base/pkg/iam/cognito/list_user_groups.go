@@ -20,7 +20,7 @@ func (i *cognitoIAM) ListUserGroups(
 		},
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "cognito")
+		return nil, errors.Wrap(err, "cognito.AdminListGroupsForUser")
 	}
 	n := len(result.Groups)
 	groups := make([]*iam.Group, n)

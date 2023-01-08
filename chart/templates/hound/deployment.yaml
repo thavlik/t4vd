@@ -30,6 +30,8 @@ spec:
           - server
           - --compiler-endpoint
           - "http://{{ .Release.Name }}-compiler:80"
+          - --sources-endpoint
+          - "http://{{ .Release.Name }}-sources:80"
           - --gateway-endpoint
           - "http://{{ .Release.Name }}-gateway:80"
         {{- if .Values.prometheus.enabled }}
