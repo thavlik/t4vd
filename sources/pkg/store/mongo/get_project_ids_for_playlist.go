@@ -14,7 +14,8 @@ func (s *mongoStore) GetProjectIDsForPlaylist(
 	cursor, err := s.channels.Find(
 		ctx,
 		map[string]interface{}{
-			"p": playlistID,
+			"p":         playlistID,
+			"blacklist": false,
 		},
 		options.Find().SetProjection(map[string]interface{}{
 			"project": 1,

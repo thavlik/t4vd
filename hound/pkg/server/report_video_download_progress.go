@@ -2,9 +2,8 @@ package server
 
 import (
 	"context"
-	"encoding/json"
+	"time"
 
-	gateway "github.com/thavlik/t4vd/gateway/pkg/api"
 	"go.uber.org/zap"
 
 	"github.com/pkg/errors"
@@ -12,8 +11,8 @@ import (
 )
 
 type EventWrapper struct {
-	Type    string      `json:"type"`
-	Payload interface{} `json:"payload"`
+	Type    string `json:"type"`
+	Payload string `json:"payload"`
 }
 
 func (s *Server) ReportVideoDownloadProgress(
@@ -27,24 +26,21 @@ func (s *Server) ReportVideoDownloadProgress(
 		// no projects are interested in this video
 		return &api.Void{}, nil
 	}
-	body, err := json.Marshal(&EventWrapper{
-		Type:    "video_download_progress",
-		Payload: &req,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if _, err := s.gateway.PushEvent(
-		context.Background(),
-		gateway.Event{
-			ProjectIDs: projectIDs,
-			Payload:    string(body),
-		},
+	if err := s.PushEvent(
+		ctx,
+		"video_download_progress",
+		&req,
+		projectIDs,
 	); err != nil {
-		return nil, errors.Wrap(err, "gateway.PushEvent")
+		return nil, errors.Wrap(err, "PushEvent")
 	}
 	s.log.Debug("reported video download progress",
 		zap.String("videoID", req.ID),
-		zap.Strings("projectIDs", projectIDs))
+		zap.Strings("projectIDs", projectIDs),
+		zap.Int64("total", req.Total),
+		zap.Float64("rate", req.Rate),
+		zap.String("elapsed", time.Duration(req.Elapsed).
+			Round(time.Millisecond).
+			String()))
 	return &api.Void{}, nil
 }

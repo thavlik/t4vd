@@ -14,7 +14,8 @@ func (s *mongoStore) GetProjectIDsForChannel(
 	cursor, err := s.channels.Find(
 		ctx,
 		map[string]interface{}{
-			"c": channelID,
+			"c":         channelID,
+			"blacklist": false,
 		},
 		options.Find().SetProjection(map[string]interface{}{
 			"project": 1,

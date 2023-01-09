@@ -14,7 +14,8 @@ func (s *mongoStore) GetProjectIDsForVideo(
 	cursor, err := s.videos.Find(
 		ctx,
 		map[string]interface{}{
-			"v": videoID,
+			"v":         videoID,
+			"blacklist": false,
 		},
 		options.Find().SetProjection(map[string]interface{}{
 			"project": 1,

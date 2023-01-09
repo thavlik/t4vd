@@ -14,7 +14,7 @@ func (s *postgresStore) GetProjectIDsForVideo(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(
-			"SELECT project FROM %s WHERE v = $1",
+			"SELECT project FROM %s WHERE v = $1 AND blacklist = FALSE",
 			videosTable,
 		),
 		videoID,

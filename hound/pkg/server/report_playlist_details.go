@@ -2,10 +2,8 @@ package server
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/pkg/errors"
-	gateway "github.com/thavlik/t4vd/gateway/pkg/api"
 	"github.com/thavlik/t4vd/hound/pkg/api"
 	"go.uber.org/zap"
 )
@@ -21,21 +19,13 @@ func (s *Server) ReportPlaylistDetails(
 		// no projects use this playlist
 		return &api.Void{}, nil
 	}
-	body, err := json.Marshal(&EventWrapper{
-		Type:    "playlist_details",
-		Payload: &req,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if _, err := s.gateway.PushEvent(
-		context.Background(),
-		gateway.Event{
-			ProjectIDs: projectIDs,
-			Payload:    string(body),
-		},
+	if err := s.PushEvent(
+		ctx,
+		"playlist_details",
+		&req,
+		projectIDs,
 	); err != nil {
-		return nil, errors.Wrap(err, "gateway.PushEvent")
+		return nil, errors.Wrap(err, "PushEvent")
 	}
 	s.log.Debug("reported playlist details",
 		zap.String("playlistID", req.ID),

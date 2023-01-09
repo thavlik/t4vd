@@ -14,7 +14,7 @@ func (s *postgresStore) GetProjectIDsForChannel(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(
-			"SELECT project FROM %s WHERE c = $1",
+			"SELECT project FROM %s WHERE c = $1 AND blacklist = FALSE",
 			channelsTable,
 		),
 		channelID,
