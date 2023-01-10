@@ -15,7 +15,7 @@ func (i *keyCloakIAM) DeleteUser(username string) error {
 	if err != nil {
 		return err
 	}
-	userID, err := i.resolve(context.Background(), username)
+	userID, err := i.resolveUser(context.Background(), username)
 	if err != nil {
 		return err
 	}

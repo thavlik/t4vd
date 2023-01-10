@@ -1,7 +1,6 @@
 package postgres
 
 import (
-	"database/sql"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -11,41 +10,56 @@ import (
 func (s *postgresStore) CreateProject(
 	project *api.Project,
 ) error {
-	row := s.db.QueryRow(
-		fmt.Sprintf(
-			"SELECT creator FROM %s WHERE id = $1",
-			projectsTable,
-		),
-		project.ID,
-	)
-	var currentCreatorID string
-	if err := row.Scan(&currentCreatorID); err == nil {
-		if currentCreatorID != project.CreatorID {
-			return errors.New("only the project creator can change the name")
-		}
-	} else if err != sql.ErrNoRows {
-		return errors.Wrap(err, "postgres select")
+	tx, err := s.db.Begin()
+	if err != nil {
+		return errors.Wrap(err, "postgres tx begin")
 	}
-	if _, err := s.db.Exec(
+	if _, err := tx.Exec(
 		fmt.Sprintf(`
 			INSERT INTO %s (
 				id,
 				name,
 				creator,
-				groupid
+				groupid,
+				desc
 			)
-			VALUES ($1, $2, $3, $4)
+			VALUES ($1, $2, $3, $4, $5)
 			ON CONFLICT (id)
 			DO UPDATE
-			SET (name, groupid) = (EXCLUDED.name, EXCLUDED.groupid)`,
+			SET (name, groupid) = (EXCLUDED.name, EXCLUDED.groupid, EXCLUDED.desc)`,
 			projectsTable,
 		),
 		project.ID,
 		project.Name,
 		project.CreatorID,
 		project.GroupID,
+		project.Description,
 	); err != nil {
 		return errors.Wrap(err, "postgres insert")
+	}
+	if _, err := tx.Exec(
+		fmt.Sprintf("DELETE FROM %s WHERE p = $1", projectTagsTable),
+		project.ID,
+	); err != nil {
+		return errors.Wrap(err, "postgres delete")
+	}
+	for _, tag := range project.Tags {
+		if _, err := tx.Exec(
+			fmt.Sprintf(`
+				INSERT INTO %s (id, p, t)
+				VALUES ($1, $2, $3)
+				ON CONFLICT DO NOTHING`,
+				projectTagsTable,
+			),
+			fmt.Sprintf("%s-%s", project.ID, tag),
+			project.ID,
+			tag,
+		); err != nil {
+			return errors.Wrap(err, "postgres tx insert")
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return errors.Wrap(err, "postgres commit tx")
 	}
 	return nil
 }

@@ -292,7 +292,7 @@ Future<void> showTagsContextMenu(
               Text(
                 "Skip",
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.button!.color,
+                  color: Theme.of(context).textTheme.labelLarge!.color,
                 ),
               ),
             ],
@@ -310,7 +310,7 @@ Future<void> showTagsContextMenu(
               Text(
                 "View on YouTube",
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.button!.color,
+                  color: Theme.of(context).textTheme.labelLarge!.color,
                 ),
               ),
             ],
@@ -328,7 +328,7 @@ Future<void> showTagsContextMenu(
               Text(
                 "Discard Frame",
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.button!.color,
+                  color: Theme.of(context).textTheme.labelLarge!.color,
                 ),
               ),
             ],

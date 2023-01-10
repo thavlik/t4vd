@@ -52,7 +52,7 @@ class _SelectProjectPageState extends State<SelectProjectPage> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       if (!mounted) return;
       final model = ScopedModel.of<BJJModel>(context);
-      await model.refreshProjects(context);
+      await model.refreshProjects(Navigator.of(context));
       if (!mounted) return;
       setState(() => _loading = false);
     });
@@ -63,7 +63,7 @@ class _SelectProjectPageState extends State<SelectProjectPage> {
     Project p,
   ) async {
     await ScopedModel.of<BJJModel>(context).selectProject(
-      context,
+      Navigator.of(context),
       p.id,
     );
     if (!mounted) return;
@@ -118,7 +118,7 @@ class _SelectProjectPageState extends State<SelectProjectPage> {
                     Padding(
                       padding: const EdgeInsets.all(4.0),
                       child: Material(
-                        color: Theme.of(context).backgroundColor,
+                        color: Theme.of(context).colorScheme.background,
                         child: InkWell(
                           key: const Key('createNewProject'),
                           onTap: () => onCreateProject(context),
@@ -214,7 +214,7 @@ class ProjectListItem extends StatelessWidget {
           child: Container(
             height: 64,
             decoration: BoxDecoration(
-              color: Theme.of(context).backgroundColor.withAlpha(64),
+              color: Theme.of(context).colorScheme.background.withAlpha(64),
               border: Border.all(
                 width: 1.0,
                 color: Theme.of(context).dividerColor,

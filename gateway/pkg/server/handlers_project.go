@@ -50,6 +50,7 @@ func (s *Server) handleDeleteProject() http.HandlerFunc {
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
+			// TODO: fix RBAC
 			resp, err := s.sources.DeleteProject(context.Background(), req)
 			if err != nil {
 				return errors.Wrap(err, "sources")
@@ -67,16 +68,19 @@ func (s *Server) handleGetProject() http.HandlerFunc {
 		http.MethodGet,
 		iam.NullPermissions,
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
-			id := r.URL.Query().Get("p")
-			if id == "" {
+			projectID := r.URL.Query().Get("p")
+			if projectID == "" {
 				w.WriteHeader(http.StatusBadRequest)
 				return nil
 			}
-			// TODO: ensure user has access to project
+			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
 			project, err := s.sources.GetProject(
 				r.Context(),
 				sources.GetProject{
-					ID: id,
+					ID: projectID,
 				})
 			if err != nil {
 				if strings.Contains(err.Error(), store.ErrProjectNotFound.Error()) {
@@ -161,13 +165,18 @@ func (s *Server) handleProjectAddCollaborator() http.HandlerFunc {
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
+			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
 			project, err := s.sources.GetProject(
 				context.Background(),
 				sources.GetProject{ID: req.ProjectID})
 			if err != nil {
 				return errors.Wrap(err, "sources.GetProject")
 			}
-			// TODO: make sure user has permission to add collaborator
+			// TODO: make sure user has additional permissions to add collaborator
+			// admin permissions?
 			if err := s.iam.AddUserToGroup(
 				userID,
 				project.GroupID,
@@ -190,6 +199,10 @@ func (s *Server) handleProjectRemoveCollaborator() http.HandlerFunc {
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
+			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
 			project, err := s.sources.GetProject(
 				context.Background(),
 				sources.GetProject{ID: req.ProjectID})
@@ -197,6 +210,7 @@ func (s *Server) handleProjectRemoveCollaborator() http.HandlerFunc {
 				return errors.Wrap(err, "sources.GetProject")
 			}
 			// TODO: make sure user has permission to remove collaborator
+			// admin permissions?
 			if err := s.iam.RemoveUserFromGroup(
 				userID,
 				project.GroupID,

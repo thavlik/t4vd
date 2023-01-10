@@ -13,7 +13,7 @@ class PlaylistDetailsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           "Playlist Details",
-          style: Theme.of(context).textTheme.headline6,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         actions: [
           IconButton(
@@ -48,7 +48,7 @@ class PlaylistDetailsPage extends StatelessWidget {
         children: [
           Text(
             name,
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(width: 16),
           Text(

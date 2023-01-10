@@ -9,10 +9,11 @@ import (
 )
 
 var (
-	channelsTable  = "srcchannels"
-	playlistsTable = "srcplaylists"
-	videosTable    = "srcvideos"
-	projectsTable  = "srcprojects"
+	channelsTable    = "srcchannels"
+	playlistsTable   = "srcplaylists"
+	videosTable      = "srcvideos"
+	projectsTable    = "srcprojects"
+	projectTagsTable = "srcprojtags"
 )
 
 type postgresStore struct {
@@ -42,7 +43,12 @@ func NewPostgresStore(db *sql.DB) store.Store {
 		id TEXT PRIMARY KEY,
 		name TEXT NOT NULL,
 		groupid TEXT NOT NULL,
-		creator TEXT NOT NULL`)
+		creator TEXT NOT NULL,
+		desc TEXT NOT NULL`)
+	table(db, projectTagsTable, `
+		id TEXT PRIMARY KEY,
+		p TEXT NOT NULL,
+		t TEXT NOT NULL`)
 	return &postgresStore{db}
 }
 

@@ -79,8 +79,9 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
     if (await nameTaken() != false) {
       return;
     }
+    if (!mounted) return;
     await ScopedModel.of<BJJModel>(context).createProject(
-      context: context,
+      nav: Navigator.of(context),
       name: _nameController.text,
     );
     if (!mounted) return;
@@ -147,7 +148,7 @@ class _CreateProjectPageState extends State<CreateProjectPage> {
               Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: Material(
-                  color: Theme.of(context).backgroundColor,
+                  color: Theme.of(context).colorScheme.background,
                   child: InkWell(
                     key: const Key('createProjectSubmit'),
                     onTap: isNameValid ? () => submit(context) : null,

@@ -16,7 +16,7 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(text, style: Theme.of(context).textTheme.headline5);
+    return Text(text, style: Theme.of(context).textTheme.headlineSmall);
   }
 }
 
@@ -175,7 +175,7 @@ class InputPage extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   name,
-                  style: Theme.of(context).textTheme.headline4,
+                  style: Theme.of(context).textTheme.headlineMedium,
                 ),
               ),
               const Padding(

@@ -102,7 +102,7 @@ class _FilterPageState extends State<FilterPage> {
     final model = ScopedModel.of<BJJModel>(context);
     if (model.markers.isEmpty) {
       loading = true;
-      model.refreshMarkers(context).then((value) {
+      model.refreshMarkers(Navigator.of(context)).then((value) {
         if (!mounted) return;
         setState(() => loading = false);
       });

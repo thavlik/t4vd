@@ -87,7 +87,7 @@ class InputPlaylistListItem extends StatelessWidget {
                       children: [
                         Text(
                           model.info?.title ?? model.id,
-                          style: Theme.of(context).textTheme.headline6,
+                          style: Theme.of(context).textTheme.titleLarge,
                           overflow: TextOverflow.ellipsis,
                         ),
                         //Text(
@@ -165,13 +165,13 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
   void initState() {
     super.initState();
     ScopedModel.of<BJJModel>(context)
-        .refreshPlaylists(context)
+        .refreshPlaylists(Navigator.of(context))
         .then((value) => setState(() => loading = false));
   }
 
   void addPlaylist(BuildContext context, String input, bool blacklist) async {
     await ScopedModel.of<BJJModel>(context).addPlaylist(
-      context: context,
+      nav: Navigator.of(context),
       input: input,
       blacklist: blacklist,
     );
@@ -179,7 +179,7 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
 
   void deletePlaylist(BuildContext context, String id, bool blacklist) async {
     await ScopedModel.of<BJJModel>(context).removePlaylist(
-      context: context,
+      nav: Navigator.of(context),
       id: id,
       blacklist: blacklist,
     );
@@ -198,7 +198,7 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(
                     "Cancel",
-                    style: Theme.of(context).textTheme.button,
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
                 TextButton(
@@ -215,13 +215,13 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
                   },
                   child: Text(
                     "Confirm",
-                    style: Theme.of(context).textTheme.button,
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
               ],
               title: Text(
                 "Add Playlist",
-                style: Theme.of(context).textTheme.headline6,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               content: SizedBox(
                 height: 110,
@@ -271,7 +271,7 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
       appBar: AppBar(
         title: Text(
           "Input Playlists",
-          style: Theme.of(context).textTheme.headline6,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         leading: IconButton(
           key: const Key('playlistsNavBack'),
@@ -329,7 +329,7 @@ class InputPlaylistsPageState extends State<InputPlaylistsPage> {
                           padding: const EdgeInsets.all(16.0),
                           child: Text(
                             "Blacklisted Playlists",
-                            style: Theme.of(context).textTheme.headline6,
+                            style: Theme.of(context).textTheme.titleLarge,
                           ),
                         ),
                       ),

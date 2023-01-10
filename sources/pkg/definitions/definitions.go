@@ -77,10 +77,12 @@ type Collaborator struct {
 }
 
 type Project struct {
-	ID        string `json:"id"`
-	Name      string `json:"name"`
-	CreatorID string `json:"creatorID"`
-	GroupID   string `json:"groupID"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	CreatorID   string   `json:"creatorID"`
+	GroupID     string   `json:"groupID"`
+	Description string   `json:"description,omitempty"`
+	Tags        []string `json:"tags,omitempty"`
 }
 
 type DeleteProject struct {

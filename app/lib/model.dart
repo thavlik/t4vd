@@ -1,8 +1,10 @@
+import 'dart:convert';
+
+import 'package:web_socket_channel/io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'api.dart' as api;
-import 'package:sse_channel/sse_channel.dart';
 
 // https://img.youtube.com/vi/e5YuPpbzBdo/maxresdefault.jpg
 
@@ -82,15 +84,6 @@ final List<api.Project> exampleProjects = [
     name: 'Quake Vision',
   )
 ];
-
-Future<void> testSSE() async {
-  final channel =
-      SseChannel.connect(Uri.parse('http://127.0.0.1:8080/sseHandler'));
-
-  channel.stream.listen((message) {
-    print(message);
-  });
-}
 
 class UserCredentials {
   final String id;
@@ -194,11 +187,11 @@ class BJJModel extends Model {
   }
 
   Future<void> addCollaborator(
-    BuildContext context,
+    NavigatorState nav,
     api.SearchUser user,
   ) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       await api.addCollaborator(
         creds: _creds!,
         userId: user.id,
@@ -213,11 +206,11 @@ class BJJModel extends Model {
   }
 
   Future<void> removeCollaborator(
-    BuildContext context,
+    NavigatorState nav,
     String userId,
   ) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       await api.removeCollaborator(
         creds: _creds!,
         userId: userId,
@@ -229,15 +222,15 @@ class BJJModel extends Model {
   }
 
   Future<List<api.SearchUser>> searchUsers(
-          BuildContext context, String prefix) async =>
-      await withAuth(context,
+          NavigatorState nav, String prefix) async =>
+      await withAuth(nav,
           () async => await api.searchUsers(creds: _creds!, prefix: prefix));
 
   Future<void> createProject({
-    required BuildContext context,
+    required NavigatorState nav,
     required String name,
   }) async {
-    await withAuth(context, () async {
+    await withAuth(nav, () async {
       final project = await api.createProject(
         creds: _creds!,
         name: name,
@@ -310,6 +303,7 @@ class BJJModel extends Model {
   }
 
   Future<void> signOut() async {
+    _channel?.sink.close();
     final c = clearCachedLogin();
     _project = null;
     if (!isLoggedIn) {
@@ -325,6 +319,26 @@ class BJJModel extends Model {
     notifyListeners();
   }
 
+  IOWebSocketChannel? _channel;
+
+  Future<void> connectWebSock() async {
+    if (!isLoggedIn) throw ErrorSummary('not logged in');
+    _channel?.sink.close();
+    _channel = api.connectWebSock(_creds!);
+    _channel!.stream.handleError((obj, stackTrace) {
+      // reconnect if we're still logged in
+      print('websock error: $obj');
+      print(stackTrace);
+      if (_creds == null) return;
+      connectWebSock();
+    });
+    _channel!.stream.listen((message) => handleWebSockMessage(message));
+  }
+
+  void handleWebSockMessage(String message) {
+    print(message);
+  }
+
   void precacheFrames(BuildContext context) {
     try {
       for (var marker in _markers.sublist(_markerIndex)) {
@@ -338,54 +352,59 @@ class BJJModel extends Model {
     }
   }
 
-  Future<bool> ensureCreds(BuildContext context, [mounted = true]) async {
+  Future<bool> ensureCreds(NavigatorState nav) async {
     if (isLoggedIn) return true;
     await readCachedCreds();
     if (isLoggedIn) return true;
-    if (!mounted) return false;
-    Navigator.of(context).pushNamed('/splash');
+    nav.pushNamed('/splash');
     return false;
   }
 
-  Future<dynamic> withAuth(BuildContext context, Future<dynamic> Function() f,
-      [mounted = true]) async {
-    if (!await ensureCreds(context)) {
-      await Navigator.of(context).pushNamed('/splash');
+  Future<dynamic> withAuth(
+    NavigatorState nav,
+    Future<dynamic> Function() f,
+  ) async {
+    if (!await ensureCreds(nav)) {
+      await nav.pushNamed('/splash');
       if (!isLoggedIn) throw UnimplementedError('re-login failed');
     }
     try {
       return await f();
     } on api.InvalidCredentialsError {
-      if (!mounted) return;
-      await Navigator.of(context).pushNamed('/splash');
+      await nav.pushNamed('/splash');
       return await f(); // try a second time without catching
     }
   }
 
-  Future<void> refreshProjects(BuildContext context) async {
-    await withAuth(context, () async {
+  Future<void> refreshProjects(NavigatorState nav) async {
+    await withAuth(nav, () async {
       _projects = await api.listProjects(creds: _creds!);
       notifyListeners();
     });
   }
 
   Future<void> selectProject(
-    BuildContext context,
+    NavigatorState nav,
     String projectId,
   ) async {
-    await withAuth(context, () async {
+    await withAuth(nav, () async {
       _project = await api.getProject(creds: _creds!, projectId: projectId);
       await const FlutterSecureStorage().write(
         key: credStorageProjectId,
         value: _project!.id,
       );
+      _channel!.sink.add(jsonEncode({
+        'type': 'subscribe',
+        'projectID': _project!.id,
+        'unsubscribeAll': true,
+      }));
       notifyListeners();
     });
   }
 
-  Future<void> refreshDataset(BuildContext context) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+  Future<void> refreshDataset(NavigatorState nav) async {
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       _dataset = await api.getDataset(
         projectId: _project!.id,
         creds: _creds!,
@@ -412,20 +431,16 @@ class BJJModel extends Model {
     }
   }
 
-  Future<void> ensureProject(
-    BuildContext context, {
-    mounted = true,
-  }) async {
+  Future<void> ensureProject(NavigatorState nav) async {
     if (hasProject) return;
     await loadCachedProject();
     if (hasProject) return;
-    if (!mounted) return;
-    await Navigator.of(context).pushNamed('/splash');
+    await nav.pushNamed('/splash');
   }
 
-  Future<void> refreshMarkers(BuildContext context) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+  Future<void> refreshMarkers(NavigatorState nav) async {
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       _markers = [
         await api.getRandomMarker(
           projectId: _project!.id,
@@ -438,11 +453,11 @@ class BJJModel extends Model {
   }
 
   Future<void> classify({
-    required BuildContext context,
+    required NavigatorState nav,
     required bool label,
   }) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       final cur = _markers[_markerIndex];
       await api.classifyMarker(
         projectId: _project!.id,
@@ -470,12 +485,12 @@ class BJJModel extends Model {
   }
 
   Future<void> addChannel({
-    required BuildContext context,
+    required NavigatorState nav,
     required String input,
     required bool blacklist,
   }) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       var item = await api.addChannel(
         projectId: _project!.id,
         creds: _creds!,
@@ -490,12 +505,12 @@ class BJJModel extends Model {
   }
 
   Future<void> addPlaylist({
-    required BuildContext context,
+    required NavigatorState nav,
     required String input,
     required bool blacklist,
   }) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       var item = await api.addPlaylist(
         projectId: _project!.id,
         creds: _creds!,
@@ -510,12 +525,12 @@ class BJJModel extends Model {
   }
 
   Future<void> addVideo({
-    required BuildContext context,
+    required NavigatorState nav,
     required String input,
     required bool blacklist,
   }) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       var item = await api.addVideo(
         projectId: _project!.id,
         creds: _creds!,
@@ -529,9 +544,9 @@ class BJJModel extends Model {
     });
   }
 
-  Future<void> refreshChannels(BuildContext context) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+  Future<void> refreshChannels(NavigatorState nav) async {
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       _channels = await api.listChannels(
         projectId: _project!.id,
         creds: _creds!,
@@ -540,9 +555,9 @@ class BJJModel extends Model {
     });
   }
 
-  Future<void> refreshPlaylists(BuildContext context) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+  Future<void> refreshPlaylists(NavigatorState nav) async {
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       _playlists = await api.listPlaylists(
         projectId: _project!.id,
         creds: _creds!,
@@ -551,9 +566,9 @@ class BJJModel extends Model {
     });
   }
 
-  Future<void> refreshVideos(BuildContext context) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+  Future<void> refreshVideos(NavigatorState nav) async {
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       _videos = await api.listVideos(
         projectId: _project!.id,
         creds: _creds!,
@@ -563,12 +578,12 @@ class BJJModel extends Model {
   }
 
   Future<void> removeChannel({
-    required BuildContext context,
+    required NavigatorState nav,
     required String id,
     required bool blacklist,
   }) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       await api.removeChannel(
         projectId: _project!.id,
         creds: _creds!,
@@ -581,12 +596,12 @@ class BJJModel extends Model {
   }
 
   Future<void> removePlaylist({
-    required BuildContext context,
+    required NavigatorState nav,
     required String id,
     required bool blacklist,
   }) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       await api.removePlaylist(
         projectId: _project!.id,
         creds: _creds!,
@@ -599,12 +614,12 @@ class BJJModel extends Model {
   }
 
   Future<void> removeVideo({
-    required BuildContext context,
+    required NavigatorState nav,
     required String id,
     required bool blacklist,
   }) async {
-    await withAuth(context, () async {
-      await ensureProject(context);
+    await withAuth(nav, () async {
+      await ensureProject(nav);
       await api.removeVideo(
         projectId: _project!.id,
         id: id,

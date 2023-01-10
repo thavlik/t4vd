@@ -24,18 +24,19 @@ class _ManageCollaboratorsPageState extends State<ManageCollaboratorsPage> {
       final model = ScopedModel.of<BJJModel>(context);
       await model.readCachedCreds();
       if (!mounted) return;
-      await model.ensureProject(context);
+      await model.ensureProject(Navigator.of(context));
       if (!mounted) return;
       setState(() => _loading = false);
     });
   }
 
   void addCollaborator(BuildContext context, SearchUser user) async =>
-      await ScopedModel.of<BJJModel>(context).addCollaborator(context, user);
+      await ScopedModel.of<BJJModel>(context)
+          .addCollaborator(Navigator.of(context), user);
 
   void removeCollaborator(BuildContext context, SearchUser user) async =>
       await ScopedModel.of<BJJModel>(context)
-          .removeCollaborator(context, user.id);
+          .removeCollaborator(Navigator.of(context), user.id);
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +89,8 @@ class _ManageCollaboratorsPageState extends State<ManageCollaboratorsPage> {
                                             ? <SearchUser>[]
                                             : await ScopedModel.of<BJJModel>(
                                                     context)
-                                                .searchUsers(context,
+                                                .searchUsers(
+                                                    Navigator.of(context),
                                                     textEditingValue.text),
                               ),
                             ),
@@ -169,7 +171,7 @@ class CollaboratorListItem extends StatelessWidget {
         child: Container(
           height: 64,
           decoration: BoxDecoration(
-            color: Theme.of(context).backgroundColor.withAlpha(64),
+            color: Theme.of(context).colorScheme.background.withAlpha(64),
             border: Border.all(
               width: 1.0,
               color: Theme.of(context).dividerColor,

@@ -42,8 +42,8 @@ dependencies:
   scoped_model: 2.0.0
   http: 0.13.5
   flutter_secure_storage: ^7.0.1
-  sse_channel: ^0.0.3
-  
+  web_socket_channel: ^2.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -22,6 +22,10 @@ func (s *Server) handleAddVideo() http.HandlerFunc {
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
+			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
 			req.SubmitterID = userID
 			resp, err := s.sources.AddVideo(context.Background(), req)
 			if err != nil {
@@ -48,6 +52,10 @@ func (s *Server) handleRemoveVideo() http.HandlerFunc {
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
+			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
 			resp, err := s.sources.RemoveVideo(context.Background(), req)
 			if err != nil {
 				return errors.Wrap(err, "sources")
@@ -68,6 +76,10 @@ func (s *Server) handleListVideos() http.HandlerFunc {
 			projectID := r.URL.Query().Get("p")
 			if projectID == "" {
 				w.WriteHeader(http.StatusBadRequest)
+				return nil
+			}
+			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
 			resp, err := s.sources.ListVideos(r.Context(), sources.ListVideosRequest{

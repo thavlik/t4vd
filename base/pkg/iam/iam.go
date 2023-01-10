@@ -51,4 +51,5 @@ type IAM interface {
 	ListUserGroups(ctx context.Context, userID string) ([]*Group, error)
 	ListGroupMembers(ctx context.Context, groupID string) ([]*User, error)
 	IsUserInGroup(ctx context.Context, userID string, groupID string) (bool, error)
+	ResolveGroup(ctx context.Context, groupName string) (groupID string, err error)
 }

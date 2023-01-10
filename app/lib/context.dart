@@ -26,7 +26,7 @@ Future<void> showVideoContextMenu(
               Text(
                 "View on YouTube",
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.button!.color,
+                  color: Theme.of(context).textTheme.labelLarge!.color,
                 ),
               ),
             ],
@@ -44,7 +44,7 @@ Future<void> showVideoContextMenu(
               Text(
                 "Blacklist Video",
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.button!.color,
+                  color: Theme.of(context).textTheme.labelLarge!.color,
                 ),
               ),
             ],
@@ -95,7 +95,7 @@ Future<void> showChannelContextMenu(
               Text(
                 "View on YouTube",
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.button!.color,
+                  color: Theme.of(context).textTheme.labelLarge!.color,
                 ),
               ),
             ],
@@ -113,7 +113,7 @@ Future<void> showChannelContextMenu(
               Text(
                 "Blacklist Video",
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.button!.color,
+                  color: Theme.of(context).textTheme.labelLarge!.color,
                 ),
               ),
             ],
@@ -164,7 +164,7 @@ Future<void> showPlaylistContextMenu(
               Text(
                 "View on YouTube",
                 style: TextStyle(
-                  color: Theme.of(context).textTheme.button!.color,
+                  color: Theme.of(context).textTheme.labelLarge!.color,
                 ),
               ),
             ],
@@ -184,7 +184,7 @@ Future<void> showPlaylistContextMenu(
                       Text(
                         "Blacklist Video",
                         style: TextStyle(
-                          color: Theme.of(context).textTheme.button!.color,
+                          color: Theme.of(context).textTheme.labelLarge!.color,
                         ),
                       ),
                     ],

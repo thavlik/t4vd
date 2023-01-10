@@ -22,6 +22,10 @@ func (s *Server) handleAddChannel() http.HandlerFunc {
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
+			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
 			req.SubmitterID = userID
 			resp, err := s.sources.AddChannel(context.Background(), req)
 			if err != nil {
@@ -52,6 +56,10 @@ func (s *Server) handleRemoveChannel() http.HandlerFunc {
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
+			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
 			resp, err := s.sources.RemoveChannel(context.Background(), req)
 			if err != nil {
 				return errors.Wrap(err, "sources")
@@ -72,6 +80,10 @@ func (s *Server) handleListChannels() http.HandlerFunc {
 			projectID := r.URL.Query().Get("p")
 			if projectID == "" {
 				w.WriteHeader(http.StatusBadRequest)
+				return nil
+			}
+			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
 			resp, err := s.sources.ListChannels(r.Context(), sources.ListChannelsRequest{

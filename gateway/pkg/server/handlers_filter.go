@@ -22,6 +22,10 @@ func (s *Server) handleGetFilterStack() http.HandlerFunc {
 				w.WriteHeader(http.StatusBadRequest)
 				return nil
 			}
+			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
 			var size int64 = 5
 			if s := r.URL.Query().Get("s"); s != "" {
 				var err error
@@ -60,6 +64,10 @@ func (s *Server) handleFilterClassify() http.HandlerFunc {
 			var req filter.Classify
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
+			}
+			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
 			}
 			resp, err := s.filter.Classify(context.Background(), req)
 			if err != nil {

@@ -32,16 +32,15 @@ func (s *Server) PushEvent(
 
 func (s *Server) getSubscriptions(projectIDs []string) (subs []*Subscription) {
 	s.subsL.Lock()
-	for sub := range s.subs {
-		for _, projectID := range projectIDs {
-			if sub.projectID == projectID {
-				subs = append(subs, sub)
-				break
-			}
+	defer s.subsL.Unlock()
+	for _, projectID := range projectIDs {
+		projectSubs, ok := s.subs[projectID]
+		if !ok {
+			continue
 		}
+		subs = append(subs, projectSubs...)
 	}
-	s.subsL.Unlock()
-	return
+	return subs
 }
 
 func (s *Server) pushEventLocal(req api.Event) error {

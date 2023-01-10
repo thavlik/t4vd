@@ -21,6 +21,10 @@ func (s *Server) handleGetDataset() http.HandlerFunc {
 				w.WriteHeader(http.StatusBadRequest)
 				return nil
 			}
+			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
+				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
 			resp, err := s.compiler.GetDataset(r.Context(), compiler.GetDatasetRequest{
 				ProjectID: projectID,
 			})

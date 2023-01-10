@@ -8,7 +8,7 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/iam"
 )
 
-func (i *keyCloakIAM) resolve(
+func (i *keyCloakIAM) resolveUser(
 	ctx context.Context,
 	username string,
 ) (userID string, err error) {
@@ -20,7 +20,11 @@ func (i *keyCloakIAM) resolve(
 		ctx,
 		accessToken,
 		i.kc.Realm,
-		gocloak.GetUsersParams{},
+		gocloak.GetUsersParams{
+			First:    gocloak.IntP(1),
+			Max:      gocloak.IntP(1),
+			Username: gocloak.StringP(username),
+		},
 	)
 	if err != nil {
 		return "", errors.Wrap(err, "keycloak")

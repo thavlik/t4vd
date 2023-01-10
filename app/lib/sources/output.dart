@@ -18,7 +18,7 @@ class _OutputPageState extends State<OutputPage> {
   void initState() {
     super.initState();
     ScopedModel.of<BJJModel>(context)
-        .refreshDataset(context)
+        .refreshDataset(Navigator.of(context))
         .then((value) => setState(() => loading = false));
   }
 

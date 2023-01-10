@@ -13,7 +13,7 @@ class VideoDetailsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           "Video Details",
-          style: Theme.of(context).textTheme.headline6,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         actions: [
           IconButton(
@@ -52,7 +52,7 @@ class VideoDetailsPage extends StatelessWidget {
         children: [
           Text(
             name,
-            style: Theme.of(context).textTheme.headline6,
+            style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(width: 16),
           Text(

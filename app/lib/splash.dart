@@ -100,7 +100,7 @@ class _SplashPageState extends State<SplashPage> {
                 padding: const EdgeInsets.all(16.0),
                 child: Text(
                   _message,
-                  style: Theme.of(context).textTheme.headline5,
+                  style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ),
             ],

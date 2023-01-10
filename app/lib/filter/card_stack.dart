@@ -31,7 +31,7 @@ class _CardStackState extends State<CardStack> {
       if (model.markers.isEmpty || model.markerIndex == model.markers.length) {
         setState(() => _loading = true);
         try {
-          await model.refreshMarkers(context);
+          await model.refreshMarkers(Navigator.of(context));
         } on InvalidCredentialsError catch (_) {
           Navigator.of(context).pushNamed('/splash');
         } finally {
@@ -46,7 +46,7 @@ class _CardStackState extends State<CardStack> {
   void submitLabel(BuildContext context, bool label) async {
     final model = ScopedModel.of<BJJModel>(context);
     await model.classify(
-      context: context,
+      nav: Navigator.of(context),
       label: label,
     );
     if (!mounted) return;

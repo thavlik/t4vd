@@ -76,7 +76,7 @@ class InputChannelListItem extends StatelessWidget {
                       children: [
                         Text(
                           model.info?.name ?? model.id,
-                          style: Theme.of(context).textTheme.headline6,
+                          style: Theme.of(context).textTheme.titleLarge,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
@@ -153,7 +153,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
   void initState() {
     super.initState();
     ScopedModel.of<BJJModel>(context)
-        .refreshChannels(context)
+        .refreshChannels(Navigator.of(context))
         .then((value) => setState(() {
               loading = false;
             }));
@@ -161,7 +161,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
 
   void addChannel(BuildContext context, String input, bool blacklist) async {
     await ScopedModel.of<BJJModel>(context).addChannel(
-      context: context,
+      nav: Navigator.of(context),
       input: input,
       blacklist: blacklist,
     );
@@ -169,7 +169,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
 
   void deleteChannel(BuildContext context, String id, bool blacklist) async {
     await ScopedModel.of<BJJModel>(context).removeChannel(
-      context: context,
+      nav: Navigator.of(context),
       id: id,
       blacklist: blacklist,
     );
@@ -188,7 +188,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(
                     "Cancel",
-                    style: Theme.of(context).textTheme.button,
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
                 TextButton(
@@ -205,13 +205,13 @@ class InputChannelsPageState extends State<InputChannelsPage> {
                   },
                   child: Text(
                     "Confirm",
-                    style: Theme.of(context).textTheme.button,
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
               ],
               title: Text(
                 "Add Channel",
-                style: Theme.of(context).textTheme.headline6,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               content: SizedBox(
                 height: 110,
@@ -261,7 +261,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
       appBar: AppBar(
         title: Text(
           "Input Channels",
-          style: Theme.of(context).textTheme.headline6,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         leading: IconButton(
           key: const Key('channelsNavBack'),
@@ -317,7 +317,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
                       "Blacklisted Channels",
-                      style: Theme.of(context).textTheme.headline6,
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
                 ),

@@ -87,15 +87,17 @@ class PendingVideoListItem extends StatelessWidget {
                     children: [
                       Text(
                         title ?? id,
-                        style: Theme.of(context).textTheme.headline6,
+                        style: Theme.of(context).textTheme.titleLarge,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
-                          Text(message,
-                              style: Theme.of(context).textTheme.caption),
+                          Text(
+                            message,
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                         ],
                       ),
                     ],
@@ -205,7 +207,7 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
                       children: [
                         Text(
                           model.info?.title ?? model.id,
-                          style: Theme.of(context).textTheme.headline6,
+                          style: Theme.of(context).textTheme.titleLarge,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
@@ -283,7 +285,7 @@ class InputVideosPageState extends State<InputVideosPage> {
   void initState() {
     super.initState();
     ScopedModel.of<BJJModel>(context)
-        .refreshVideos(context)
+        .refreshVideos(Navigator.of(context))
         .then((value) => setState(() {
               loading = false;
             }));
@@ -295,7 +297,7 @@ class InputVideosPageState extends State<InputVideosPage> {
     bool blacklist,
   ) async {
     await ScopedModel.of<BJJModel>(context).addVideo(
-      context: context,
+      nav: Navigator.of(context),
       input: value,
       blacklist: blacklist,
     );
@@ -303,7 +305,7 @@ class InputVideosPageState extends State<InputVideosPage> {
 
   void deleteVideo(BuildContext context, String id, bool blacklist) async {
     await ScopedModel.of<BJJModel>(context).removeVideo(
-      context: context,
+      nav: Navigator.of(context),
       id: id,
       blacklist: blacklist,
     );
@@ -322,7 +324,7 @@ class InputVideosPageState extends State<InputVideosPage> {
                   onPressed: () => Navigator.of(context).pop(),
                   child: Text(
                     "Cancel",
-                    style: Theme.of(context).textTheme.button,
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
                 TextButton(
@@ -339,13 +341,13 @@ class InputVideosPageState extends State<InputVideosPage> {
                   },
                   child: Text(
                     "Confirm",
-                    style: Theme.of(context).textTheme.button,
+                    style: Theme.of(context).textTheme.labelLarge,
                   ),
                 ),
               ],
               title: Text(
                 "Add Video",
-                style: Theme.of(context).textTheme.headline6,
+                style: Theme.of(context).textTheme.titleLarge,
               ),
               content: SizedBox(
                 height: 110,
@@ -392,7 +394,7 @@ class InputVideosPageState extends State<InputVideosPage> {
       appBar: AppBar(
         title: Text(
           "Input Videos",
-          style: Theme.of(context).textTheme.headline6,
+          style: Theme.of(context).textTheme.titleLarge,
         ),
         leading: IconButton(
           key: const Key('videosNavBack'),
@@ -470,7 +472,7 @@ class InputVideosPageState extends State<InputVideosPage> {
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
                       "Blacklisted Videos",
-                      style: Theme.of(context).textTheme.headline6,
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
                 ),

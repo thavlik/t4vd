@@ -62,6 +62,7 @@ class _SignUpPageState extends State<SignUpPage> {
     if (await emailTaken() != false) {
       return;
     }
+    if (!mounted) return;
     await ScopedModel.of<BJJModel>(context).register(
       username: _usernameController.text,
       email: _emailController.text,
@@ -258,7 +259,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             padding: const EdgeInsets.all(16.0),
                             child: Text(
                               "Create an Account",
-                              style: Theme.of(context).textTheme.headline5,
+                              style: Theme.of(context).textTheme.headlineSmall,
                             ),
                           ),
                         Padding(

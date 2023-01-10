@@ -27,9 +27,11 @@ func (s *mongoStore) ListProjects(
 
 func convertProjectDoc(m map[string]interface{}) *api.Project {
 	return &api.Project{
-		ID:        m["_id"].(string),
-		Name:      m["name"].(string),
-		CreatorID: m["creator"].(string),
-		GroupID:   m["group"].(string),
+		ID:          m["_id"].(string),
+		Name:        m["name"].(string),
+		CreatorID:   m["creator"].(string),
+		GroupID:     m["group"].(string),
+		Tags:        m["tags"].([]string),
+		Description: m["desc"].(string),
 	}
 }

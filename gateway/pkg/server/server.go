@@ -1,11 +1,13 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/gorilla/websocket"
 	"github.com/pacedotdev/oto/otohttp"
 	remoteiam "github.com/thavlik/t4vd/base/pkg/iam/api"
 	"github.com/thavlik/t4vd/base/pkg/pubsub"
@@ -20,6 +22,8 @@ import (
 	"go.uber.org/zap"
 )
 
+type websockMessageHandler func(ctx context.Context, userID string, msg map[string]interface{}, c *websocket.Conn) error
+
 type Server struct {
 	iam        iam.IAM
 	seerOpts   base.ServiceOptions
@@ -29,9 +33,12 @@ type Server struct {
 	slideshow  base.ServiceOptions
 	corsHeader string
 	subsL      sync.Mutex
-	subs       map[*Subscription]struct{}
+	subs       map[string][]*Subscription
 	pub        pubsub.Publisher
 	log        *zap.Logger
+	wsHandlers map[string]websockMessageHandler
+	wsSubs     map[*websocket.Conn][]*Subscription
+	wsSubsL    chan struct{}
 }
 
 func NewServer(
@@ -45,7 +52,7 @@ func NewServer(
 	corsHeader string,
 	log *zap.Logger,
 ) *Server {
-	return &Server{
+	s := &Server{
 		iam,
 		seerOpts,
 		sources,
@@ -54,10 +61,25 @@ func NewServer(
 		slideshow,
 		corsHeader,
 		sync.Mutex{},
-		make(map[*Subscription]struct{}),
+		make(map[string][]*Subscription),
 		pub,
 		log,
+		make(map[string]websockMessageHandler),
+		make(map[*websocket.Conn][]*Subscription),
+		make(chan struct{}, 1),
 	}
+	s.registerHandlers()
+	return s
+}
+
+func (s *Server) registerHandlers() {
+	s.registerWebsockHandler("subscribe", s.handleSubscribe())
+	s.registerWebsockHandler("unsubscribe", s.handleUnsubscribe())
+	s.registerWebsockHandler("ping", s.handlePing())
+}
+
+func (s *Server) registerWebsockHandler(name string, handler websockMessageHandler) {
+	s.wsHandlers[name] = handler
 }
 
 func (s *Server) AdminListenAndServe(port int) error {
@@ -103,7 +125,8 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.HandleFunc("/filter/classify", s.handleFilterClassify())
 	mux.HandleFunc("/randmarker", s.handleGetRandomMarker())
 	mux.HandleFunc("/frame", s.handleGetFrame())
-	mux.HandleFunc("/events", s.handleEvents())
+	mux.HandleFunc("/sse", s.handleServerSentEvents())
+	mux.HandleFunc("/ws", s.handleWebSock())
 	if s.iam != nil {
 		mux.HandleFunc("/user/login", s.handleLogin())
 		mux.HandleFunc("/user/search", s.handleUserSearch())

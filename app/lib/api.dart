@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:web_socket_channel/io.dart';
 
 import 'package:t4vd/model.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
 const apiHost = 'api.beebs.dev';
+const websockAddr = 'wss://$apiHost/ws';
 const int minUsernameLength = 4;
 const int minProjectNameLength = 3;
 const int minPasswordLength = 8;
@@ -729,3 +731,11 @@ String playlistThumbnail(String playlistId) =>
 
 String channelAvatar(String channelId) =>
     'https://$apiHost/channel/avatar?c=$channelId';
+
+IOWebSocketChannel connectWebSock(UserCredentials creds) =>
+    IOWebSocketChannel.connect(
+      Uri.parse(websockAddr),
+      headers: {
+        'AccessToken': creds.accessToken,
+      },
+    );

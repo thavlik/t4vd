@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	"go.uber.org/zap"
 )
@@ -12,6 +11,7 @@ import (
 type Subscription struct {
 	userID    string
 	projectID string
+	stop      chan struct{}
 	ch        chan []byte
 }
 
@@ -19,21 +19,35 @@ func (s *Server) subscribe(userID, projectID string) *Subscription {
 	sub := &Subscription{
 		userID:    userID,
 		projectID: projectID,
-		ch:        make(chan []byte, 16),
+		stop:      make(chan struct{}, 1),
+		ch:        make(chan []byte, 32),
 	}
 	s.subsL.Lock()
-	s.subs[sub] = struct{}{}
+	s.subs[projectID] = append(s.subs[projectID], sub)
 	s.subsL.Unlock()
 	return sub
 }
 
 func (s *Server) unsubscribe(sub *Subscription) {
+	sub.stop <- struct{}{}
 	s.subsL.Lock()
-	delete(s.subs, sub)
-	s.subsL.Unlock()
+	defer s.subsL.Unlock()
+	subs := s.subs[sub.projectID]
+	var newSubs []*Subscription
+	for _, s := range subs {
+		if sub == s {
+			continue
+		}
+		newSubs = append(newSubs, sub)
+	}
+	if len(newSubs) == 0 {
+		delete(s.subs, sub.projectID)
+	} else {
+		s.subs[sub.projectID] = newSubs
+	}
 }
 
-func (s *Server) handleEvents() http.HandlerFunc {
+func (s *Server) handleServerSentEvents() http.HandlerFunc {
 	return s.rbacHandler(
 		http.MethodGet,
 		iam.NullPermissions,
@@ -47,17 +61,13 @@ func (s *Server) handleEvents() http.HandlerFunc {
 				w.WriteHeader(http.StatusBadRequest)
 				return nil
 			}
-			reqLog := s.log.With(
-				zap.String("userID", userID),
-				zap.String("projectID", projectID))
-			// make sure user has access to project
-			if inGroup, err := s.iam.IsUserInGroup(r.Context(), userID, projectID); err != nil {
-				return errors.Wrap(err, "iam.IsUserInGroup")
-			} else if !inGroup {
-				reqLog.Warn("user not in project group")
+			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
+			reqLog := s.log.With(
+				zap.String("userID", userID),
+				zap.String("projectID", projectID))
 			reqLog.Debug("subscribing to events")
 			defer reqLog.Debug("unsubscribing from events")
 			done := r.Context().Done()
