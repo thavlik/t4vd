@@ -76,12 +76,10 @@ func Query(
 	go func() {
 		err := cmd.Wait()
 		if err != nil && limit != 0 {
-			if exiterr, ok := err.(*exec.ExitError); ok {
-				if exiterr.ExitCode() == 101 {
-					// standard exit code for MaxDownloadsReached
-					done <- nil
-					return
-				}
+			if exiterr, ok := err.(*exec.ExitError); ok && exiterr.ExitCode() == 101 {
+				// standard exit code for MaxDownloadsReached
+				done <- nil
+				return
 			}
 		}
 		done <- err

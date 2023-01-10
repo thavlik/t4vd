@@ -136,5 +136,7 @@ An obvious improvement to a kata sequence visualization tool would be the inclus
 
 **Status:** conceptual phase
 
-Possible solutions include generative modeling where the force vectors predict the next frame.
+Possible solutions include generative modeling where the force vectors predict the next frame. The underlying simulation uses skeletons with constant joint rigidity. Simulation results are used to back-solve for force vectors.
+
+Link this data with kata sequence analysis to estimate technique success rate based on body type.
 

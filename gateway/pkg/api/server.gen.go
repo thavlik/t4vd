@@ -63,6 +63,7 @@ func (s *gatewayServer) handlePushEvent(w http.ResponseWriter, r *http.Request) 
 
 type Event struct {
 	ProjectIDs []string `json:"projectIDs"`
+	Type       string   `json:"type"`
 	Payload    string   `json:"payload"`
 }
 

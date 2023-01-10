@@ -18,18 +18,12 @@ func (s *Server) PushEvent(
 	if err != nil {
 		return errors.Wrap(err, "json.Marshal")
 	}
-	body, err := json.Marshal(&EventWrapper{
-		Type:    ty,
-		Payload: string(pl),
-	})
-	if err != nil {
-		return errors.Wrap(err, "json.Marshal")
-	}
 	if _, err := s.gateway.PushEvent(
 		context.Background(),
 		gateway.Event{
 			ProjectIDs: projectIDs,
-			Payload:    string(body),
+			Type:       ty,
+			Payload:    string(pl),
 		},
 	); err != nil {
 		return errors.Wrap(err, "gateway.PushEvent")

@@ -16,26 +16,44 @@ func (s *Server) GetProjectIDsForVideo(
 	// projects that have a video include it directly and
 	// indirectly by including a playlist or channel that
 	// includes it
+	doneSources := make(chan interface{}, 1)
+	go func() {
+		src, err := s.sources.GetProjectIDsForVideo(
+			ctx,
+			sources.GetProjectIDsForVideoRequest{
+				VideoID: videoID,
+			},
+		)
+		if err != nil {
+			doneSources <- errors.Wrap(err, "sources.GetProjectIDsForVideo")
+			return
+		}
+		doneSources <- src.ProjectIDs
+	}()
+	doneCompiler := make(chan interface{}, 1)
+	go func() {
+		resolved, err := s.compiler.ResolveProjectsForVideo(
+			ctx,
+			compiler.ResolveProjectsForVideoRequest{
+				VideoID: videoID,
+			})
+		if err != nil {
+			doneCompiler <- errors.Wrap(err, "compiler.ResolveProjectsForVideo")
+			return
+		}
+		doneCompiler <- resolved.ProjectIDs
+	}()
+	result := <-doneSources
+	if err, ok := result.(error); ok {
+		return nil, err
+	}
 	projectIDs := make(map[string]struct{})
-	src, err := s.sources.GetProjectIDsForVideo(
-		ctx,
-		sources.GetProjectIDsForVideoRequest{
-			VideoID: videoID,
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "sources.GetProjectIDsForVideo")
+	merge(projectIDs, result.([]string))
+	result = <-doneCompiler
+	if err, ok := result.(error); ok {
+		return nil, err
 	}
-	merge(projectIDs, src.ProjectIDs)
-	resolved, err := s.compiler.ResolveProjectsForVideo(
-		ctx,
-		compiler.ResolveProjectsForVideoRequest{
-			VideoID: videoID,
-		})
-	if err != nil {
-		return nil, errors.Wrap(err, "compiler.ResolveProjectsForVideo")
-	}
-	merge(projectIDs, resolved.ProjectIDs)
+	merge(projectIDs, result.([]string))
 	return flattenMap(projectIDs), nil
 }
 

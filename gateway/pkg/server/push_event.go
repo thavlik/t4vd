@@ -21,7 +21,7 @@ func (s *Server) PushEvent(
 		return nil, errors.Wrap(err, "json")
 	}
 	if err := s.pub.Publish(body); err != nil {
-		return nil, errors.Wrap(err, "pubsub.Publish")
+		return nil, errors.Wrap(err, "publisher.Publish")
 	}
 	return &api.Void{}, nil
 }
@@ -47,6 +47,7 @@ func (s *Server) pushEventLocal(req api.Event) error {
 		case sub.ch <- []byte(req.Payload):
 			continue
 		default:
+			// TODO: should we close the subscription here?
 			s.log.Warn("discarding event due to full stream",
 				zap.String("userID", sub.userID))
 		}

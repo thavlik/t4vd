@@ -22,20 +22,10 @@ var (
 		Name: "filter_classify_success_total",
 		Help: "Auto-generated metric incremented on every call to Filter.Classify that does not return with an error",
 	})
-
-	filterGetStackTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "filter_get_stack_total",
-		Help: "Auto-generated metric incremented on every call to Filter.GetStack",
-	})
-	filterGetStackSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "filter_get_stack_success_total",
-		Help: "Auto-generated metric incremented on every call to Filter.GetStack that does not return with an error",
-	})
 )
 
 type Filter interface {
 	Classify(context.Context, Classify) (*Void, error)
-	GetStack(context.Context, GetStack) (*Stack, error)
 }
 
 type filterServer struct {
@@ -49,7 +39,6 @@ func RegisterFilter(server *otohttp.Server, filter Filter) {
 		filter: filter,
 	}
 	server.Register("Filter", "Classify", handler.handleClassify)
-	server.Register("Filter", "GetStack", handler.handleGetStack)
 }
 
 func (s *filterServer) handleClassify(w http.ResponseWriter, r *http.Request) {
@@ -72,26 +61,6 @@ func (s *filterServer) handleClassify(w http.ResponseWriter, r *http.Request) {
 	filterClassifySuccessTotal.Inc()
 }
 
-func (s *filterServer) handleGetStack(w http.ResponseWriter, r *http.Request) {
-	filterGetStackTotal.Inc()
-	var request GetStack
-	if err := otohttp.Decode(r, &request); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	response, err := s.filter.GetStack(r.Context(), request)
-	if err != nil {
-		log.Println("TODO: oto service error:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
-		s.server.OnErr(w, r, err)
-		return
-	}
-	filterGetStackSuccessTotal.Inc()
-}
-
 type Marker struct {
 	VideoID string `json:"videoID"`
 	Time    int64  `json:"time"`
@@ -105,13 +74,4 @@ type Classify struct {
 
 type Void struct {
 	Error string `json:"error,omitempty"`
-}
-
-type GetStack struct {
-	ProjectID string `json:"projectID"`
-}
-
-type Stack struct {
-	Markers []*Marker `json:"markers"`
-	Error   string    `json:"error,omitempty"`
 }

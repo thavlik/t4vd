@@ -259,6 +259,7 @@ func queryWorker(
 						}
 					}()
 					if _, err := retrieveChannelVideos(
+						context.Background(),
 						infoCache,
 						e.ID,
 						onVideo,

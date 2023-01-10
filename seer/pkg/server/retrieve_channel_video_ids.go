@@ -17,6 +17,7 @@ import (
 var maxRecency = 7 * 24 * time.Hour
 
 func retrieveChannelVideos(
+	ctx context.Context,
 	infoCache infocache.InfoCache,
 	channelID string,
 	onVideo chan<- *api.VideoDetails,
@@ -29,7 +30,7 @@ func retrieveChannelVideos(
 	start := time.Now()
 	videos := make(chan *api.VideoDetails, 1)
 	done := make(chan error, 1)
-	ctx, cancel := context.WithCancel(context.TODO()) // no timeout
+	ctx, cancel := context.WithCancel(ctx) // no timeout
 	defer cancel()
 	go func() {
 		done <- ytdl.Query(ctx, input, videos, 0, log)
@@ -47,7 +48,11 @@ func retrieveChannelVideos(
 			return nil, errors.Wrap(err, "infocache.SetVideo")
 		}
 		if onVideo != nil {
-			onVideo <- video
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case onVideo <- video:
+			}
 		}
 		dur := time.Duration(video.Duration) * time.Second
 		totalDur += dur

@@ -26,6 +26,10 @@ func (s *Server) handleAddChannel() http.HandlerFunc {
 			resp, err := s.sources.AddChannel(context.Background(), req)
 			if err != nil {
 				if strings.Contains(err.Error(), infocache.ErrCacheUnavailable.Error()) {
+					// TODO: this is a hack, we should have a better way to handle this
+					// In the future, the handler should wait to see if the download
+					// completes before returning Accepted, which indicates that the
+					// request was accepted but not yet completed.
 					w.WriteHeader(http.StatusAccepted)
 					return nil
 				}

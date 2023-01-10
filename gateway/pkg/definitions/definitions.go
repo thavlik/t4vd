@@ -6,6 +6,7 @@ type Gateway interface {
 
 type Event struct {
 	ProjectIDs []string `json:"projectIDs"`
+	Type       string   `json:"type"`
 	Payload    string   `json:"payload"`
 }
 
