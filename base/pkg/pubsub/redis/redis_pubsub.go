@@ -7,19 +7,16 @@ import (
 )
 
 type redisPubSub struct {
-	redis   *redis.Client
-	channel string
-	log     *zap.Logger
+	redis *redis.Client
+	log   *zap.Logger
 }
 
 func NewRedisPubSub(
 	redis *redis.Client,
-	channel string,
 	log *zap.Logger,
 ) pubsub.PubSub {
 	return &redisPubSub{
 		redis,
-		channel,
 		log,
 	}
 }

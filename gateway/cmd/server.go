@@ -68,7 +68,6 @@ func initPubSub(log *zap.Logger) pubsub.PubSub {
 	if serverArgs.redis.IsSet() {
 		return redis_pubsub.NewRedisPubSub(
 			base.ConnectRedis(&serverArgs.redis),
-			"gateway",
 			log,
 		)
 	}

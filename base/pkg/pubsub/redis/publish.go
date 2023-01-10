@@ -6,10 +6,14 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (p *redisPubSub) Publish(payload []byte) error {
+func (p *redisPubSub) Publish(
+	ctx context.Context,
+	topic string,
+	payload []byte,
+) error {
 	if _, err := p.redis.Publish(
-		context.Background(),
-		p.channel,
+		ctx,
+		topic,
 		payload,
 	).Result(); err != nil {
 		return errors.Wrap(err, "redis")

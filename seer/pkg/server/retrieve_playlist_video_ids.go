@@ -15,6 +15,7 @@ import (
 )
 
 func retrievePlaylistVideos(
+	ctx context.Context,
 	infoCache infocache.InfoCache,
 	playlistID string,
 	onVideo chan<- *api.VideoDetails,
@@ -27,7 +28,7 @@ func retrievePlaylistVideos(
 	start := time.Now()
 	videos := make(chan *api.VideoDetails)
 	done := make(chan error, 1)
-	ctx, cancel := context.WithCancel(context.Background()) // no timeout
+	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go func() {
 		done <- ytdl.Query(ctx, input, videos, 0, log)

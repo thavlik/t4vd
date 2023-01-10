@@ -41,7 +41,7 @@ func (s *redisScheduler) Lock(entity string) (scheduler.Lock, error) {
 	lock, err := s.locker.Obtain(
 		context.Background(),
 		lockKey(entity),
-		s.ttl,
+		s.lockTTL,
 		nil,
 	)
 	if err == redislock.ErrNotObtained {
@@ -51,6 +51,6 @@ func (s *redisScheduler) Lock(entity string) (scheduler.Lock, error) {
 	}
 	return &redisLock{
 		lock: lock,
-		ttl:  s.ttl,
+		ttl:  s.lockTTL,
 	}, nil
 }

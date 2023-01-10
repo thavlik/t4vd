@@ -8,9 +8,11 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/base"
+	"github.com/thavlik/t4vd/base/pkg/pubsub"
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	hound "github.com/thavlik/t4vd/hound/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/cachedset"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"go.uber.org/zap"
@@ -46,6 +48,8 @@ func initQueryWorkers(
 	concurrency int,
 	infoCache infocache.InfoCache,
 	thumbCache thumbcache.ThumbCache,
+	cachedVideoIDs cachedset.CachedSet,
+	pub pubsub.Publisher,
 	querySched scheduler.Scheduler,
 	hound hound.Hound,
 	stop <-chan struct{},
@@ -59,6 +63,8 @@ func initQueryWorkers(
 			thumbCache,
 			popQuery,
 			querySched,
+			pub,
+			cachedVideoIDs,
 			hound,
 			log,
 		)
@@ -106,6 +112,8 @@ func queryWorker(
 	thumbCache thumbcache.ThumbCache,
 	popQuery <-chan string,
 	querySched scheduler.Scheduler,
+	pub pubsub.Publisher,
+	cachedVideoIDs cachedset.CachedSet,
 	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
@@ -138,19 +146,17 @@ func queryWorker(
 		if err := func() error {
 			defer lock.Release()
 			ctx, cancel := context.WithCancel(context.Background())
-			done := ctx.Done()
-			defer cancel()
 			onProgress := make(chan struct{}, 4)
 			stopped := make(chan struct{})
 			defer func() {
-				close(onProgress)
+				cancel()
 				<-stopped
 			}()
 			go func() {
 				defer func() { stopped <- struct{}{} }()
 				for {
 					select {
-					case <-done:
+					case <-ctx.Done():
 					case _, ok := <-onProgress:
 						if !ok {
 							return
@@ -174,42 +180,58 @@ func queryWorker(
 						return errors.Wrap(err, "infocache.SetPlaylist")
 					}
 					base.Progress(ctx, onProgress)
-					go reportPlaylistDetails(playlist, houndClient, log)
-					onVideo := make(chan *api.VideoDetails, 4)
+					go reportPlaylistDetails(ctx, playlist, houndClient, log)
+					onVideo := make(chan *api.VideoDetails, 32)
+					stopped := make(chan struct{})
+					innerCtx, cancel := context.WithCancel(ctx)
 					go func() {
+						defer func() { stopped <- struct{}{} }()
 						numVideos := 0
 						for {
 							select {
-							case <-done:
+							case <-innerCtx.Done():
 								return
 							case video, ok := <-onVideo:
 								if !ok {
 									return
 								}
 								numVideos++
-								go reportPlaylistVideo(
+								reportPlaylistVideo(
+									innerCtx,
 									e.ID,
 									video,
 									numVideos,
+									pub,
+									cachedVideoIDs,
 									houndClient,
 									log,
 								)
-								base.Progress(ctx, onProgress)
+								base.Progress(innerCtx, onProgress)
 							}
 						}
 					}()
-					if _, err := retrievePlaylistVideos(
+					_, err := retrievePlaylistVideos(
+						ctx,
 						infoCache,
 						e.ID,
 						onVideo,
 						entityLog,
-					); err != nil {
+					)
+					cancel()
+					if err != nil {
 						return errors.Wrap(err, "failed to retrieve playlist videos")
+					}
+					<-stopped
+					if err := cachedVideoIDs.Complete(
+						ctx,
+						e.ID,
+					); err != nil {
+						return errors.Wrap(err, "failed to complete cached video IDs")
 					}
 				}
 				base.Progress(ctx, onProgress)
 				if err := cachePlaylistThumbnail(
-					context.Background(), // "main" thread
+					ctx,
 					e.ID,
 					thumbCache,
 					entityLog,
@@ -221,7 +243,7 @@ func queryWorker(
 				if recent, err := infoCache.IsChannelRecent(e.ID); err != nil {
 					return errors.Wrap(err, "infocache.IsChannelRecent")
 				} else if recent {
-					channel, err = infoCache.GetChannel(context.Background(), e.ID)
+					channel, err = infoCache.GetChannel(ctx, e.ID)
 					if err != nil {
 						return errors.Wrap(err, "infocache.GetChannel")
 					}
@@ -234,43 +256,58 @@ func queryWorker(
 						return errors.Wrap(err, "infocache.SetChannel")
 					}
 					base.Progress(ctx, onProgress)
-					go reportChannelDetails(channel, houndClient, log)
-					onVideo := make(chan *api.VideoDetails, 4)
+					go reportChannelDetails(ctx, channel, houndClient, log)
+					onVideo := make(chan *api.VideoDetails, 32)
+					stopped := make(chan struct{})
+					innerCtx, cancel := context.WithCancel(ctx)
 					go func() {
+						defer func() { stopped <- struct{}{} }()
 						numVideos := 0
 						for {
 							select {
-							case <-done:
+							case <-innerCtx.Done():
 								return
 							case video, ok := <-onVideo:
 								if !ok {
 									return
 								}
 								numVideos++
-								go reportChannelVideo(
+								reportChannelVideo(
+									innerCtx,
 									e.ID,
 									video,
 									numVideos,
+									pub,
+									cachedVideoIDs,
 									houndClient,
 									log,
 								)
-								base.Progress(ctx, onProgress)
+								base.Progress(innerCtx, onProgress)
 							}
 						}
 					}()
-					if _, err := retrieveChannelVideos(
-						context.Background(),
+					_, err := retrieveChannelVideos(
+						ctx,
 						infoCache,
 						e.ID,
 						onVideo,
 						entityLog,
-					); err != nil {
+					)
+					cancel()
+					if err != nil {
 						return errors.Wrap(err, "failed to retrieve channel videos")
+					}
+					<-stopped
+					if err := cachedVideoIDs.Complete(
+						ctx,
+						e.ID,
+					); err != nil {
+						return errors.Wrap(err, "failed to complete cached video IDs")
 					}
 				}
 				base.Progress(ctx, onProgress)
 				if err := cacheChannelAvatar(
-					context.Background(), // Background() since this is on the "main" thread
+					ctx,
 					e.ID,
 					channel.Avatar,
 					thumbCache,
@@ -291,11 +328,11 @@ func queryWorker(
 					if err := infoCache.SetVideo(video); err != nil {
 						return errors.Wrap(err, "infocache.SetVideo")
 					}
-					go reportVideoDetails(video, houndClient, log)
+					go reportVideoDetails(ctx, video, houndClient, log)
 				}
 				base.Progress(ctx, onProgress)
 				if err := cacheVideoThumbnail(
-					context.Background(), // main thread
+					ctx,
 					e.ID,
 					thumbCache,
 					entityLog,
@@ -316,6 +353,7 @@ func queryWorker(
 }
 
 func reportVideoDetails(
+	ctx context.Context,
 	details *api.VideoDetails,
 	houndClient hound.Hound,
 	log *zap.Logger,
@@ -324,7 +362,7 @@ func reportVideoDetails(
 		return
 	}
 	if _, err := houndClient.ReportVideoDetails(
-		context.TODO(),
+		ctx,
 		*convertVideo(details),
 	); err != nil {
 		log.Warn("failed to report video details", zap.Error(err))
@@ -332,50 +370,89 @@ func reportVideoDetails(
 }
 
 func reportPlaylistVideo(
+	ctx context.Context,
 	playlistID string,
 	video *api.VideoDetails,
 	numVideos int,
+	pub pubsub.Publisher,
+	cachedVideoIDs cachedset.CachedSet,
 	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
-	if houndClient == nil {
-		return
-	}
-	if _, err := houndClient.ReportPlaylistVideo(
-		context.TODO(),
-		hound.PlaylistVideo{
-			PlaylistID: playlistID,
-			Video:      *convertVideo(video),
-			NumVideos:  numVideos,
-		},
+	if err := pub.Publish(
+		ctx,
+		playlistTopic(playlistID),
+		[]byte(video.ID),
 	); err != nil {
-		log.Warn("failed to report playlist video", zap.Error(err))
+		log.Warn("failed to publish video ID for playlist",
+			zap.Error(err))
+	}
+	if err := cachedVideoIDs.Set(
+		ctx,
+		playlistID,
+		video.ID,
+		numVideos-1,
+	); err != nil {
+		log.Warn("failed to set cached video ID for playlist",
+			zap.Error(err))
+	}
+	if houndClient != nil {
+		if _, err := houndClient.ReportPlaylistVideo(
+			ctx,
+			hound.PlaylistVideo{
+				PlaylistID: playlistID,
+				Video:      *convertVideo(video),
+				NumVideos:  numVideos,
+			},
+		); err != nil {
+			log.Warn("failed to report playlist video", zap.Error(err))
+		}
 	}
 }
 
 func reportChannelVideo(
+	ctx context.Context,
 	channelID string,
 	video *api.VideoDetails,
 	numVideos int,
+	pub pubsub.Publisher,
+	cachedVideoIDs cachedset.CachedSet,
 	houndClient hound.Hound,
 	log *zap.Logger,
 ) {
-	if houndClient == nil {
-		return
-	}
-	if _, err := houndClient.ReportChannelVideo(
-		context.TODO(),
-		hound.ChannelVideo{
-			ChannelID: channelID,
-			NumVideos: numVideos,
-			Video:     *convertVideo(video),
-		},
+	if err := pub.Publish(
+		ctx,
+		channelTopic(channelID),
+		[]byte(video.ID),
 	); err != nil {
-		log.Warn("failed to report channel video", zap.Error(err))
+		log.Warn("failed to publish video ID for channel",
+			zap.Error(err))
+	}
+	if err := cachedVideoIDs.Set(
+		ctx,
+		channelID,
+		video.ID,
+		numVideos-1,
+	); err != nil {
+		log.Warn("failed to set cached video ID for channel",
+			zap.Error(err))
+	}
+	if houndClient != nil {
+		if _, err := houndClient.ReportChannelVideo(
+			ctx,
+			hound.ChannelVideo{
+				ChannelID: channelID,
+				NumVideos: numVideos,
+				Video:     *convertVideo(video),
+			},
+		); err != nil {
+			log.Warn("failed to report channel video", zap.Error(err))
+		}
 	}
 }
 
 func reportChannelDetails(
+	ctx context.Context,
 	details *api.ChannelDetails,
 	houndClient hound.Hound,
 	log *zap.Logger,
@@ -384,7 +461,7 @@ func reportChannelDetails(
 		return
 	}
 	if _, err := houndClient.ReportChannelDetails(
-		context.TODO(),
+		ctx,
 		hound.ChannelDetails{
 			ID:     details.ID,
 			Name:   details.Name,
@@ -397,6 +474,7 @@ func reportChannelDetails(
 }
 
 func reportPlaylistDetails(
+	ctx context.Context,
 	details *api.PlaylistDetails,
 	houndClient hound.Hound,
 	log *zap.Logger,
@@ -405,7 +483,7 @@ func reportPlaylistDetails(
 		return
 	}
 	if _, err := houndClient.ReportPlaylistDetails(
-		context.TODO(),
+		ctx,
 		hound.PlaylistDetails{
 			ID:        details.ID,
 			Title:     details.Title,

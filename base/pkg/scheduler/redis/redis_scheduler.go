@@ -9,22 +9,22 @@ import (
 )
 
 type redisScheduler struct {
-	redis  *redis.Client
-	locker *redislock.Client
-	key    string
-	ttl    time.Duration
+	redis   *redis.Client
+	locker  *redislock.Client
+	key     string
+	lockTTL time.Duration
 }
 
 func NewRedisScheduler(
 	redisClient *redis.Client,
 	key string,
-	ttl time.Duration,
+	lockTTL time.Duration,
 ) scheduler.Scheduler {
 	return &redisScheduler{
 		redisClient,
 		redislock.New(redisClient),
 		key,
-		ttl,
+		lockTTL,
 	}
 }
 

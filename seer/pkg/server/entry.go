@@ -3,14 +3,20 @@ package server
 import (
 	"context"
 
+	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/pubsub"
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	hound "github.com/thavlik/t4vd/hound/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/cachedset"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
 	"go.uber.org/zap"
+)
+
+var (
+	cancelVideoTopic = "cancel_video"
 )
 
 func Entry(
@@ -21,6 +27,7 @@ func Entry(
 	infoCache infocache.InfoCache,
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
+	cachedVideoIDs cachedset.CachedSet,
 	hound hound.Hound,
 	videoFormat string,
 	includeAudio bool,
@@ -28,13 +35,17 @@ func Entry(
 	disableDownloads bool,
 	log *zap.Logger,
 ) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	s := NewServer(
 		querySched,
 		dlSched,
-		pubsub.Publisher(pubSub),
+		pubSub,
 		infoCache,
 		vidCache,
 		thumbCache,
+		cachedVideoIDs,
 		videoFormat,
 		includeAudio,
 		log,
@@ -46,15 +57,20 @@ func Entry(
 		concurrency,
 		infoCache,
 		thumbCache,
+		cachedVideoIDs,
+		pubsub.Publisher(pubSub),
 		querySched,
 		hound,
 		stopPopQuery,
 		log,
 	)
 
-	cancelVideoDownload, err := pubSub.Subscribe(context.Background())
+	cancelVideoDownload, err := pubSub.Subscribe(
+		ctx,
+		cancelVideoTopic,
+	)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to subscribe to topic")
 	}
 
 	stopPopDl := make(chan struct{}, 1)
@@ -62,7 +78,7 @@ func Entry(
 	initDownloadWorkers(
 		concurrency,
 		dlSched,
-		cancelVideoDownload,
+		cancelVideoDownload.Messages(ctx),
 		vidCache,
 		thumbCache,
 		hound,

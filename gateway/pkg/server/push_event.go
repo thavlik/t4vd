@@ -20,7 +20,11 @@ func (s *Server) PushEvent(
 	if err != nil {
 		return nil, errors.Wrap(err, "json")
 	}
-	if err := s.pub.Publish(body); err != nil {
+	if err := s.pub.Publish(
+		ctx,
+		gatewayTopic,
+		body,
+	); err != nil {
 		return nil, errors.Wrap(err, "publisher.Publish")
 	}
 	return &api.Void{}, nil

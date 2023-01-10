@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/go-redis/redis/v9"
 	"github.com/spf13/cobra"
 	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/pubsub"
@@ -13,6 +14,8 @@ import (
 	memory_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/memory"
 	redis_scheduler "github.com/thavlik/t4vd/base/pkg/scheduler/redis"
 	hound "github.com/thavlik/t4vd/hound/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/cachedset"
+	redis_cachedset "github.com/thavlik/t4vd/seer/pkg/cachedset/redis"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	mongo_infocache "github.com/thavlik/t4vd/seer/pkg/infocache/mongo"
 	postgres_infocache "github.com/thavlik/t4vd/seer/pkg/infocache/postgres"
@@ -52,14 +55,16 @@ var serverCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		log := base.Log
 		go base.RunMetrics(serverArgs.MetricsPort, log)
+		redis := initRedis()
 		return server.Entry(
 			serverArgs.Port,
-			initPubSub(log),
-			initScheduler("dlsched"),
-			initScheduler("qrysched"),
+			initPubSub(redis, log),
+			initScheduler(redis, "dlsched"),
+			initScheduler(redis, "qrysched"),
 			initInfoCache(&serverArgs.db),
 			initVidCache(),
 			initThumbCache(),
+			initCachedSet(redis, log),
 			hound.NewHoundClientFromOptions(serverArgs.hound),
 			serverArgs.videoFormat,
 			serverArgs.includeAudio,
@@ -70,23 +75,37 @@ var serverCmd = &cobra.Command{
 	},
 }
 
-func initPubSub(log *zap.Logger) pubsub.PubSub {
+func initRedis() *redis.Client {
 	if serverArgs.redis.IsSet() {
+		return base.ConnectRedis(&serverArgs.redis)
+	}
+	return nil
+}
+
+func initCachedSet(redis *redis.Client, log *zap.Logger) cachedset.CachedSet {
+	if redis != nil {
+		return redis_cachedset.NewRedisCachedSet(redis, log)
+	}
+	panic(errors.New("missing cached set source"))
+}
+
+func initPubSub(redis *redis.Client, log *zap.Logger) pubsub.PubSub {
+	if redis != nil {
 		return redis_pubsub.NewRedisPubSub(
-			base.ConnectRedis(&serverArgs.redis),
-			"seer",
+			redis,
 			log,
 		)
 	}
 	return memory_pubsub.NewMemoryPubSub(log)
 }
 
-func initScheduler(name string) scheduler.Scheduler {
-	if serverArgs.redis.IsSet() {
+func initScheduler(redis *redis.Client, name string) scheduler.Scheduler {
+	if redis != nil {
 		return redis_scheduler.NewRedisScheduler(
-			base.ConnectRedis(&serverArgs.redis),
+			redis,
 			name,
-			25*time.Second)
+			25*time.Second,
+		)
 	}
 	return memory_scheduler.NewMemoryScheduler()
 }

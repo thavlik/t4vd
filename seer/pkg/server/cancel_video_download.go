@@ -14,7 +14,11 @@ func (s *Server) CancelVideoDownload(
 	if err := s.dlSched.Remove(req.VideoID); err != nil {
 		return nil, errors.Wrap(err, "sched.Remove")
 	}
-	if err := s.pub.Publish([]byte(req.VideoID)); err != nil {
+	if err := s.pubsub.Publish(
+		ctx,
+		cancelVideoTopic,
+		[]byte(req.VideoID),
+	); err != nil {
 		return nil, errors.Wrap(err, "publisher.Publish")
 	}
 	return &api.Void{}, nil

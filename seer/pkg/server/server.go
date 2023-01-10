@@ -12,30 +12,33 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/pubsub"
 	"github.com/thavlik/t4vd/base/pkg/scheduler"
 	"github.com/thavlik/t4vd/seer/pkg/api"
+	"github.com/thavlik/t4vd/seer/pkg/cachedset"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
 )
 
 type Server struct {
-	querySched   scheduler.Scheduler
-	dlSched      scheduler.Scheduler
-	pub          pubsub.Publisher
-	infoCache    infocache.InfoCache
-	vidCache     vidcache.VidCache
-	thumbCache   thumbcache.ThumbCache
-	videoFormat  string
-	includeAudio bool
-	log          *zap.Logger
+	querySched     scheduler.Scheduler
+	dlSched        scheduler.Scheduler
+	pubsub         pubsub.PubSub
+	infoCache      infocache.InfoCache
+	vidCache       vidcache.VidCache
+	thumbCache     thumbcache.ThumbCache
+	cachedVideoIDs cachedset.CachedSet
+	videoFormat    string
+	includeAudio   bool
+	log            *zap.Logger
 }
 
 func NewServer(
 	querySched scheduler.Scheduler,
 	dlSched scheduler.Scheduler,
-	pub pubsub.Publisher,
+	pub pubsub.PubSub,
 	infoCache infocache.InfoCache,
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
+	cachedVideoIDs cachedset.CachedSet,
 	videoFormat string,
 	includeAudio bool,
 	log *zap.Logger,
@@ -47,6 +50,7 @@ func NewServer(
 		infoCache,
 		vidCache,
 		thumbCache,
+		cachedVideoIDs,
 		videoFormat,
 		includeAudio,
 		log,
@@ -58,6 +62,8 @@ func (s *Server) ListenAndServe(port int) error {
 	api.RegisterSeer(otoServer, s)
 	mux := http.NewServeMux()
 	mux.Handle("/", otoServer)
+	mux.HandleFunc("/channel/videos", s.handleGetChannelVideoIDs())
+	mux.HandleFunc("/playlist/videos", s.handleGetPlaylistVideoIDs())
 	mux.HandleFunc("/video", s.handleGetVideo())
 	mux.HandleFunc("/video/thumbnail", s.handleGetVideoThumbnail())
 	mux.HandleFunc("/playlist/thumbnail", s.handleGetPlaylistThumbnail())

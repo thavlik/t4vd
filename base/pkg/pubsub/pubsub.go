@@ -2,12 +2,17 @@ package pubsub
 
 import "context"
 
+type Subscription interface {
+	Messages(ctx context.Context) <-chan []byte
+	Cancel(ctx context.Context) error
+}
+
 type Publisher interface {
-	Publish(message []byte) error
+	Publish(ctx context.Context, topic string, message []byte) error
 }
 
 type Subscriber interface {
-	Subscribe(context.Context) (<-chan []byte, error)
+	Subscribe(ctx context.Context, topic string) (Subscription, error)
 }
 
 type PubSub interface {

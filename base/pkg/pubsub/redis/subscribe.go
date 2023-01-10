@@ -3,28 +3,17 @@ package redis
 import (
 	"context"
 
-	"github.com/go-redis/redis/v9"
+	"github.com/thavlik/t4vd/base/pkg/pubsub"
 )
 
-func (p *redisPubSub) Subscribe(ctx context.Context) (<-chan []byte, error) {
-	sub := p.redis.Subscribe(
-		ctx,
-		p.channel,
-	).Channel(redis.WithChannelSize(64))
-	ch := make(chan []byte, 32)
-	go func() {
-		defer close(ch)
-		for {
-			msg, ok := <-sub
-			if !ok {
-				return
-			}
-			select {
-			case ch <- []byte(msg.Payload):
-			default:
-				p.log.Warn("redis pubsub dropped message due to channel being full")
-			}
-		}
-	}()
-	return ch, nil
+func (p *redisPubSub) Subscribe(
+	ctx context.Context,
+	topic string,
+) (pubsub.Subscription, error) {
+	return &redisSubscription{
+		redis: p.redis,
+		stop:  make(chan struct{}, 1),
+		topic: topic,
+		log:   p.log,
+	}, nil
 }

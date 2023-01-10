@@ -15,6 +15,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var gatewayTopic = "gateway"
+
 func Entry(
 	port int,
 	adminPort int,
@@ -41,14 +43,18 @@ func Entry(
 	)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	ch, err := pubSub.Subscribe(ctx)
+	sub, err := pubSub.Subscribe(ctx, gatewayTopic)
 	if err != nil {
-		return errors.Wrap(err, "pubsub.Subscrube")
+		return errors.Wrap(err, "pubsub.Subscribe")
 	}
 	go func() {
+		defer panic("gateway subscriber returned")
+		ch := sub.Messages(ctx)
+		defer sub.Cancel(ctx)
+		done := ctx.Done()
 		for {
 			select {
-			case <-ctx.Done():
+			case <-done:
 				return
 			case msg, ok := <-ch:
 				if !ok {
