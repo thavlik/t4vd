@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
@@ -86,18 +87,69 @@ func (s *Server) handleListPlaylists() http.HandlerFunc {
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
-			resp, err := s.sources.ListPlaylists(r.Context(), sources.ListPlaylistsRequest{
-				ProjectID: projectID,
-			})
+			resp, err := s.sources.ListPlaylists(
+				r.Context(),
+				sources.ListPlaylistsRequest{
+					ProjectID: projectID,
+				})
 			if err != nil {
 				return errors.Wrap(err, "sources")
 			}
+			output, err := resolvePlaylists(
+				r.Context(),
+				s.seerOpts,
+				resp.Playlists,
+			)
+			if err != nil {
+				return errors.Wrap(err, "resolvePlaylists")
+			}
 			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(resp.Playlists); err != nil {
+			if err := json.NewEncoder(w).Encode(output); err != nil {
 				return errors.Wrap(err, "encoder")
 			}
 			return nil
 		})
+}
+
+func resolvePlaylists(
+	ctx context.Context,
+	opts base.ServiceOptions,
+	playlists []*sources.Playlist,
+) ([]*playlist, error) {
+	output := make([]*playlist, len(playlists))
+	playlistIDs := make([]string, len(playlists))
+	for i, v := range playlists {
+		playlistIDs[i] = v.ID
+		output[i] = &playlist{
+			ID:        v.ID,
+			Blacklist: v.Blacklist,
+		}
+	}
+	resolved, err := seer.NewSeerClientFromOptions(opts).
+		GetBulkPlaylistsDetails(
+			ctx,
+			seer.GetBulkPlaylistsDetailsRequest{
+				PlaylistIDs: playlistIDs,
+			},
+		)
+	if err != nil {
+		return nil, errors.Wrap(err, "seer.GetBulkPlaylistsDetails")
+	}
+	for _, info := range resolved.Playlists {
+		for i, pl := range playlists {
+			if pl.ID == info.ID {
+				output[i].Info = info
+				break
+			}
+		}
+	}
+	return output, nil
+}
+
+type playlist struct {
+	ID        string                `json:"id"`
+	Blacklist bool                  `json:"blacklist"`
+	Info      *seer.PlaylistDetails `json:"info"`
 }
 
 func (s *Server) handleGetPlaylistThumbnail() http.HandlerFunc {

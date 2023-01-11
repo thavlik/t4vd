@@ -32,6 +32,33 @@ var (
 		Help: "Auto-generated metric incremented on every call to Seer.CancelVideoDownload that does not return with an error",
 	})
 
+	seerGetBulkChannelsDetailsTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_get_bulk_channels_details_total",
+		Help: "Auto-generated metric incremented on every call to Seer.GetBulkChannelsDetails",
+	})
+	seerGetBulkChannelsDetailsSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_get_bulk_channels_details_success_total",
+		Help: "Auto-generated metric incremented on every call to Seer.GetBulkChannelsDetails that does not return with an error",
+	})
+
+	seerGetBulkPlaylistsDetailsTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_get_bulk_playlists_details_total",
+		Help: "Auto-generated metric incremented on every call to Seer.GetBulkPlaylistsDetails",
+	})
+	seerGetBulkPlaylistsDetailsSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_get_bulk_playlists_details_success_total",
+		Help: "Auto-generated metric incremented on every call to Seer.GetBulkPlaylistsDetails that does not return with an error",
+	})
+
+	seerGetBulkVideosDetailsTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_get_bulk_videos_details_total",
+		Help: "Auto-generated metric incremented on every call to Seer.GetBulkVideosDetails",
+	})
+	seerGetBulkVideosDetailsSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "seer_get_bulk_videos_details_success_total",
+		Help: "Auto-generated metric incremented on every call to Seer.GetBulkVideosDetails that does not return with an error",
+	})
+
 	seerGetChannelDetailsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "seer_get_channel_details_total",
 		Help: "Auto-generated metric incremented on every call to Seer.GetChannelDetails",
@@ -117,6 +144,9 @@ var (
 type Seer interface {
 	BulkScheduleVideoDownloads(context.Context, BulkScheduleVideoDownloads) (*Void, error)
 	CancelVideoDownload(context.Context, CancelVideoDownload) (*Void, error)
+	GetBulkChannelsDetails(context.Context, GetBulkChannelsDetailsRequest) (*GetBulkChannelsDetailsResponse, error)
+	GetBulkPlaylistsDetails(context.Context, GetBulkPlaylistsDetailsRequest) (*GetBulkPlaylistsDetailsResponse, error)
+	GetBulkVideosDetails(context.Context, GetBulkVideosDetailsRequest) (*GetBulkVideosDetailsResponse, error)
 	GetChannelDetails(context.Context, GetChannelDetailsRequest) (*GetChannelDetailsResponse, error)
 	GetChannelVideoIDs(context.Context, GetChannelVideoIDsRequest) (*GetChannelVideoIDsResponse, error)
 	GetPlaylistDetails(context.Context, GetPlaylistDetailsRequest) (*GetPlaylistDetailsResponse, error)
@@ -140,6 +170,9 @@ func RegisterSeer(server *otohttp.Server, seer Seer) {
 	}
 	server.Register("Seer", "BulkScheduleVideoDownloads", handler.handleBulkScheduleVideoDownloads)
 	server.Register("Seer", "CancelVideoDownload", handler.handleCancelVideoDownload)
+	server.Register("Seer", "GetBulkChannelsDetails", handler.handleGetBulkChannelsDetails)
+	server.Register("Seer", "GetBulkPlaylistsDetails", handler.handleGetBulkPlaylistsDetails)
+	server.Register("Seer", "GetBulkVideosDetails", handler.handleGetBulkVideosDetails)
 	server.Register("Seer", "GetChannelDetails", handler.handleGetChannelDetails)
 	server.Register("Seer", "GetChannelVideoIDs", handler.handleGetChannelVideoIDs)
 	server.Register("Seer", "GetPlaylistDetails", handler.handleGetPlaylistDetails)
@@ -189,6 +222,66 @@ func (s *seerServer) handleCancelVideoDownload(w http.ResponseWriter, r *http.Re
 		return
 	}
 	seerCancelVideoDownloadSuccessTotal.Inc()
+}
+
+func (s *seerServer) handleGetBulkChannelsDetails(w http.ResponseWriter, r *http.Request) {
+	seerGetBulkChannelsDetailsTotal.Inc()
+	var request GetBulkChannelsDetailsRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.seer.GetBulkChannelsDetails(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	seerGetBulkChannelsDetailsSuccessTotal.Inc()
+}
+
+func (s *seerServer) handleGetBulkPlaylistsDetails(w http.ResponseWriter, r *http.Request) {
+	seerGetBulkPlaylistsDetailsTotal.Inc()
+	var request GetBulkPlaylistsDetailsRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.seer.GetBulkPlaylistsDetails(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	seerGetBulkPlaylistsDetailsSuccessTotal.Inc()
+}
+
+func (s *seerServer) handleGetBulkVideosDetails(w http.ResponseWriter, r *http.Request) {
+	seerGetBulkVideosDetailsTotal.Inc()
+	var request GetBulkVideosDetailsRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.seer.GetBulkVideosDetails(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	seerGetBulkVideosDetailsSuccessTotal.Inc()
 }
 
 func (s *seerServer) handleGetChannelDetails(w http.ResponseWriter, r *http.Request) {
@@ -384,6 +477,33 @@ type ChannelDetails struct {
 	Name   string `json:"name"`
 	Avatar string `json:"avatar"`
 	Subs   string `json:"subs"`
+}
+
+type GetBulkChannelsDetailsRequest struct {
+	ChannelIDs []string `json:"channelIDs"`
+}
+
+type GetBulkChannelsDetailsResponse struct {
+	Channels []*ChannelDetails `json:"channels"`
+	Error    string            `json:"error,omitempty"`
+}
+
+type GetBulkPlaylistsDetailsRequest struct {
+	PlaylistIDs []string `json:"playlistIDs"`
+}
+
+type GetBulkPlaylistsDetailsResponse struct {
+	Playlists []*PlaylistDetails `json:"playlists"`
+	Error     string             `json:"error,omitempty"`
+}
+
+type GetBulkVideosDetailsRequest struct {
+	VideoIDs []string `json:"videoIDs"`
+}
+
+type GetBulkVideosDetailsResponse struct {
+	Videos []*VideoDetails `json:"videos"`
+	Error  string          `json:"error,omitempty"`
 }
 
 type GetChannelDetailsRequest struct {

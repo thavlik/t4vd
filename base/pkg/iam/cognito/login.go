@@ -100,6 +100,7 @@ func buildAuthBearerToken(
 ) string {
 	jwt, err := json.Marshal(&authHeader{
 		AccessToken:   accessToken,
+		RefreshToken:  refreshToken,
 		IDToken:       idToken,
 		CognitoRegion: region,
 		UserPoolID:    userPoolId,

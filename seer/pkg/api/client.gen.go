@@ -163,6 +163,117 @@ func (c *seerClient) CancelVideoDownload(ctx context.Context, req CancelVideoDow
 	return &response, nil
 }
 
+func (c *seerClient) GetBulkChannelsDetails(ctx context.Context, req GetBulkChannelsDetailsRequest) (*GetBulkChannelsDetailsResponse, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Seer.GetBulkChannelsDetails", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response GetBulkChannelsDetailsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
+func (c *seerClient) GetBulkPlaylistsDetails(ctx context.Context, req GetBulkPlaylistsDetailsRequest) (*GetBulkPlaylistsDetailsResponse, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Seer.GetBulkPlaylistsDetails", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response GetBulkPlaylistsDetailsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
+func (c *seerClient) GetBulkVideosDetails(ctx context.Context, req GetBulkVideosDetailsRequest) (*GetBulkVideosDetailsResponse, error) {
+	var body bytes.Buffer
+	if err := json.NewEncoder(&body).Encode(&req); err != nil {
+		return nil, errors.Wrap(err, "encode")
+	}
+	request, err := http.NewRequestWithContext(
+		ctx,
+		"POST",
+		fmt.Sprintf("%s/oto/Seer.GetBulkVideosDetails", c.endpoint),
+		&body,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "build request")
+	}
+	if c.basicAuth != nil {
+		request.SetBasicAuth(c.basicAuth.username, c.basicAuth.password)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	resp, err := c.cl.Do(request)
+	if err != nil {
+		return nil, errors.Wrap(err, "http")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		if resp.StatusCode == 500 {
+			return nil, errors.New(string(body))
+		}
+		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
+	}
+	var response GetBulkVideosDetailsResponse
+	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
+		return nil, errors.Wrap(err, "decode")
+	}
+	return &response, nil
+}
+
 func (c *seerClient) GetChannelDetails(ctx context.Context, req GetChannelDetailsRequest) (*GetChannelDetailsResponse, error) {
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(&req); err != nil {

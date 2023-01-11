@@ -256,8 +256,10 @@ func (s *Server) handleSignOut() http.HandlerFunc {
 		http.MethodPost,
 		iam.NullPermissions,
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
-			s.log.Warn("TODO: sign out")
-			return nil
+			return s.iam.Logout(
+				r.Context(),
+				"TODO",
+			)
 		})
 }
 

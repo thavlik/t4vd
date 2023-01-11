@@ -2,6 +2,8 @@ package keycloak
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"net/http"
 
 	"github.com/Nerzal/gocloak/v12"
@@ -27,6 +29,10 @@ func (i *keyCloakIAM) Login(ctx context.Context, username string, password strin
 	} else if err != nil {
 		return "", errors.Wrap(err, "keycloak")
 	}
-	//return strings.Join(strings.Split(token.AccessToken, ".")[:2], "."), nil
-	return token.AccessToken, nil
+	body, err := json.Marshal(token)
+	if err != nil {
+		return "", err
+	}
+	base64Body := base64.URLEncoding.EncodeToString(body)
+	return "Bearer " + base64Body, nil
 }

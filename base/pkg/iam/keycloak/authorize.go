@@ -16,9 +16,13 @@ func (i *keyCloakIAM) Authorize(
 	token string,
 	permissions []string,
 ) (string, error) {
+	jwt, err := retrieveAuthHeader(token)
+	if err != nil {
+		return "", err
+	}
 	result, err := i.kc.RetrospectToken(
 		ctx,
-		token,
+		jwt.AccessToken,
 		i.kc.ClientID,
 		i.kc.ClientSecret,
 		i.kc.Realm,

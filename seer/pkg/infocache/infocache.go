@@ -15,6 +15,10 @@ var (
 )
 
 type InfoCache interface {
+	GetBulkVideos(ctx context.Context, videoIDs []string) ([]*api.VideoDetails, error)
+	GetBulkPlaylists(ctx context.Context, playlistIDs []string) ([]*api.PlaylistDetails, error)
+	GetBulkChannels(ctx context.Context, channelIDs []string) ([]*api.ChannelDetails, error)
+
 	GetVideo(ctx context.Context, videoID string) (*api.VideoDetails, error)
 	SetVideo(video *api.VideoDetails) error
 	IsVideoRecent(videoID string) (bool, error)

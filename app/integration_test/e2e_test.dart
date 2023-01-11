@@ -55,10 +55,14 @@ void main() {
         find.byKey(const Key('createProjectSubmit'));
     await pumpUntilFound(tester, findCreateProjectSubmit);
     final findCreateProjectName = find.byKey(const Key('createProjectName'));
+    await tester.tap(findCreateProjectName);
+    await tester.pumpAndSettle();
     await tester.enterText(findCreateProjectName, 'd');
     await tester.tap(findCreateProjectSubmit);
     await pumpUntilFound(tester,
         find.text('Must contain at least $minProjectNameLength characters'));
+    await tester.tap(findCreateProjectName);
+    await tester.pumpAndSettle();
     await tester.enterText(findCreateProjectName, project.name);
     await tester.pumpAndSettle();
     final findSubmit = find.text('Create project "${project.name}"');
@@ -119,15 +123,20 @@ void main() {
     final findPasswordConfirm = find.byKey(const Key('signUpPasswordConfirm'));
     expect(findPasswordConfirm, findsOneWidget);
     if (fumble) {
-      await tester.enterText(findUsername, 'a');
+      await tester.enterText(findUsername, 'z');
       await tester.pumpAndSettle();
       await tester.tap(findSubmit);
       await tester.pumpAndSettle();
-      expect(find.text('Must contain at least $minPasswordLength characters'),
-          findsOneWidget);
-      await tester.enterText(findUsername, 'admin');
+      await pumpUntilFound(tester,
+          find.text('Must contain at least $minPasswordLength characters'));
+      await tester.tap(find.byKey(const Key('signUpUsername')));
+      await tester.enterText(find.byKey(const Key('signUpUsername')), 'admin');
+      await tester.pumpAndSettle();
       await tester.tap(findSubmit);
+      await tester.pumpAndSettle();
       await pumpUntilFound(tester, find.text('Username already taken'));
+      await tester.tap(findUsername);
+      await tester.pumpAndSettle();
       await tester.enterText(findUsername, creds.username);
       await tester.pumpAndSettle();
       await tester.enterText(findEmail, 'd@d.com');
@@ -163,6 +172,8 @@ void main() {
       await tester.enterText(findLastName, creds.lastName);
       await tester.enterText(findPassword, creds.password);
     }
+    await tester.tap(findPasswordConfirm);
+    await tester.pumpAndSettle();
     await tester.enterText(findPasswordConfirm, creds.password);
     await tester.pumpAndSettle();
     await tester.tap(findSubmit);

@@ -114,6 +114,7 @@ class VideoProgress {
 }
 
 class VideoInfo {
+  final String id;
   final String title;
   final String uploader;
   final String uploaderId;
@@ -127,6 +128,7 @@ class VideoInfo {
   final int fps;
 
   VideoInfo({
+    required this.id,
     required this.uploader,
     required this.uploaderId,
     required this.thumbnail,
@@ -141,6 +143,7 @@ class VideoInfo {
   });
 
   static VideoInfo fromMap(Map m) => VideoInfo(
+        id: m['id'],
         title: m['title'],
         channel: m['channel'],
         channelId: m['channelID'],
@@ -179,12 +182,14 @@ class Video {
 }
 
 class PlaylistInfo {
+  final String id;
   final String title;
   final String channel;
   final String channelId;
   final int numVideos;
 
   PlaylistInfo({
+    required this.id,
     required this.title,
     required this.channel,
     required this.channelId,
@@ -192,6 +197,7 @@ class PlaylistInfo {
   });
 
   static PlaylistInfo fromMap(Map m) => PlaylistInfo(
+        id: m['id'],
         title: m['title'],
         channel: m['channel'],
         channelId: m['channelID'],
@@ -231,15 +237,18 @@ class ChannelProgress {
 }
 
 class ChannelInfo {
+  final String id;
   final String name;
   final String avatarUrl;
 
   ChannelInfo({
+    required this.id,
     required this.name,
     required this.avatarUrl,
   });
 
   static ChannelInfo fromMap(Map m) => ChannelInfo(
+        id: m['id'],
         name: m['name'],
         avatarUrl: m['avatar'],
       );

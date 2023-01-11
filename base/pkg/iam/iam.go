@@ -34,6 +34,7 @@ type Group struct {
 
 type IAM interface {
 	Login(ctx context.Context, username string, password string) (string, error)
+	Logout(ctx context.Context, token string) error
 	Authorize(ctx context.Context, token string, permissions []string) (userID string, err error)
 	SetPassword(username string, password string, temporary bool) error
 

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
@@ -90,18 +91,69 @@ func (s *Server) handleListChannels() http.HandlerFunc {
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
-			resp, err := s.sources.ListChannels(r.Context(), sources.ListChannelsRequest{
-				ProjectID: projectID,
-			})
+			resp, err := s.sources.ListChannels(
+				r.Context(),
+				sources.ListChannelsRequest{
+					ProjectID: projectID,
+				})
 			if err != nil {
 				return errors.Wrap(err, "sources")
 			}
+			output, err := resolveChannels(
+				r.Context(),
+				s.seerOpts,
+				resp.Channels,
+			)
+			if err != nil {
+				return errors.Wrap(err, "resolveChannels")
+			}
 			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(resp.Channels); err != nil {
+			if err := json.NewEncoder(w).Encode(output); err != nil {
 				return errors.Wrap(err, "encoder")
 			}
 			return nil
 		})
+}
+
+type channel struct {
+	ID        string               `json:"id"`
+	Blacklist bool                 `json:"blacklist"`
+	Info      *seer.ChannelDetails `json:"info"`
+}
+
+func resolveChannels(
+	ctx context.Context,
+	opts base.ServiceOptions,
+	channels []*sources.Channel,
+) ([]*channel, error) {
+	output := make([]*channel, len(channels))
+	channelIDs := make([]string, len(channels))
+	for i, v := range channels {
+		channelIDs[i] = v.ID
+		output[i] = &channel{
+			ID:        v.ID,
+			Blacklist: v.Blacklist,
+		}
+	}
+	resolved, err := seer.NewSeerClientFromOptions(opts).
+		GetBulkChannelsDetails(
+			ctx,
+			seer.GetBulkChannelsDetailsRequest{
+				ChannelIDs: channelIDs,
+			},
+		)
+	if err != nil {
+		return nil, errors.Wrap(err, "seer.GetBulkChannelsDetails")
+	}
+	for _, info := range resolved.Channels {
+		for i, ch := range channels {
+			if ch.ID == info.ID {
+				output[i].Info = info
+				break
+			}
+		}
+	}
+	return output, nil
 }
 
 func (s *Server) handleGetChannelAvatar() http.HandlerFunc {

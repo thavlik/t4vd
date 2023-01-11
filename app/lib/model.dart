@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:t4vd/sources/video_details.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -17,6 +18,7 @@ final List<api.Video> exampleVideos = [
   api.Video(
     id: "6wrYM8KzBRU",
     info: api.VideoInfo(
+      id: "6wrYM8KzBRU",
       channel: "Tyler Spangler",
       channelId: "TylerSpangler",
       title: "I Tried Using Jiu Jitsu Versus A Knife",
@@ -33,6 +35,7 @@ final List<api.Video> exampleVideos = [
   api.Video(
     id: "e5YuPpbzBdo",
     info: api.VideoInfo(
+      id: "e5YuPpbzBdo",
       channel: "Tyler Spangler",
       channelId: "TylerSpangler",
       title: "I Tore My Knee At A New Gym",
@@ -52,6 +55,7 @@ final List<api.Playlist> examplePlaylists = [
   api.Playlist(
     id: "PLuWwmKO5nQLtJ7aczfnESU3Wvetw-N12I",
     info: api.PlaylistInfo(
+      id: "PLuWwmKO5nQLtJ7aczfnESU3Wvetw-N12I",
       channel: "ROYDEAN",
       channelId: "ROYDEAN",
       title: "Costa Rica 2021",
@@ -64,6 +68,7 @@ final List<api.Channel> exampleChannels = [
   api.Channel(
     id: "tylerspangler",
     info: api.ChannelInfo(
+      id: "tylerspangler",
       name: "Tyler Spangler",
       avatarUrl: "assets/tylerspangler.jpg",
     ),
@@ -344,15 +349,38 @@ class BJJModel extends Model {
   }
 
   void handleWebSockMessage(dynamic message) {
-    print(message);
     final obj = jsonDecode(message) as Map<String, dynamic>;
     switch (obj['type']) {
       case 'channel_details':
+        mergeChannelInfo(api.ChannelInfo.fromMap(obj['info']));
+        break;
       case 'playlists_details':
+        mergePlaylistInfo(api.PlaylistInfo.fromMap(obj['info']));
+        break;
       case 'video_details':
-      case 'channel_video':
-      case 'playlist_video':
+        mergeVideoInfo(api.VideoInfo.fromMap(obj['info']));
+        break;
+      default:
+        break;
     }
+  }
+
+  void mergeVideoInfo(api.VideoInfo info) {
+    final i = _videos.indexWhere((v) => v.id == info.id);
+    if (i == -1) return;
+    _videos[i].info = info;
+  }
+
+  void mergePlaylistInfo(api.PlaylistInfo info) {
+    final i = _playlists.indexWhere((v) => v.id == info.id);
+    if (i == -1) return;
+    _playlists[i].info = info;
+  }
+
+  void mergeChannelInfo(api.ChannelInfo info) {
+    final i = _channels.indexWhere((v) => v.id == info.id);
+    if (i == -1) return;
+    _channels[i].info = info;
   }
 
   void precacheFrames(BuildContext context) {

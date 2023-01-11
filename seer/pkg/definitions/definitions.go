@@ -4,6 +4,10 @@ type Seer interface {
 	GetChannelDetails(GetChannelDetailsRequest) GetChannelDetailsResponse
 	GetPlaylistDetails(GetPlaylistDetailsRequest) GetPlaylistDetailsResponse
 	GetVideoDetails(GetVideoDetailsRequest) GetVideoDetailsResponse
+	GetBulkVideosDetails(GetBulkVideosDetailsRequest) GetBulkVideosDetailsResponse
+	GetBulkPlaylistsDetails(GetBulkPlaylistsDetailsRequest) GetBulkPlaylistsDetailsResponse
+	GetBulkChannelsDetails(GetBulkChannelsDetailsRequest) GetBulkChannelsDetailsResponse
+
 	GetChannelVideoIDs(GetChannelVideoIDsRequest) GetChannelVideoIDsResponse
 	GetPlaylistVideoIDs(GetPlaylistVideoIDsRequest) GetPlaylistVideoIDsResponse
 	PurgeVideo(PurgeVideo) Void
@@ -68,6 +72,30 @@ type GetPlaylistDetailsResponse struct {
 type GetVideoDetailsRequest struct {
 	Input string `json:"input"`
 	Force bool   `json:"force"`
+}
+
+type GetBulkVideosDetailsRequest struct {
+	VideoIDs []string `json:"videoIDs"`
+}
+
+type GetBulkVideosDetailsResponse struct {
+	Videos []*VideoDetails `json:"videos"`
+}
+
+type GetBulkPlaylistsDetailsRequest struct {
+	PlaylistIDs []string `json:"playlistIDs"`
+}
+
+type GetBulkPlaylistsDetailsResponse struct {
+	Playlists []*PlaylistDetails `json:"playlists"`
+}
+
+type GetBulkChannelsDetailsRequest struct {
+	ChannelIDs []string `json:"channelIDs"`
+}
+
+type GetBulkChannelsDetailsResponse struct {
+	Channels []*ChannelDetails `json:"channels"`
 }
 
 type VideoDetails struct {

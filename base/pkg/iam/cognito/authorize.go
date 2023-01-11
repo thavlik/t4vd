@@ -32,6 +32,7 @@ type idTokenClaims struct {
 
 type authHeader struct {
 	AccessToken   string `json:"accessToken"`
+	RefreshToken  string `json:"refreshToken"`
 	IDToken       string `json:"idToken"`
 	CognitoRegion string `json:"cognitoRegion"`
 	UserPoolID    string `json:"userPoolId"`

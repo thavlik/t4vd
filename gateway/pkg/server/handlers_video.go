@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/t4vd/base/pkg/base"
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
@@ -86,18 +87,69 @@ func (s *Server) handleListVideos() http.HandlerFunc {
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
-			resp, err := s.sources.ListVideos(r.Context(), sources.ListVideosRequest{
-				ProjectID: projectID,
-			})
+			resp, err := s.sources.ListVideos(
+				r.Context(),
+				sources.ListVideosRequest{
+					ProjectID: projectID,
+				})
 			if err != nil {
 				return errors.Wrap(err, "sources")
 			}
+			output, err := resolveVideos(
+				r.Context(),
+				s.seerOpts,
+				resp.Videos,
+			)
+			if err != nil {
+				return errors.Wrap(err, "resolveVideos")
+			}
 			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(resp.Videos); err != nil {
+			if err := json.NewEncoder(w).Encode(output); err != nil {
 				return errors.Wrap(err, "encoder")
 			}
 			return nil
 		})
+}
+
+type video struct {
+	ID        string             `json:"id"`
+	Blacklist bool               `json:"blacklist"`
+	Info      *seer.VideoDetails `json:"info"`
+}
+
+func resolveVideos(
+	ctx context.Context,
+	opts base.ServiceOptions,
+	videos []*sources.Video,
+) ([]*video, error) {
+	output := make([]*video, len(videos))
+	videoIDs := make([]string, len(videos))
+	for i, v := range videos {
+		videoIDs[i] = v.ID
+		output[i] = &video{
+			ID:        v.ID,
+			Blacklist: v.Blacklist,
+		}
+	}
+	resolved, err := seer.NewSeerClientFromOptions(opts).
+		GetBulkVideosDetails(
+			ctx,
+			seer.GetBulkVideosDetailsRequest{
+				VideoIDs: videoIDs,
+			},
+		)
+	if err != nil {
+		return nil, errors.Wrap(err, "seer.GetBulkPlaylistsDetails")
+	}
+	for _, info := range resolved.Videos {
+		for i, v := range videos {
+			if v.ID == info.ID {
+				output[i].Info = info
+				break
+			}
+		}
+	}
+	return output, nil
 }
 
 func (s *Server) handleGetVideoThumbnail() http.HandlerFunc {
