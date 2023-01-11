@@ -551,6 +551,27 @@ Future<void> classifyMarker({
   checkHttpStatus(response);
 }
 
+Future<void> tagMarker({
+  required String projectId,
+  required String videoId,
+  required int time,
+  required List<String> tags,
+  required UserCredentials creds,
+}) async {
+  final url = Uri.https(apiHost, 'filter/tag');
+  final response = await http.post(url,
+      headers: {'AccessToken': creds.accessToken},
+      body: json.encode({
+        'projectID': projectId,
+        'marker': {
+          'videoID': videoId,
+          'time': time,
+        },
+        'tags': tags,
+      }));
+  checkHttpStatus(response);
+}
+
 Future<bool> userExists(String username) async {
   final url = Uri.https(apiHost, 'user/exists', {
     'u': username,

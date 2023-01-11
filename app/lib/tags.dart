@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'model.dart';
 
 class TagWidget extends StatefulWidget {
   const TagWidget(
@@ -129,13 +132,20 @@ class _TagsPageState extends State<TagsPage> {
     //"straight ankle lock",
   ];
 
-  void skip() {}
+  Future<void> skip(BuildContext context) async =>
+      await ScopedModel.of<BJJModel>(context).skip(Navigator.of(context));
 
-  void discard() {}
+  Future<void> discard(BuildContext context) async =>
+      await ScopedModel.of<BJJModel>(context).discard(Navigator.of(context));
 
-  void submit() {}
+  Future<void> submit(BuildContext context) async =>
+      await ScopedModel.of<BJJModel>(context).tag(
+        nav: Navigator.of(context),
+        tags: tags,
+      );
 
-  void previous() {}
+  void previous(BuildContext context) =>
+      ScopedModel.of<BJJModel>(context).markerBack();
 
   void addTag(String tag) => setState(() {
         tags.add(tag);
@@ -214,19 +224,30 @@ class _TagsPageState extends State<TagsPage> {
             const SizedBox(height: 48),
           ],
         ),
+        Visibility(
+          visible: ScopedModel.of<BJJModel>(context).markerIndex > 0,
+          child: Positioned(
+            top: 16,
+            left: 16,
+            child: FloatingActionButton(
+              onPressed: () => previous(context),
+              child: const Icon(Icons.navigate_before),
+            ),
+          ),
+        ),
         Positioned(
           bottom: 16,
           left: 16,
           child: FloatingActionButton(
-            onPressed: () => previous(),
-            child: const Icon(Icons.navigate_before),
+            onPressed: () => discard(context),
+            child: const Icon(Icons.block),
           ),
         ),
         Positioned(
           bottom: 16,
           right: 16,
           child: FloatingActionButton(
-            onPressed: () => submit(),
+            onPressed: () => submit(context),
             child: const Icon(Icons.done),
           ),
         ),
@@ -240,8 +261,8 @@ class _TagsPageState extends State<TagsPage> {
                 details.globalPosition,
                 id: videoId,
                 startSeconds: startSeconds,
-                onSkip: () => skip(),
-                onDiscard: () => discard(),
+                onSkip: () => skip(context),
+                onDiscard: () => discard(context),
               );
             },
             child: Padding(
@@ -323,7 +344,7 @@ Future<void> showTagsContextMenu(
           padding: const EdgeInsets.only(left: 0, right: 40),
           child: Row(
             children: [
-              const Icon(Icons.delete),
+              const Icon(Icons.block),
               const SizedBox(width: 4),
               Text(
                 "Discard Frame",

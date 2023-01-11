@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:scoped_model/scoped_model.dart';
+
+import 'model.dart';
 
 class CropPage extends StatelessWidget {
   const CropPage({super.key});
+
+  Future<void> submit(BuildContext context) async {}
+
+  Future<void> discard(BuildContext context) async =>
+      await ScopedModel.of<BJJModel>(context).discard(Navigator.of(context));
+
+  void previous(BuildContext context) =>
+      ScopedModel.of<BJJModel>(context).markerBack();
 
   @override
   Widget build(BuildContext context) {
@@ -34,19 +45,22 @@ class CropPage extends StatelessWidget {
             ),
           ],
         ),
+        Visibility(
+          visible: ScopedModel.of<BJJModel>(context).markerIndex > 0,
+          child: Positioned(
+              top: 16,
+              left: 16,
+              child: FloatingActionButton(
+                onPressed: () {},
+                child: const Icon(Icons.navigate_before),
+              )),
+        ),
         Positioned(
             bottom: 16,
             left: 16,
             child: FloatingActionButton(
               onPressed: () {},
-              child: const Icon(Icons.navigate_before),
-            )),
-        Positioned(
-            top: 16,
-            left: 16,
-            child: FloatingActionButton(
-              onPressed: () {},
-              child: const Icon(Icons.cancel_outlined),
+              child: const Icon(Icons.block),
             )),
         Positioned(
             bottom: 16,

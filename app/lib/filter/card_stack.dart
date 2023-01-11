@@ -51,7 +51,7 @@ class _CardStackState extends State<CardStack> {
       nav: Navigator.of(context),
       label: label,
     );
-    if (!mounted) return;
+    //if (!mounted) return;
     //model.precacheFrames(context);
   }
 
@@ -108,9 +108,7 @@ class _CardStackState extends State<CardStack> {
                   top: 16,
                   left: 16,
                   child: FloatingActionButton(
-                    onPressed: () {
-                      model.classifyBack();
-                    },
+                    onPressed: () => model.markerBack(),
                     child: const Icon(Icons.navigate_before),
                   )),
             ),

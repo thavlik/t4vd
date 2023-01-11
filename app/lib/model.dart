@@ -504,6 +504,29 @@ class BJJModel extends Model {
     });
   }
 
+  void _checkStack() {
+    final remaining = _markers.length - _markerIndex;
+    if (remaining < 3) {
+      // asynchronously get another stack
+      api.getStack(projectId: _project!.id, creds: creds!).then((value) {
+        _markers.addAll(value);
+        notifyListeners();
+      });
+    }
+  }
+
+  Future<void> skip(NavigatorState nav) async {
+    await withAuth(nav, () async {
+      await ensureProject(nav);
+      _markerIndex++;
+      _checkStack();
+      notifyListeners();
+    });
+  }
+
+  Future<void> discard(NavigatorState nav) async =>
+      await classify(nav: nav, label: false);
+
   Future<void> classify({
     required NavigatorState nav,
     required bool label,
@@ -519,6 +542,26 @@ class BJJModel extends Model {
         creds: creds!,
       );
       _markerIndex++;
+      _checkStack();
+      notifyListeners();
+    });
+  }
+
+  Future<void> tag({
+    required NavigatorState nav,
+    required List<String> tags,
+  }) async {
+    await withAuth(nav, () async {
+      await ensureProject(nav);
+      final cur = _markers[_markerIndex];
+      await api.tagMarker(
+        projectId: _project!.id,
+        videoId: cur.videoId,
+        time: cur.time,
+        tags: tags,
+        creds: creds!,
+      );
+      _markerIndex++;
       final remaining = _markers.length - _markerIndex;
       if (remaining < 3) {
         // asynchronously get another stack
@@ -531,7 +574,8 @@ class BJJModel extends Model {
     });
   }
 
-  Future<void> classifyBack() async {
+  void markerBack() {
+    if (_markerIndex == 0) return;
     _markerIndex--;
     notifyListeners();
   }
