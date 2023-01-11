@@ -9,7 +9,6 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	compiler "github.com/thavlik/t4vd/compiler/pkg/api"
 	"github.com/thavlik/t4vd/compiler/pkg/datastore"
-	"go.uber.org/zap"
 )
 
 func (s *Server) handleGetDataset() http.HandlerFunc {
@@ -23,7 +22,7 @@ func (s *Server) handleGetDataset() http.HandlerFunc {
 				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
-				s.log.Warn("project access denied", zap.Error(err))
+
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}

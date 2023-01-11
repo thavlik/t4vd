@@ -113,6 +113,7 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.HandleFunc("/dataset", s.handleGetDataset())
 	mux.HandleFunc("/filter/stack", s.handleGetFilterStack())
 	mux.HandleFunc("/filter/classify", s.handleFilterClassify())
+	mux.HandleFunc("/filter/tag", s.handleFilterTag())
 	mux.HandleFunc("/randmarker", s.handleGetRandomMarker())
 	mux.HandleFunc("/frame", s.handleGetFrame())
 	mux.HandleFunc("/sse", s.handleServerSentEvents())

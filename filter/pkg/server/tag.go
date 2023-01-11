@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -10,9 +9,9 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *Server) Classify(
+func (s *Server) Tag(
 	ctx context.Context,
-	req api.Classify,
+	req api.Tag,
 ) (*api.Void, error) {
 	if req.ProjectID == "" {
 		return nil, errors.New("missing projectID")
@@ -21,13 +20,13 @@ func (s *Server) Classify(
 		req.ProjectID,
 		req.Marker.VideoID,
 		time.Duration(req.Marker.Time),
-		[]string{fmt.Sprintf("%d", req.Label)},
+		req.Tags,
 	); err != nil {
 		return nil, errors.Wrap(err, "mongo")
 	}
-	s.log.Debug("classified frame",
+	s.log.Debug("tagged frame",
 		zap.String("videoID", req.Marker.VideoID),
 		zap.Int64("time", req.Marker.Time),
-		zap.Int64("label", req.Label))
+		zap.Strings("tags", req.Tags))
 	return &api.Void{}, nil
 }

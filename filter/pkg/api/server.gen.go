@@ -22,10 +22,20 @@ var (
 		Name: "filter_classify_success_total",
 		Help: "Auto-generated metric incremented on every call to Filter.Classify that does not return with an error",
 	})
+
+	filterTagTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "filter_tag_total",
+		Help: "Auto-generated metric incremented on every call to Filter.Tag",
+	})
+	filterTagSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "filter_tag_success_total",
+		Help: "Auto-generated metric incremented on every call to Filter.Tag that does not return with an error",
+	})
 )
 
 type Filter interface {
 	Classify(context.Context, Classify) (*Void, error)
+	Tag(context.Context, Tag) (*Void, error)
 }
 
 type filterServer struct {
@@ -39,6 +49,7 @@ func RegisterFilter(server *otohttp.Server, filter Filter) {
 		filter: filter,
 	}
 	server.Register("Filter", "Classify", handler.handleClassify)
+	server.Register("Filter", "Tag", handler.handleTag)
 }
 
 func (s *filterServer) handleClassify(w http.ResponseWriter, r *http.Request) {
@@ -61,6 +72,26 @@ func (s *filterServer) handleClassify(w http.ResponseWriter, r *http.Request) {
 	filterClassifySuccessTotal.Inc()
 }
 
+func (s *filterServer) handleTag(w http.ResponseWriter, r *http.Request) {
+	filterTagTotal.Inc()
+	var request Tag
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.filter.Tag(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	filterTagSuccessTotal.Inc()
+}
+
 type Marker struct {
 	VideoID string `json:"videoID"`
 	Time    int64  `json:"time"`
@@ -74,4 +105,10 @@ type Classify struct {
 
 type Void struct {
 	Error string `json:"error,omitempty"`
+}
+
+type Tag struct {
+	ProjectID string   `json:"projectID"`
+	Marker    Marker   `json:"marker"`
+	Tags      []string `json:"tags"`
 }

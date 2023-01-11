@@ -20,7 +20,7 @@ func NewPostgresLabelStore(db *sql.DB) labelstore.LabelStore {
 			id SERIAL PRIMARY KEY,
 			v VARCHAR(11) NOT NULL,
 			t BIGINT NOT NULL,
-			l INT NOT NULL,
+			l TEXT[] NOT NULL,
 			p TEXT NOT NULL
 		)`,
 		tableName,

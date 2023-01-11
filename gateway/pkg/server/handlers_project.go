@@ -74,7 +74,7 @@ func (s *Server) handleGetProject() http.HandlerFunc {
 				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
-				s.log.Warn("project access denied", zap.Error(err))
+
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
@@ -167,7 +167,7 @@ func (s *Server) handleProjectAddCollaborator() http.HandlerFunc {
 				return errors.Wrap(err, "decoder")
 			}
 			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
-				s.log.Warn("project access denied", zap.Error(err))
+
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
@@ -202,7 +202,7 @@ func (s *Server) handleProjectRemoveCollaborator() http.HandlerFunc {
 				return errors.Wrap(err, "decoder")
 			}
 			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
-				s.log.Warn("project access denied", zap.Error(err))
+
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}

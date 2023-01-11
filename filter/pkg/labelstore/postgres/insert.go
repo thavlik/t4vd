@@ -11,7 +11,7 @@ func (l *postgresLabelStore) Insert(
 	projectID string,
 	videoID string,
 	time time.Duration,
-	label int,
+	labels []string,
 ) error {
 	if _, err := l.db.Exec(
 		fmt.Sprintf(
@@ -20,7 +20,7 @@ func (l *postgresLabelStore) Insert(
 		),
 		videoID,
 		int64(time),
-		label,
+		labels,
 		projectID,
 	); err != nil {
 		return errors.Wrap(err, "postgres")

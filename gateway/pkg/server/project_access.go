@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 var NoProjectAccess = errors.New("no project access")
@@ -25,6 +26,9 @@ func (s *Server) ProjectAccess(
 	if err != nil {
 		return errors.Wrap(err, "iam.IsUserInGroup")
 	} else if !access {
+		s.log.Warn("project access denied",
+			zap.String("userID", userID),
+			zap.String("projectID", projectID))
 		return NoProjectAccess
 	}
 	return nil

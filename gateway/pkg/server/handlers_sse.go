@@ -62,7 +62,7 @@ func (s *Server) handleServerSentEvents() http.HandlerFunc {
 				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
-				s.log.Warn("project access denied", zap.Error(err))
+
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}

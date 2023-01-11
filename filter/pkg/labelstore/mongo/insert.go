@@ -11,14 +11,14 @@ func (l *mongoLabelStore) Insert(
 	projectID string,
 	videoID string,
 	time time.Duration,
-	label int,
+	labels []string,
 ) error {
 	if _, err := l.col.InsertOne(
 		context.Background(),
 		map[string]interface{}{
 			"v": videoID,
 			"t": int64(time),
-			"l": label,
+			"l": labels,
 			"p": projectID,
 		},
 	); err != nil {
