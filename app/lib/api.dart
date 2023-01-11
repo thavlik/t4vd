@@ -69,6 +69,7 @@ class Marker {
   });
 
   String get imageUrl => "https://$apiHost/frame?v=$videoId&t=$time";
+  String get hash => '$videoId:$time';
 
   static Marker fromMap(Map m) => Marker(
         videoId: m['videoID'],

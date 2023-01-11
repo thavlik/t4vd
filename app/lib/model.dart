@@ -168,6 +168,10 @@ class BJJModel extends Model {
   List<api.Channel> _channels = [];
   List<api.Video> _videos = [];
   List<api.Marker> _markers = [];
+  final Map<String, List<String>> _tags = {};
+
+  List<String>? getTags(api.Marker marker) => _tags[marker.hash];
+
   int _markerIndex = 0;
   api.Dataset? _dataset;
   String? _loginErr;
@@ -561,6 +565,7 @@ class BJJModel extends Model {
         tags: tags,
         creds: creds!,
       );
+      _tags[cur.hash] = tags;
       _markerIndex++;
       final remaining = _markers.length - _markerIndex;
       if (remaining < 3) {

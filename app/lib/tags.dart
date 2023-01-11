@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'api.dart';
 import 'model.dart';
 
 class TagWidget extends StatefulWidget {
@@ -91,15 +92,14 @@ class TagsPage extends StatefulWidget {
 class _TagsPageState extends State<TagsPage> {
   final _textController = TextEditingController();
   final _textNode = FocusNode();
+  bool _loading = false;
 
-  String videoId = "xdx_ojqARK8";
-  int startSeconds = 30;
   List<String> tags = [
-    "rear naked choke",
-    "side control",
-    "bottom armbar",
-    "guillotine",
-    "de la Riva",
+    //"rear naked choke",
+    //"side control",
+    //"bottom armbar",
+    //"guillotine",
+    //"de la Riva",
     //"bicep slicer",
     //"kimura",
     //"heel hook",
@@ -132,33 +132,74 @@ class _TagsPageState extends State<TagsPage> {
     //"straight ankle lock",
   ];
 
-  Future<void> skip(BuildContext context) async =>
-      await ScopedModel.of<BJJModel>(context).skip(Navigator.of(context));
+  @override
+  void initState() {
+    super.initState();
+    final model = ScopedModel.of<BJJModel>(context);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      if (!mounted) return;
+      if (model.markers.isEmpty || model.markerIndex == model.markers.length) {
+        setState(() => _loading = true);
+        try {
+          await model.refreshMarkers(Navigator.of(context));
+        } on InvalidCredentialsError {
+          Navigator.of(context).pushNamed('/splash');
+        } on ForbiddenError {
+          Navigator.of(context).pushNamed('/splash');
+        } finally {
+          setState(() => _loading = false);
+        }
+      }
+      if (!mounted) return;
+      //model.precacheFrames(context);
+    });
+  }
 
-  Future<void> discard(BuildContext context) async =>
-      await ScopedModel.of<BJJModel>(context).discard(Navigator.of(context));
+  Future<void> skip(BuildContext context) async {
+    if (_loading) return;
+    await ScopedModel.of<BJJModel>(context).skip(Navigator.of(context));
+  }
 
-  Future<void> submit(BuildContext context) async =>
-      await ScopedModel.of<BJJModel>(context).tag(
-        nav: Navigator.of(context),
-        tags: tags,
-      );
+  Future<void> discard(BuildContext context) async {
+    if (_loading) return;
+    await ScopedModel.of<BJJModel>(context).discard(Navigator.of(context));
+  }
 
-  void previous(BuildContext context) =>
-      ScopedModel.of<BJJModel>(context).markerBack();
+  Future<void> submit(BuildContext context) async {
+    if (_loading) return;
+    await ScopedModel.of<BJJModel>(context).tag(
+      nav: Navigator.of(context),
+      tags: tags,
+    );
+  }
 
-  void addTag(String tag) => setState(() {
-        tags.add(tag);
-        _textController.clear();
-        _textNode.requestFocus();
-      });
+  void previous(BuildContext context) {
+    if (_loading) return;
+    final model = ScopedModel.of<BJJModel>(context);
+    model.markerBack();
+    setState(() => tags = model.currentMarker != null
+        ? model.getTags(model.currentMarker!) ?? []
+        : []);
+  }
 
-  void removeTag(String tag) => setState(() {
-        tags.remove(tag);
-      });
+  void addTag(String tag) {
+    if (_loading) return;
+    setState(() {
+      tags.add(tag);
+      _textController.clear();
+      _textNode.requestFocus();
+    });
+  }
+
+  void removeTag(String tag) {
+    if (_loading) return;
+    setState(() => tags.remove(tag));
+  }
 
   @override
   Widget build(BuildContext context) {
+    final model = ScopedModel.of<BJJModel>(context);
+    final currentMarker = model.currentMarker;
     return Stack(
       children: [
         Column(
@@ -169,12 +210,14 @@ class _TagsPageState extends State<TagsPage> {
                 child: AspectRatio(
                   aspectRatio: 1920.0 / 1080.0,
                   child: Container(
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage("assets/example-2.jpg"),
-                        alignment: Alignment(0, 0),
-                        fit: BoxFit.cover,
-                      ),
+                    decoration: BoxDecoration(
+                      image: currentMarker != null
+                          ? DecorationImage(
+                              image: NetworkImage(currentMarker!.imageUrl),
+                              alignment: Alignment(0, 0),
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -251,36 +294,43 @@ class _TagsPageState extends State<TagsPage> {
             child: const Icon(Icons.done),
           ),
         ),
-        Positioned(
-          top: 0,
-          right: 0,
-          child: GestureDetector(
-            onTapDown: (details) {
-              showTagsContextMenu(
-                context,
-                details.globalPosition,
-                id: videoId,
-                startSeconds: startSeconds,
-                onSkip: () => skip(context),
-                onDiscard: () => discard(context),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Icon(
-                Icons.more_vert,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withAlpha(170),
-                    blurRadius: 12.0,
-                    offset: const Offset(0, 0),
-                  )
-                ],
-                color: Colors.pink,
+        if (currentMarker != null)
+          Positioned(
+            top: 0,
+            right: 0,
+            child: GestureDetector(
+              onTapDown: (details) {
+                showTagsContextMenu(
+                  context,
+                  details.globalPosition,
+                  id: currentMarker.videoId,
+                  startSeconds:
+                      Duration(microseconds: currentMarker.time ~/ 1000)
+                          .inSeconds,
+                  onSkip: () => skip(context),
+                  onDiscard: () => discard(context),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Icon(
+                  Icons.more_vert,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withAlpha(170),
+                      blurRadius: 12.0,
+                      offset: const Offset(0, 0),
+                    )
+                  ],
+                  color: Colors.pink,
+                ),
               ),
             ),
           ),
-        )
+        if (_loading)
+          const Center(
+            child: CircularProgressIndicator(),
+          ),
       ],
     );
   }
