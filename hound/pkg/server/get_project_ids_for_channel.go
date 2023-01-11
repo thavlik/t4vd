@@ -7,7 +7,7 @@ import (
 	sources "github.com/thavlik/t4vd/sources/pkg/api"
 )
 
-func (s *Server) GetProjectIDsForChannel(
+func (s *Server) getProjectIDsForChannel(
 	ctx context.Context,
 	channelID string,
 ) ([]string, error) {

@@ -12,14 +12,14 @@ func (s *Server) ReportChannelVideo(
 	ctx context.Context,
 	req api.ChannelVideo,
 ) (*api.Void, error) {
-	projectIDs, err := s.GetProjectIDsForChannel(ctx, req.ChannelID)
+	projectIDs, err := s.getProjectIDsForChannel(ctx, req.ChannelID)
 	if err != nil {
 		return nil, err
 	} else if len(projectIDs) == 0 {
 		// no projects use this playlist
 		return &api.Void{}, nil
 	}
-	if err := s.PushEvent(
+	if err := s.pushEvent(
 		ctx,
 		"channel_video",
 		&req,

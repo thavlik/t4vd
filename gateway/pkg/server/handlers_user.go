@@ -258,7 +258,7 @@ func (s *Server) handleSignOut() http.HandlerFunc {
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
 			return s.iam.Logout(
 				r.Context(),
-				"TODO",
+				r.Header.Get("AccessToken"),
 			)
 		})
 }

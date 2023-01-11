@@ -5,12 +5,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	"go.uber.org/zap"
 )
+
+const pingInterval = 10 * time.Second
+const heartbeatTimeout = 20 * time.Second
+
+func (s *Server) setupWebSockHandlers() {
+	s.registerWebsockHandler("subscribe", s.handleSubscribe())
+	s.registerWebsockHandler("unsubscribe", s.handleUnsubscribe())
+}
+
+func (s *Server) registerWebsockHandler(name string, handler websockMessageHandler) {
+	s.wsHandlers[name] = handler
+}
 
 func (s *Server) handleSubscribe() websockMessageHandler {
 	return func(
@@ -109,19 +122,6 @@ func (s *Server) handleUnsubscribe() websockMessageHandler {
 	}
 }
 
-func (s *Server) handlePing() websockMessageHandler {
-	return func(
-		ctx context.Context,
-		userID string,
-		msg map[string]interface{},
-		c *websocket.Conn,
-	) error {
-		return c.WriteJSON(map[string]interface{}{
-			"type": "pong",
-		})
-	}
-}
-
 func (s *Server) handleWebSock() http.HandlerFunc {
 	return s.rbacHandler(
 		http.MethodGet,
@@ -152,30 +152,35 @@ func (s *Server) handleWebSock() http.HandlerFunc {
 				delete(s.wsSubs, c)
 			}()
 			messages := make(chan []byte, 32)
-			stopped := make(chan error)
-			go func() {
-				defer close(messages)
-				stopped <- func() error {
-					for {
-						_, buf, err := c.ReadMessage()
-						if err != nil {
-							return err
-						}
-						select {
-						case <-ctx.Done():
-							return ctx.Err()
-						case messages <- buf:
-							continue
-						}
-					}
-				}()
-			}()
+			pong := make(chan struct{}, 8)
+			stopped := make(chan error, 1)
+			go handleWebSockMessages(
+				ctx,
+				c,
+				messages,
+				pong,
+				stopped,
+				reqLog,
+			)
+			heartbeat := time.Now()
 			for {
 				select {
 				case <-ctx.Done():
 					return ctx.Err()
 				case err := <-stopped:
-					return err
+					return errors.Wrap(err, "handleWebSockMessages")
+				case <-pong:
+					heartbeat = time.Now()
+				case <-time.After(pingInterval):
+					if err := c.WriteMessage(
+						websocket.PingMessage,
+						nil,
+					); err != nil {
+						return err
+					}
+					if time.Since(heartbeat) > heartbeatTimeout {
+						return errors.New("heartbeat timeout")
+					}
 				case msg := <-messages:
 					obj := make(map[string]interface{})
 					if err := json.Unmarshal(msg, &obj); err != nil {
@@ -201,4 +206,55 @@ func (s *Server) handleWebSock() http.HandlerFunc {
 			}
 		},
 	)
+}
+
+func handleWebSockMessages(
+	ctx context.Context,
+	c *websocket.Conn,
+	messages chan<- []byte,
+	pong chan<- struct{},
+	err chan<- error,
+	log *zap.Logger,
+) {
+	err <- func() error {
+		defer close(messages)
+		for {
+			ty, buf, err := c.ReadMessage()
+			if err != nil {
+				return err
+			}
+			switch ty {
+			case websocket.CloseMessage:
+				_ = c.Close()
+				return nil
+			case websocket.PongMessage:
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case pong <- struct{}{}:
+					continue
+				default:
+					log.Warn("pong dropped")
+				}
+			case websocket.PingMessage:
+				if err := c.WriteMessage(
+					websocket.PongMessage,
+					nil,
+				); err != nil {
+					return err
+				}
+			case websocket.TextMessage:
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				case messages <- buf:
+					continue
+				default:
+					log.Warn("message dropped")
+				}
+			default:
+				return fmt.Errorf("unexpected message type: %d", ty)
+			}
+		}
+	}()
 }

@@ -8,7 +8,7 @@ import (
 	gateway "github.com/thavlik/t4vd/gateway/pkg/api"
 )
 
-func (s *Server) PushEvent(
+func (s *Server) pushEvent(
 	ctx context.Context,
 	ty string,
 	payload interface{},

@@ -45,8 +45,9 @@ class _OutputPageState extends State<OutputPage> {
                 : ListView(
                     children: [
                       ...model.dataset!.videos
-                          .map((vid) => InputVideoListItem(
-                                model: vid,
+                          .map((info) => InputVideoListItem(
+                                id: info.id,
+                                info: info,
                               ))
                           .toList(),
                     ],

@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/compiler/pkg/api"
 	"github.com/thavlik/t4vd/compiler/pkg/datastore"
-	"go.uber.org/zap"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
 )
 
 func (ds *postgresDataStore) GetDataset(
@@ -55,9 +55,6 @@ func (ds *postgresDataStore) getSpecificDataset(
 	projectID string,
 	datasetID string,
 ) (*api.Dataset, error) {
-	if datasetID == "" {
-		return nil, errors.New("missing datasetID")
-	}
 	row := ds.db.QueryRowContext(
 		ctx,
 		fmt.Sprintf(
@@ -80,18 +77,20 @@ func (ds *postgresDataStore) getSpecificDataset(
 	if err != nil {
 		return nil, errors.Wrap(err, "getDatasetVideoIDs")
 	}
-	ds.log.Debug("resolving videos", zap.Int("num", len(videoIDs)))
-	dataset.Videos, err = datastore.ResolveVideos(
+	resp, err := ds.seer.GetBulkVideosDetails(
 		ctx,
-		ds.seer,
-		ds,
-		videoIDs,
-		nil,
-		ds.log,
+		seer.GetBulkVideosDetailsRequest{
+			VideoIDs: videoIDs,
+		},
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "ResolveVideos")
+		return nil, errors.Wrap(err, "GetBulkVideosDetails")
 	}
+	dataset.Videos = make([]*api.Video, len(resp.Videos))
+	for i, video := range resp.Videos {
+		dataset.Videos[i] = (*api.Video)(video)
+	}
+	dataset.Complete = dataset.Complete && len(dataset.Videos) == len(videoIDs)
 	return &dataset, nil
 }
 

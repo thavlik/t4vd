@@ -20,30 +20,27 @@ func (s *Server) handleAddChannel() http.HandlerFunc {
 		http.MethodPost,
 		iam.NullPermissions,
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
+			ctx := r.Context()
 			var req sources.AddChannelRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
-			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {
 				s.log.Warn("project access denied", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
 			req.SubmitterID = userID
-			resp, err := s.sources.AddChannel(context.Background(), req)
+			resp, err := s.sources.AddChannel(ctx, req)
 			if err != nil {
-				if strings.Contains(err.Error(), infocache.ErrCacheUnavailable.Error()) {
-					// TODO: this is a hack, we should have a better way to handle this
-					// In the future, the handler should wait to see if the download
-					// completes before returning Accepted, which indicates that the
-					// request was accepted but not yet completed.
-					w.WriteHeader(http.StatusAccepted)
-					return nil
-				}
 				return errors.Wrap(err, "sources.AddChannel")
 			}
+			output, err := resolveChannel(ctx, s.seerOpts, resp)
+			if err != nil {
+				return errors.Wrap(err, "resolveChannel")
+			}
 			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(resp); err != nil {
+			if err := json.NewEncoder(w).Encode(output); err != nil {
 				return errors.Wrap(err, "encoder")
 			}
 			return nil
@@ -55,16 +52,17 @@ func (s *Server) handleRemoveChannel() http.HandlerFunc {
 		http.MethodPost,
 		iam.NullPermissions,
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
+			ctx := r.Context()
 			var req sources.RemoveChannelRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
-			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {
 				s.log.Warn("project access denied", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
-			resp, err := s.sources.RemoveChannel(context.Background(), req)
+			resp, err := s.sources.RemoveChannel(ctx, req)
 			if err != nil {
 				return errors.Wrap(err, "sources")
 			}
@@ -81,26 +79,27 @@ func (s *Server) handleListChannels() http.HandlerFunc {
 		http.MethodGet,
 		iam.NullPermissions,
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
+			ctx := r.Context()
 			projectID := r.URL.Query().Get("p")
 			if projectID == "" {
 				w.WriteHeader(http.StatusBadRequest)
 				return nil
 			}
-			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
+			if err := s.ProjectAccess(ctx, userID, projectID); err != nil {
 				s.log.Warn("project access denied", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
 			resp, err := s.sources.ListChannels(
-				r.Context(),
+				ctx,
 				sources.ListChannelsRequest{
 					ProjectID: projectID,
 				})
 			if err != nil {
 				return errors.Wrap(err, "sources")
 			}
-			output, err := resolveChannels(
-				r.Context(),
+			output, err := resolveBulkChannels(
+				ctx,
 				s.seerOpts,
 				resp.Channels,
 			)
@@ -121,7 +120,33 @@ type channel struct {
 	Info      *seer.ChannelDetails `json:"info"`
 }
 
-func resolveChannels(
+func resolveChannel(
+	ctx context.Context,
+	opts base.ServiceOptions,
+	ch *sources.Channel,
+) (*channel, error) {
+	output := &channel{
+		ID:        ch.ID,
+		Blacklist: ch.Blacklist,
+	}
+	resp, err := seer.NewSeerClientFromOptions(opts).
+		GetChannelDetails(
+			ctx,
+			seer.GetChannelDetailsRequest{
+				Input: ch.ID,
+			},
+		)
+	if err != nil {
+		if strings.Contains(err.Error(), infocache.ErrCacheUnavailable.Error()) {
+			return output, nil
+		}
+		return nil, errors.Wrap(err, "seer.GetBulkChannelsDetails")
+	}
+	output.Info = &resp.Details
+	return output, nil
+}
+
+func resolveBulkChannels(
 	ctx context.Context,
 	opts base.ServiceOptions,
 	channels []*sources.Channel,

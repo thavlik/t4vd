@@ -20,26 +20,27 @@ func (s *Server) handleAddVideo() http.HandlerFunc {
 		http.MethodPost,
 		iam.NullPermissions,
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
+			ctx := r.Context()
 			var req sources.AddVideoRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
-			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {
 				s.log.Warn("project access denied", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
 			req.SubmitterID = userID
-			resp, err := s.sources.AddVideo(context.Background(), req)
+			resp, err := s.sources.AddVideo(ctx, req)
 			if err != nil {
-				if strings.Contains(err.Error(), infocache.ErrCacheUnavailable.Error()) {
-					w.WriteHeader(http.StatusAccepted)
-					return nil
-				}
 				return errors.Wrap(err, "sources.AddVideo")
 			}
+			output, err := resolveVideo(ctx, s.seerOpts, resp)
+			if err != nil {
+				return errors.Wrap(err, "resolveVideo")
+			}
 			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(resp); err != nil {
+			if err := json.NewEncoder(w).Encode(output); err != nil {
 				return errors.Wrap(err, "encoder")
 			}
 			return nil
@@ -95,7 +96,7 @@ func (s *Server) handleListVideos() http.HandlerFunc {
 			if err != nil {
 				return errors.Wrap(err, "sources")
 			}
-			output, err := resolveVideos(
+			output, err := resolveBulkVideos(
 				r.Context(),
 				s.seerOpts,
 				resp.Videos,
@@ -117,7 +118,33 @@ type video struct {
 	Info      *seer.VideoDetails `json:"info"`
 }
 
-func resolveVideos(
+func resolveVideo(
+	ctx context.Context,
+	opts base.ServiceOptions,
+	v *sources.Video,
+) (*video, error) {
+	output := &video{
+		ID:        v.ID,
+		Blacklist: v.Blacklist,
+	}
+	resolved, err := seer.NewSeerClientFromOptions(opts).
+		GetVideoDetails(
+			ctx,
+			seer.GetVideoDetailsRequest{
+				Input: v.ID,
+			},
+		)
+	if err != nil {
+		if strings.Contains(err.Error(), infocache.ErrCacheUnavailable.Error()) {
+			return output, nil
+		}
+		return nil, errors.Wrap(err, "seer.GetVideoDetails")
+	}
+	output.Info = &resolved.Details
+	return output, nil
+}
+
+func resolveBulkVideos(
 	ctx context.Context,
 	opts base.ServiceOptions,
 	videos []*sources.Video,

@@ -54,15 +54,15 @@ func ResolveVideos(
 				Height:      resp.Details.Height,
 				FPS:         resp.Details.FPS,
 			}
+			if err := ds.CacheVideo(ctx, video); err != nil {
+				return nil, errors.Wrap(err, "datastore.CacheVideo")
+			}
 			if resolvedVideo != nil {
 				select {
 				case <-ctx.Done():
 					return nil, errors.Wrap(ctx.Err(), "context")
 				case resolvedVideo <- video:
 				}
-			}
-			if err := ds.CacheVideo(ctx, video); err != nil {
-				return nil, errors.Wrap(err, "datastore.CacheVideo")
 			}
 		} else if err != nil {
 			return nil, errors.Wrap(err, "GetCachedVideo")

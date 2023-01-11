@@ -19,14 +19,14 @@ func (s *Server) ReportVideoDownloadProgress(
 	ctx context.Context,
 	req api.VideoDownloadProgress,
 ) (*api.Void, error) {
-	projectIDs, err := s.GetProjectIDsForVideo(ctx, req.ID)
+	projectIDs, err := s.getProjectIDsForVideo(ctx, req.ID)
 	if err != nil {
 		return nil, errors.Wrap(err, "GetProjectIDsForVideo")
 	} else if len(projectIDs) == 0 {
 		// no projects are interested in this video
 		return &api.Void{}, nil
 	}
-	if err := s.PushEvent(
+	if err := s.pushEvent(
 		ctx,
 		"video_download_progress",
 		&req,

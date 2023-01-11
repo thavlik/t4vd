@@ -263,7 +263,7 @@ void main() {
     await tester.enterText(findAddVideoInput, env.projects[0].inputVideos[0]);
     final findConfirmAddVideo = find.byKey(const Key('confirmAddVideo'));
     await tester.tap(findConfirmAddVideo);
-    await tester.pumpAndSettle();
+    //await tester.pumpAndSettle();
     //final findVideo =
     //    find.byKey(Key('video-${env.projects[0].inputVideos[0]}'));
     //await pumpUntilFound(tester, findVideo);

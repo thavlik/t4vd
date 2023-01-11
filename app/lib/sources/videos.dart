@@ -115,14 +115,16 @@ class PendingVideoListItem extends StatelessWidget {
 class InputVideoListItem extends StatefulWidget {
   const InputVideoListItem({
     super.key,
-    required this.model,
+    required this.id,
+    this.info,
     this.editMode = false,
     this.onDelete,
   });
 
+  final String id;
+  final VideoInfo? info;
   final bool editMode;
   final void Function()? onDelete;
-  final Video model;
 
   @override
   State<InputVideoListItem> createState() => _InputVideoListItemState();
@@ -133,21 +135,26 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
 
   @override
   Widget build(BuildContext context) {
-    final model = widget.model;
+    final info = widget.info;
     final secs = 777; //model.duration;
     final m = (secs.toDouble() / 60.0).floor();
     final s = secs - m * 60;
     final duration = "${m}m${s}s";
     return InkWell(
-      key: Key('video-${model.id}'),
-      onTap: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => VideoDetailsPage(model))),
+      key: Key('video-${widget.id}'),
+      onTap: info != null
+          ? () => Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) => VideoDetailsPage(Video(
+                    id: widget.id,
+                    info: info,
+                  ))))
+          : () => {},
       onLongPress: () {
         if (lastPosition != null) {
           showVideoContextMenu(
             context,
             lastPosition!,
-            id: model.id,
+            id: widget.id,
             onBlacklist: () {},
           );
         }
@@ -162,7 +169,7 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
           showVideoContextMenu(
             context,
             event.position,
-            id: model.id,
+            id: widget.id,
             onBlacklist: () {},
           );
         },
@@ -189,7 +196,7 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
                         borderRadius:
                             const BorderRadius.all(Radius.circular(8.0)),
                         image: DecorationImage(
-                          image: NetworkImage(videoThumbnail(model.id)),
+                          image: NetworkImage(videoThumbnail(widget.id)),
                           alignment: const Alignment(0, 0),
                           fit: BoxFit.cover,
                         ),
@@ -206,13 +213,13 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          model.info?.title ?? model.id,
+                          info?.title ?? widget.id,
                           style: Theme.of(context).textTheme.titleLarge,
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          model.info != null
-                              ? "${model.info!.channel} • $duration"
+                          info != null
+                              ? "${info.channel} • $duration"
                               : "<unknown channel>",
                           style: Theme.of(context).textTheme.bodySmall,
                           overflow: TextOverflow.ellipsis,
@@ -241,7 +248,7 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
                       showVideoContextMenu(
                         context,
                         details.globalPosition,
-                        id: model.id,
+                        id: widget.id,
                         onBlacklist: () {},
                       );
                     },
@@ -444,7 +451,8 @@ class InputVideosPageState extends State<InputVideosPage> {
                     .map((vid) => InputVideoListItem(
                           editMode: editMode,
                           onDelete: () => deleteVideo(context, vid.id, false),
-                          model: vid,
+                          id: vid.id,
+                          info: vid.info,
                         ))
                     .toList(),
                 Visibility(
@@ -481,7 +489,8 @@ class InputVideosPageState extends State<InputVideosPage> {
                     .map((vid) => InputVideoListItem(
                           editMode: editMode,
                           onDelete: () => deleteVideo(context, vid.id, true),
-                          model: vid,
+                          id: vid.id,
+                          info: vid.info,
                         ))
                     .toList(),
                 Visibility(

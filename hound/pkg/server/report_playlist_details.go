@@ -12,14 +12,14 @@ func (s *Server) ReportPlaylistDetails(
 	ctx context.Context,
 	req api.PlaylistDetails,
 ) (*api.Void, error) {
-	projectIDs, err := s.GetProjectIDsForPlaylist(ctx, req.ID)
+	projectIDs, err := s.getProjectIDsForPlaylist(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	} else if len(projectIDs) == 0 {
 		// no projects use this playlist
 		return &api.Void{}, nil
 	}
-	if err := s.PushEvent(
+	if err := s.pushEvent(
 		ctx,
 		"playlist_details",
 		&req,

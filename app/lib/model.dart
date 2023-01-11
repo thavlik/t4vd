@@ -310,18 +310,17 @@ class BJJModel extends Model {
 
   Future<void> signOut() async {
     _channel?.sink.close();
-    final c = clearCachedLogin();
+    await clearCachedLogin();
     _project = null;
     if (!isLoggedIn) {
-      await c;
       return;
     }
-    final f = Future.wait([
-      c,
-      api.signOut(creds!),
-    ]);
+    try {
+      await api.signOut(creds!);
+    } catch (err) {
+      print('sign out error: $err');
+    }
     _creds = null;
-    await f;
     notifyListeners();
   }
 
@@ -349,7 +348,7 @@ class BJJModel extends Model {
   }
 
   void handleWebSockMessage(dynamic message) {
-    final obj = jsonDecode(message) as Map<String, dynamic>;
+    final obj = jsonDecode(message.body) as Map<String, dynamic>;
     switch (obj['type']) {
       case 'channel_details':
         mergeChannelInfo(api.ChannelInfo.fromMap(obj['info']));

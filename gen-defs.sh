@@ -9,6 +9,7 @@ build() {
 ./base/pkg/iam/definitions/build.sh
 build compiler
 build filter
+build hound
 build seer
 build slideshow
 build sources

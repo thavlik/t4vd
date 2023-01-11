@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *Server) GetProjectIDsForPlaylist(
+func (s *Server) getProjectIDsForPlaylist(
 	ctx context.Context,
 	playlistID string,
 ) ([]string, error) {

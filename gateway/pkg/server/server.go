@@ -68,18 +68,8 @@ func NewServer(
 		make(map[*websocket.Conn][]*Subscription),
 		make(chan struct{}, 1),
 	}
-	s.registerHandlers()
+	s.setupWebSockHandlers()
 	return s
-}
-
-func (s *Server) registerHandlers() {
-	s.registerWebsockHandler("subscribe", s.handleSubscribe())
-	s.registerWebsockHandler("unsubscribe", s.handleUnsubscribe())
-	s.registerWebsockHandler("ping", s.handlePing())
-}
-
-func (s *Server) registerWebsockHandler(name string, handler websockMessageHandler) {
-	s.wsHandlers[name] = handler
 }
 
 func (s *Server) AdminListenAndServe(port int) error {

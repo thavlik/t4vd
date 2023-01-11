@@ -42,7 +42,7 @@ type authHeader struct {
 func retrieveAuthHeader(r string) (*authHeader, error) {
 	split := strings.Split(r, "Bearer ")
 	if len(split) != 2 {
-		return nil, errors.New("invalid basic authorization header")
+		return nil, errors.New("basic authorization header missing Bearer prefix")
 	}
 	authJSON, err := base64.StdEncoding.DecodeString(split[1])
 	if err != nil {

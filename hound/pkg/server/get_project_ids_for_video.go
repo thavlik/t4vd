@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (s *Server) GetProjectIDsForVideo(
+func (s *Server) getProjectIDsForVideo(
 	ctx context.Context,
 	videoID string,
 ) ([]string, error) {

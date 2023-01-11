@@ -20,26 +20,27 @@ func (s *Server) handleAddPlaylist() http.HandlerFunc {
 		http.MethodPost,
 		iam.NullPermissions,
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
+			ctx := r.Context()
 			var req sources.AddPlaylistRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				return errors.Wrap(err, "decoder")
 			}
-			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {
 				s.log.Warn("project access denied", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
 			req.SubmitterID = userID
-			resp, err := s.sources.AddPlaylist(context.Background(), req)
+			resp, err := s.sources.AddPlaylist(ctx, req)
 			if err != nil {
-				if strings.Contains(err.Error(), infocache.ErrCacheUnavailable.Error()) {
-					w.WriteHeader(http.StatusAccepted)
-					return nil
-				}
 				return errors.Wrap(err, "sources.AddPlaylist")
 			}
+			output, err := resolvePlaylist(ctx, s.seerOpts, resp)
+			if err != nil {
+				return errors.Wrap(err, "resolvePlaylist")
+			}
 			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(resp); err != nil {
+			if err := json.NewEncoder(w).Encode(output); err != nil {
 				return errors.Wrap(err, "encoder")
 			}
 			return nil
@@ -95,7 +96,7 @@ func (s *Server) handleListPlaylists() http.HandlerFunc {
 			if err != nil {
 				return errors.Wrap(err, "sources")
 			}
-			output, err := resolvePlaylists(
+			output, err := resolveBulkPlaylists(
 				r.Context(),
 				s.seerOpts,
 				resp.Playlists,
@@ -111,7 +112,33 @@ func (s *Server) handleListPlaylists() http.HandlerFunc {
 		})
 }
 
-func resolvePlaylists(
+func resolvePlaylist(
+	ctx context.Context,
+	opts base.ServiceOptions,
+	pl *sources.Playlist,
+) (*playlist, error) {
+	output := &playlist{
+		ID:        pl.ID,
+		Blacklist: pl.Blacklist,
+	}
+	resolved, err := seer.NewSeerClientFromOptions(opts).
+		GetPlaylistDetails(
+			ctx,
+			seer.GetPlaylistDetailsRequest{
+				Input: pl.ID,
+			},
+		)
+	if err != nil {
+		if strings.Contains(err.Error(), infocache.ErrCacheUnavailable.Error()) {
+			return output, nil
+		}
+		return nil, errors.Wrap(err, "seer.GetPlaylistDetails")
+	}
+	output.Info = &resolved.Details
+	return output, nil
+}
+
+func resolveBulkPlaylists(
 	ctx context.Context,
 	opts base.ServiceOptions,
 	playlists []*sources.Playlist,

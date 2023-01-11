@@ -78,7 +78,7 @@ class Marker {
 
 class Dataset {
   final String id;
-  final List<Video> videos;
+  final List<VideoInfo> videos;
   final DateTime timestamp;
 
   Dataset({
@@ -90,7 +90,7 @@ class Dataset {
   static Dataset fromMap(Map m) => Dataset(
         id: m['id'],
         timestamp: DateTime.fromMicrosecondsSinceEpoch(m['timestamp'] ~/ 1000),
-        videos: (m['videos'] as List).map((o) => Video.fromMap(o)).toList(),
+        videos: (m['videos'] as List).map((o) => VideoInfo.fromMap(o)).toList(),
       );
 }
 

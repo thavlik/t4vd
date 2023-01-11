@@ -16,11 +16,15 @@ func (i *cognitoIAM) Logout(
 	if err != nil {
 		return err
 	}
+	var clientSecret *string
+	if i.clientSecret != "" {
+		clientSecret = aws.String(i.clientSecret)
+	}
 	if _, err := i.cognito.RevokeToken(
 		&cognitoidentityprovider.RevokeTokenInput{
 			Token:        aws.String(hdr.RefreshToken),
 			ClientId:     aws.String(i.clientID),
-			ClientSecret: aws.String(i.clientSecret),
+			ClientSecret: clientSecret,
 		},
 	); err != nil {
 		return errors.Wrap(err, "cognito")

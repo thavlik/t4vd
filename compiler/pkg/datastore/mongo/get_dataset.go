@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/compiler/pkg/api"
 	"github.com/thavlik/t4vd/compiler/pkg/datastore"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -107,21 +108,23 @@ func (ds *mongoDataStore) getSpecificDataset(
 	if err != nil {
 		return nil, errors.Wrap(err, "getDatasetVideoIDs")
 	}
-	videos, err := datastore.ResolveVideos(
+	resolved, err := ds.seer.GetBulkVideosDetails(
 		ctx,
-		ds.seer,
-		ds,
-		videoIDs,
-		nil,
-		ds.log,
+		seer.GetBulkVideosDetailsRequest{
+			VideoIDs: videoIDs,
+		},
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "ResolveVideos")
+		return nil, errors.Wrap(err, "GetBulkVideosDetails")
+	}
+	videos := make([]*api.Video, len(resolved.Videos))
+	for i, video := range resolved.Videos {
+		videos[i] = (*api.Video)(video)
 	}
 	return &api.Dataset{
 		ID:        datasetID,
 		Timestamp: timestamp,
 		Videos:    videos,
-		Complete:  complete,
+		Complete:  complete && len(videos) == len(videoIDs),
 	}, nil
 }
