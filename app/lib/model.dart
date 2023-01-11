@@ -334,14 +334,20 @@ class BJJModel extends Model {
     if (!isLoggedIn) throw ErrorSummary('not logged in');
     _channel?.sink.close();
     _channel = api.connectWebSock(_creds!);
-    _channel!.stream.handleError((obj, stackTrace) {
-      // reconnect if we're still logged in
-      print('websock error: $obj');
-      print(stackTrace);
-      if (_creds == null) return;
-      connectWebSock();
-    });
-    _channel!.stream.listen((message) => handleWebSockMessage(message));
+    _channel!.stream.listen(
+      (message) => handleWebSockMessage(message),
+      onError: (err) async {
+        print('websock error: $err');
+        if (_creds == null) return;
+        await Future.delayed(const Duration(seconds: 1));
+        connectWebSock();
+      },
+      onDone: () async {
+        if (_creds == null) return;
+        await Future.delayed(const Duration(seconds: 1));
+        connectWebSock();
+      },
+    );
     if (_project != null) {
       _channel!.sink.add(jsonEncode({
         'type': 'subscribe',
@@ -352,8 +358,11 @@ class BJJModel extends Model {
   }
 
   void handleWebSockMessage(dynamic message) {
-    final obj = jsonDecode(message.body) as Map<String, dynamic>;
+    final obj = jsonDecode(message) as Map<String, dynamic>;
     switch (obj['type']) {
+      case 'ping':
+        _channel?.sink.add(jsonEncode({'type': 'pong'}));
+        break;
       case 'channel_details':
         mergeChannelInfo(api.ChannelInfo.fromMap(obj['info']));
         break;

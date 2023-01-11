@@ -776,6 +776,7 @@ String channelAvatar(String channelId) =>
 IOWebSocketChannel connectWebSock(UserCredentials creds) =>
     IOWebSocketChannel.connect(
       Uri.parse(websockAddr),
+      pingInterval: const Duration(seconds: 10),
       headers: {
         'AccessToken': creds.accessToken,
       },

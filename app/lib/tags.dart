@@ -171,6 +171,7 @@ class _TagsPageState extends State<TagsPage> {
       nav: Navigator.of(context),
       tags: tags,
     );
+    setState(() => tags = []);
   }
 
   void previous(BuildContext context) {
@@ -183,6 +184,10 @@ class _TagsPageState extends State<TagsPage> {
   }
 
   void addTag(String tag) {
+    if (tag.isEmpty) {
+      _textNode.requestFocus();
+      return;
+    }
     if (_loading) return;
     setState(() {
       tags.add(tag);
@@ -198,140 +203,144 @@ class _TagsPageState extends State<TagsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final model = ScopedModel.of<BJJModel>(context);
-    final currentMarker = model.currentMarker;
-    return Stack(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+    return ScopedModelDescendant<BJJModel>(
+      builder: (context, child, model) {
+        final model = ScopedModel.of<BJJModel>(context);
+        final currentMarker = model.currentMarker;
+        return Stack(
           children: [
-            Expanded(
-              child: Align(
-                child: AspectRatio(
-                  aspectRatio: 1920.0 / 1080.0,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      image: currentMarker != null
-                          ? DecorationImage(
-                              image: NetworkImage(currentMarker!.imageUrl),
-                              alignment: Alignment(0, 0),
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        runAlignment: WrapAlignment.end,
-                        children: [
-                          ...tags
-                              .map((tag) => TagWidget(
-                                    tag,
-                                    onDelete: (tag) => removeTag(tag),
-                                  ))
-                              .toList()
-                        ],
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Align(
+                    child: AspectRatio(
+                      aspectRatio: 1920.0 / 1080.0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          image: currentMarker != null
+                              ? DecorationImage(
+                                  image: NetworkImage(currentMarker!.imageUrl),
+                                  alignment: const Alignment(0, 0),
+                                  fit: BoxFit.cover,
+                                )
+                              : null,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            runAlignment: WrapAlignment.end,
+                            children: [
+                              ...tags
+                                  .map((tag) => TagWidget(
+                                        tag,
+                                        onDelete: (tag) => removeTag(tag),
+                                      ))
+                                  .toList()
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    width: 256,
-                    child: TextField(
-                      controller: _textController,
-                      autofocus: true,
-                      focusNode: _textNode,
-                      textInputAction: TextInputAction.done,
-                      onSubmitted: (value) => addTag(value),
-                    ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 256,
+                        child: TextField(
+                          controller: _textController,
+                          autofocus: true,
+                          focusNode: _textNode,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (value) => addTag(value),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => addTag(_textController.text),
+                        icon: Icon(
+                          Icons.send,
+                          color: Theme.of(context).iconTheme.color,
+                        ),
+                      )
+                    ],
                   ),
-                  IconButton(
-                    onPressed: () => addTag(_textController.text),
-                    icon: Icon(
-                      Icons.send,
-                      color: Theme.of(context).iconTheme.color,
-                    ),
-                  )
-                ],
-              ),
+                ),
+                const SizedBox(height: 48),
+              ],
             ),
-            const SizedBox(height: 48),
-          ],
-        ),
-        Visibility(
-          visible: ScopedModel.of<BJJModel>(context).markerIndex > 0,
-          child: Positioned(
-            top: 16,
-            left: 16,
-            child: FloatingActionButton(
-              onPressed: () => previous(context),
-              child: const Icon(Icons.navigate_before),
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 16,
-          left: 16,
-          child: FloatingActionButton(
-            onPressed: () => discard(context),
-            child: const Icon(Icons.block),
-          ),
-        ),
-        Positioned(
-          bottom: 16,
-          right: 16,
-          child: FloatingActionButton(
-            onPressed: () => submit(context),
-            child: const Icon(Icons.done),
-          ),
-        ),
-        if (currentMarker != null)
-          Positioned(
-            top: 0,
-            right: 0,
-            child: GestureDetector(
-              onTapDown: (details) {
-                showTagsContextMenu(
-                  context,
-                  details.globalPosition,
-                  id: currentMarker.videoId,
-                  startSeconds:
-                      Duration(microseconds: currentMarker.time ~/ 1000)
-                          .inSeconds,
-                  onSkip: () => skip(context),
-                  onDiscard: () => discard(context),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Icon(
-                  Icons.more_vert,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withAlpha(170),
-                      blurRadius: 12.0,
-                      offset: const Offset(0, 0),
-                    )
-                  ],
-                  color: Colors.pink,
+            Visibility(
+              visible: ScopedModel.of<BJJModel>(context).markerIndex > 0,
+              child: Positioned(
+                top: 16,
+                left: 16,
+                child: FloatingActionButton(
+                  onPressed: () => previous(context),
+                  child: const Icon(Icons.navigate_before),
                 ),
               ),
             ),
-          ),
-        if (_loading)
-          const Center(
-            child: CircularProgressIndicator(),
-          ),
-      ],
+            Positioned(
+              bottom: 16,
+              left: 16,
+              child: FloatingActionButton(
+                onPressed: () => discard(context),
+                child: const Icon(Icons.block),
+              ),
+            ),
+            Positioned(
+              bottom: 16,
+              right: 16,
+              child: FloatingActionButton(
+                onPressed: () => submit(context),
+                child: const Icon(Icons.done),
+              ),
+            ),
+            if (currentMarker != null)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: GestureDetector(
+                  onTapDown: (details) {
+                    showTagsContextMenu(
+                      context,
+                      details.globalPosition,
+                      id: currentMarker.videoId,
+                      startSeconds:
+                          Duration(microseconds: currentMarker.time ~/ 1000)
+                              .inSeconds,
+                      onSkip: () => skip(context),
+                      onDiscard: () => discard(context),
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(
+                      Icons.more_vert,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withAlpha(170),
+                          blurRadius: 12.0,
+                          offset: const Offset(0, 0),
+                        )
+                      ],
+                      color: Colors.pink,
+                    ),
+                  ),
+                ),
+              ),
+            if (_loading)
+              const Center(
+                child: CircularProgressIndicator(),
+              ),
+          ],
+        );
+      },
     );
   }
 }
