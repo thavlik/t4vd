@@ -3,6 +3,7 @@ import 'package:t4vd/project/create_project.dart';
 import 'package:t4vd/project/manage_collaborators.dart';
 import 'package:t4vd/project/select_project.dart';
 import 'package:t4vd/splash.dart';
+import 'package:t4vd/tags.dart';
 import 'package:t4vd/user/login.dart';
 import 'package:t4vd/model.dart';
 import 'package:t4vd/filter/filter.dart';
@@ -16,6 +17,8 @@ import 'package:t4vd/user/reset_password.dart';
 import 'package:t4vd/user/sign_up.dart';
 import 'package:flutter/material.dart';
 import 'package:scoped_model/scoped_model.dart';
+
+import 'crop.dart';
 
 void main() {
   run();
@@ -105,7 +108,7 @@ class _TabsPageState extends State<TabsPage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-        length: 3,
+        length: 5,
         child: Scaffold(
           appBar: AppBar(
             toolbarHeight: 16,
@@ -123,19 +126,19 @@ class _TabsPageState extends State<TabsPage> {
                   text: "Filter",
                 ),
                 Tab(
+                  icon: Icon(Icons.tag),
+                  text: "Tags",
+                ),
+                Tab(
+                  icon: Icon(Icons.crop),
+                  text: "Crop",
+                ),
+                Tab(
                   key: Key('accountTab'),
                   icon: Icon(Icons.account_circle),
                   text: "Account",
                 ),
                 /*
-                Tab(
-                  icon: Icon(Icons.rectangle_outlined),
-                  text: "Crop",
-                ),
-                Tab(
-                  icon: Icon(Icons.tag),
-                  text: "Tags",
-                ),
                 Tab(
                   icon: Icon(Icons.edit),
                   text: "Landmarks",
@@ -148,9 +151,9 @@ class _TabsPageState extends State<TabsPage> {
             children: [
               SourcesPage(),
               FilterPage(),
+              TagsPage(),
+              CropPage(),
               AccountPage(),
-              //CropPage(),
-              //TagsPage(),
               //LandmarksPage(),
             ],
           ),
