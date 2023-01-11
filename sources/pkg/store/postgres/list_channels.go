@@ -6,7 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/sources/pkg/api"
-	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *postgresStore) ListChannels(
@@ -16,9 +15,7 @@ func (s *postgresStore) ListChannels(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(`
-			SELECT
-				id,
-				blacklist
+			SELECT c, blacklist
 			FROM %s WHERE project = $1`,
 			channelsTable,
 		),
@@ -30,18 +27,14 @@ func (s *postgresStore) ListChannels(
 	defer rows.Close()
 	var channels []*api.Channel
 	for rows.Next() {
-		var id string
-		var blacklist bool
+		channel := &api.Channel{}
 		if err := rows.Scan(
-			&id,
-			&blacklist,
+			&channel.ID,
+			&channel.Blacklist,
 		); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}
-		channels = append(channels, &api.Channel{
-			ID:        store.ExtractResourceID(id),
-			Blacklist: blacklist,
-		})
+		channels = append(channels, channel)
 	}
 	return channels, nil
 }
@@ -54,7 +47,7 @@ func (s *postgresStore) ListChannelIDs(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(
-			"SELECT id FROM %s WHERE blacklist = $1 AND project = $2",
+			"SELECT c FROM %s WHERE blacklist = $1 AND project = $2",
 			channelsTable,
 		),
 		blacklist,
@@ -70,7 +63,7 @@ func (s *postgresStore) ListChannelIDs(
 		if err := rows.Scan(&id); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}
-		channelIDs = append(channelIDs, store.ExtractResourceID(id))
+		channelIDs = append(channelIDs, id)
 	}
 	return channelIDs, nil
 }

@@ -6,7 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/sources/pkg/api"
-	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *postgresStore) ListPlaylists(
@@ -16,9 +15,7 @@ func (s *postgresStore) ListPlaylists(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(`
-			SELECT
-				id,
-				blacklist
+			SELECT p, blacklist
 			FROM %s WHERE project = $1`,
 			playlistsTable,
 		),
@@ -30,18 +27,14 @@ func (s *postgresStore) ListPlaylists(
 	defer rows.Close()
 	var playlists []*api.Playlist
 	for rows.Next() {
-		var id string
-		var blacklist bool
+		playlist := &api.Playlist{}
 		if err := rows.Scan(
-			&id,
-			&blacklist,
+			&playlist.ID,
+			&playlist.Blacklist,
 		); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}
-		playlists = append(playlists, &api.Playlist{
-			ID:        store.ExtractResourceID(id),
-			Blacklist: blacklist,
-		})
+		playlists = append(playlists, playlist)
 	}
 	return playlists, nil
 }
@@ -54,7 +47,7 @@ func (s *postgresStore) ListPlaylistIDs(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(
-			"SELECT id FROM %s WHERE blacklist = $1 AND project = $2",
+			"SELECT p FROM %s WHERE blacklist = $1 AND project = $2",
 			playlistsTable,
 		),
 		blacklist,
@@ -70,7 +63,7 @@ func (s *postgresStore) ListPlaylistIDs(
 		if err := rows.Scan(&id); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}
-		playlistIDs = append(playlistIDs, store.ExtractResourceID(id))
+		playlistIDs = append(playlistIDs, id)
 	}
 	return playlistIDs, nil
 }

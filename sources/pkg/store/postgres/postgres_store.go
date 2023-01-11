@@ -44,7 +44,7 @@ func NewPostgresStore(db *sql.DB) store.Store {
 		name TEXT NOT NULL,
 		groupid TEXT NOT NULL,
 		creator TEXT NOT NULL,
-		desc TEXT NOT NULL`)
+		description TEXT NOT NULL`)
 	table(db, projectTagsTable, `
 		id TEXT PRIMARY KEY,
 		p TEXT NOT NULL,

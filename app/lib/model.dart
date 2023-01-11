@@ -294,6 +294,7 @@ class BJJModel extends Model {
         username: username,
         password: password,
       );
+      await connectWebSock();
     }).catchError((err) {
       _loginErr = err is api.InvalidCredentialsError
           ? 'Invalid username or password'
@@ -333,6 +334,13 @@ class BJJModel extends Model {
       connectWebSock();
     });
     _channel!.stream.listen((message) => handleWebSockMessage(message));
+    if (_project != null) {
+      _channel!.sink.add(jsonEncode({
+        'type': 'subscribe',
+        'projectID': _project!.id,
+        'unsubscribeAll': true,
+      }));
+    }
   }
 
   void handleWebSockMessage(dynamic message) {
@@ -404,11 +412,13 @@ class BJJModel extends Model {
         key: credStorageProjectId,
         value: _project!.id,
       );
-      _channel!.sink.add(jsonEncode({
-        'type': 'subscribe',
-        'projectID': _project!.id,
-        'unsubscribeAll': true,
-      }));
+      if (_channel != null) {
+        _channel!.sink.add(jsonEncode({
+          'type': 'subscribe',
+          'projectID': _project!.id,
+          'unsubscribeAll': true,
+        }));
+      }
       notifyListeners();
     });
   }

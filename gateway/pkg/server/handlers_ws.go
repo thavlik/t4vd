@@ -133,6 +133,9 @@ func (s *Server) handleWebSock() http.HandlerFunc {
 			if err != nil {
 				return fmt.Errorf("upgrade: %v", err)
 			}
+			reqLog := s.log.With(zap.String("userID", userID))
+			reqLog.Debug("upgraded websocket connection")
+			defer reqLog.Debug("closed websocket connection")
 			ctx := r.Context()
 			defer c.Close()
 			defer func() {

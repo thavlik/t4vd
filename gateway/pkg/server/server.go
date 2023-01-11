@@ -182,8 +182,6 @@ func (s *Server) rbacHandler(
 						zap.Error(err))
 					return nil
 				}
-				s.log.Debug("authenticated user",
-					zap.Strings("permissions", permissions))
 			}
 			return f(userID, w, r)
 		}(); err != nil {

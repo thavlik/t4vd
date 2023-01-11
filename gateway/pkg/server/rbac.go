@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -33,6 +32,5 @@ func (s *Server) rbac(
 	if err != nil {
 		return "", errors.Wrap(err, "iam")
 	}
-	fmt.Printf("userID: %s\n", userID)
 	return userID, nil
 }

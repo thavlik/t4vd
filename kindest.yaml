@@ -110,7 +110,7 @@ env:
           sources:
             replicas: 1
           iam:
-            driver: keycloak
+            driver: cognito
             cognito:
               region: us-east-1
               userPoolId:

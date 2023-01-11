@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/thavlik/t4vd/sources/pkg/api"
 )
@@ -38,8 +37,4 @@ type Store interface {
 
 func ScopedResourceID(projectID, id string) string {
 	return fmt.Sprintf("%s:%s", projectID, id)
-}
-
-func ExtractResourceID(id string) string {
-	return strings.Split(id, ":")[1]
 }

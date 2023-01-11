@@ -6,7 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/sources/pkg/api"
-	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *postgresStore) ListVideos(
@@ -14,22 +13,7 @@ func (s *postgresStore) ListVideos(
 	projectID string,
 ) ([]*api.Video, error) {
 	rows, err := s.db.QueryContext(ctx, fmt.Sprintf(`
-		SELECT
-			id,
-			title,
-			description,
-			channel,
-			channelid,
-			duration,
-			viewcount,
-			width,
-			height,
-			fps,
-			uploaddate,
-			uploader,
-			uploaderid,
-			thumbnail,
-			blacklist
+		SELECT v, blacklist
 		FROM %s WHERE project = $1`,
 		videosTable,
 	), projectID)
@@ -39,18 +23,14 @@ func (s *postgresStore) ListVideos(
 	defer rows.Close()
 	var videos []*api.Video
 	for rows.Next() {
-		var id string
-		var blacklist bool
+		video := &api.Video{}
 		if err := rows.Scan(
-			&id,
-			&blacklist,
+			&video.ID,
+			&video.Blacklist,
 		); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}
-		videos = append(videos, &api.Video{
-			ID:        store.ExtractResourceID(id),
-			Blacklist: blacklist,
-		})
+		videos = append(videos, video)
 	}
 	return videos, nil
 }
@@ -63,7 +43,7 @@ func (s *postgresStore) ListVideoIDs(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(
-			"SELECT id FROM %s WHERE blacklist = $1 AND project = $2",
+			"SELECT v FROM %s WHERE blacklist = $1 AND project = $2",
 			videosTable,
 		),
 		blacklist,
@@ -79,7 +59,7 @@ func (s *postgresStore) ListVideoIDs(
 		if err := rows.Scan(&id); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}
-		videoIDs = append(videoIDs, store.ExtractResourceID(id))
+		videoIDs = append(videoIDs, id)
 	}
 	return videoIDs, nil
 }

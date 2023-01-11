@@ -21,12 +21,12 @@ func (s *postgresStore) CreateProject(
 				name,
 				creator,
 				groupid,
-				desc
+				description
 			)
 			VALUES ($1, $2, $3, $4, $5)
 			ON CONFLICT (id)
 			DO UPDATE
-			SET (name, groupid) = (EXCLUDED.name, EXCLUDED.groupid, EXCLUDED.desc)`,
+			SET (name, groupid, description) = (EXCLUDED.name, EXCLUDED.groupid, EXCLUDED.description)`,
 			projectsTable,
 		),
 		project.ID,
