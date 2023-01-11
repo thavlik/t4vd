@@ -26,12 +26,20 @@ func (s *mongoStore) ListProjects(
 }
 
 func convertProjectDoc(m map[string]interface{}) *api.Project {
+	var tags []string
+	if v, ok := m["tags"].([]interface{}); ok {
+		tags = make([]string, len(v))
+		for i, tag := range v {
+			tags[i] = tag.(string)
+		}
+	}
+	desc, _ := m["desc"].(string)
 	return &api.Project{
 		ID:          m["_id"].(string),
 		Name:        m["name"].(string),
 		CreatorID:   m["creator"].(string),
 		GroupID:     m["group"].(string),
-		Tags:        m["tags"].([]string),
-		Description: m["desc"].(string),
+		Tags:        tags,
+		Description: desc,
 	}
 }

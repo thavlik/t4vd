@@ -21,7 +21,6 @@ func (i *keyCloakIAM) resolveUser(
 		accessToken,
 		i.kc.Realm,
 		gocloak.GetUsersParams{
-			First:    gocloak.IntP(1),
 			Max:      gocloak.IntP(1),
 			Username: gocloak.StringP(username),
 		},

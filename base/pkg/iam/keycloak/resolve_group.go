@@ -21,7 +21,6 @@ func (i *keyCloakIAM) ResolveGroup(
 		accessToken,
 		i.kc.Realm,
 		gocloak.GetGroupsParams{
-			First:  gocloak.IntP(1),
 			Max:    gocloak.IntP(1),
 			Search: gocloak.StringP(groupName),
 		},

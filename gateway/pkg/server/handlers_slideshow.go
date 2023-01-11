@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	slideshow "github.com/thavlik/t4vd/slideshow/pkg/api"
+	"go.uber.org/zap"
 )
 
 func (s *Server) handleGetRandomMarker() http.HandlerFunc {
@@ -22,6 +23,7 @@ func (s *Server) handleGetRandomMarker() http.HandlerFunc {
 				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
+				s.log.Warn("project access denied", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}

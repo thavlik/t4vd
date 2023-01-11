@@ -14,22 +14,30 @@ const int minPasswordLength = 8;
 
 class InvalidCredentialsError extends Error {}
 
+class ForbiddenError extends Error {}
+
 class ResourceNotFoundError extends Error {}
 
 class Project {
   final String id;
   final String name;
+  final List<String> tags;
+  final String description;
   List<SearchUser>? collaborators;
 
   Project({
     required this.id,
     required this.name,
+    this.tags = const [],
+    this.description = '',
     this.collaborators,
   });
 
   static Project fromMap(Map<dynamic, dynamic> m) => Project(
         id: m['id'],
         name: m['name'],
+        tags: (m['tags'] as List?)?.map((e) => e as String).toList() ?? [],
+        description: m['description'] ?? '',
         collaborators: (m['collaborators'] as List?)
             ?.map((e) => SearchUser.fromMap(e))
             .toList(),
@@ -275,6 +283,8 @@ class SourceOutput {
 void checkHttpStatus(Response response) {
   if (response.statusCode == 401) {
     throw InvalidCredentialsError();
+  } else if (response.statusCode == 403) {
+    throw ForbiddenError();
   } else if (response.statusCode == 404) {
     throw ResourceNotFoundError();
   } else if (response.statusCode != 200 && response.statusCode != 202) {

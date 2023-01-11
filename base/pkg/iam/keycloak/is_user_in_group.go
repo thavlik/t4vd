@@ -22,7 +22,7 @@ func (i *keyCloakIAM) IsUserInGroup(
 		i.kc.Realm,
 		groupID,
 		gocloak.GetGroupsParams{
-			First:  gocloak.IntP(1),
+			Max:    gocloak.IntP(1),
 			Search: gocloak.StringP(userID),
 		},
 	)

@@ -32,7 +32,9 @@ class _CardStackState extends State<CardStack> {
         setState(() => _loading = true);
         try {
           await model.refreshMarkers(Navigator.of(context));
-        } on InvalidCredentialsError catch (_) {
+        } on InvalidCredentialsError {
+          Navigator.of(context).pushNamed('/splash');
+        } on ForbiddenError {
           Navigator.of(context).pushNamed('/splash');
         } finally {
           setState(() => _loading = false);

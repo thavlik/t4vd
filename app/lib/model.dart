@@ -335,8 +335,16 @@ class BJJModel extends Model {
     _channel!.stream.listen((message) => handleWebSockMessage(message));
   }
 
-  void handleWebSockMessage(String message) {
+  void handleWebSockMessage(dynamic message) {
     print(message);
+    final obj = jsonDecode(message) as Map<String, dynamic>;
+    switch (obj['type']) {
+      case 'channel_details':
+      case 'playlists_details':
+      case 'video_details':
+      case 'channel_video':
+      case 'playlist_video':
+    }
   }
 
   void precacheFrames(BuildContext context) {
@@ -371,6 +379,9 @@ class BJJModel extends Model {
     try {
       return await f();
     } on api.InvalidCredentialsError {
+      await nav.pushNamed('/splash');
+      return await f(); // try a second time without catching
+    } on api.ForbiddenError {
       await nav.pushNamed('/splash');
       return await f(); // try a second time without catching
     }
@@ -422,6 +433,10 @@ class BJJModel extends Model {
           projectId: projectId,
           creds: _creds!,
         );
+      } on api.ForbiddenError {
+        // user no longer has access to project
+        await const FlutterSecureStorage().delete(key: credStorageProjectId);
+        return;
       } on api.ResourceNotFoundError {
         // project was deleted
         await const FlutterSecureStorage().delete(key: credStorageProjectId);

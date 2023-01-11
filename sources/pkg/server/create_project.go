@@ -21,7 +21,8 @@ func (s *Server) CreateProject(ctx context.Context, project api.Project) (*api.P
 		return nil, errors.New("missing creator id")
 	}
 	if s.iam != nil {
-		group, err := s.iam.CreateGroup(project.Name)
+		// the group name is the project id for easy lookup
+		group, err := s.iam.CreateGroup(project.ID)
 		if err != nil {
 			return nil, errors.Wrap(err, "iam.CreateGroup")
 		}

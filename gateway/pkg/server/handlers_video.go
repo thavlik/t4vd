@@ -11,6 +11,7 @@ import (
 	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	sources "github.com/thavlik/t4vd/sources/pkg/api"
+	"go.uber.org/zap"
 )
 
 func (s *Server) handleAddVideo() http.HandlerFunc {
@@ -23,6 +24,7 @@ func (s *Server) handleAddVideo() http.HandlerFunc {
 				return errors.Wrap(err, "decoder")
 			}
 			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+				s.log.Warn("project access denied", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
@@ -53,6 +55,7 @@ func (s *Server) handleRemoveVideo() http.HandlerFunc {
 				return errors.Wrap(err, "decoder")
 			}
 			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
+				s.log.Warn("project access denied", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
@@ -79,6 +82,7 @@ func (s *Server) handleListVideos() http.HandlerFunc {
 				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
+				s.log.Warn("project access denied", zap.Error(err))
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
