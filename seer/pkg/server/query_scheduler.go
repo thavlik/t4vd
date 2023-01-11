@@ -363,7 +363,7 @@ func reportVideoDetails(
 	}
 	if _, err := houndClient.ReportVideoDetails(
 		ctx,
-		*convertVideo(details),
+		*((*hound.VideoDetails)(details)),
 	); err != nil {
 		log.Warn("failed to report video details", zap.Error(err))
 	}
@@ -401,7 +401,7 @@ func reportPlaylistVideo(
 			ctx,
 			hound.PlaylistVideo{
 				PlaylistID: playlistID,
-				Video:      *convertVideo(video),
+				Video:      *(*hound.VideoDetails)(video),
 				NumVideos:  numVideos,
 			},
 		); err != nil {
@@ -443,7 +443,7 @@ func reportChannelVideo(
 			hound.ChannelVideo{
 				ChannelID: channelID,
 				NumVideos: numVideos,
-				Video:     *convertVideo(video),
+				Video:     *(*hound.VideoDetails)(video),
 			},
 		); err != nil {
 			log.Warn("failed to report channel video", zap.Error(err))
@@ -493,24 +493,5 @@ func reportPlaylistDetails(
 		},
 	); err != nil {
 		log.Warn("failed to report playlist details", zap.Error(err))
-	}
-}
-
-func convertVideo(details *api.VideoDetails) *hound.VideoDetails {
-	return &hound.VideoDetails{
-		ID:          details.ID,
-		Title:       details.Title,
-		Description: details.Description,
-		Thumbnail:   details.Thumbnail,
-		UploadDate:  details.UploadDate,
-		Uploader:    details.Uploader,
-		UploaderID:  details.UploaderID,
-		Channel:     details.Channel,
-		ChannelID:   details.ChannelID,
-		Duration:    details.Duration,
-		ViewCount:   details.ViewCount,
-		Width:       details.Width,
-		Height:      details.Height,
-		FPS:         details.FPS,
 	}
 }

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:t4vd/sources/video_details.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

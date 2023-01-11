@@ -154,9 +154,10 @@ class InputChannelsPageState extends State<InputChannelsPage> {
     super.initState();
     ScopedModel.of<BJJModel>(context)
         .refreshChannels(Navigator.of(context))
-        .then((value) => setState(() {
-              loading = false;
-            }));
+        .then((value) {
+      if (!mounted) return;
+      setState(() => loading = false);
+    });
   }
 
   void addChannel(BuildContext context, String input, bool blacklist) async {
@@ -232,9 +233,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
                         Checkbox(
                             value: blacklist,
                             onChanged: (bool? value) {
-                              setState(() {
-                                blacklist = value ?? false;
-                              });
+                              setState(() => blacklist = value ?? false);
                             }),
                         Text(
                           "Blacklist",
@@ -270,11 +269,7 @@ class InputChannelsPageState extends State<InputChannelsPage> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              setState(() {
-                editMode = !editMode;
-              });
-            },
+            onPressed: () => setState(() => editMode = !editMode),
             icon: Icon(editMode ? Icons.cancel : Icons.edit),
           )
         ],

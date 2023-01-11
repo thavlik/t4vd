@@ -107,7 +107,7 @@ func (s *Server) handleGetProject() http.HandlerFunc {
 			s.log.Debug("retrieved project",
 				zap.String("id", project.ID),
 				zap.String("name", project.Name),
-				zap.Int("numCollabs", len(collabs)))
+				zap.Int("numCollaborators", len(collabs)))
 			w.Header().Set("Content-Type", "application/json")
 			if err := json.NewEncoder(w).Encode(&getProjectResponse{
 				ID:            project.ID,

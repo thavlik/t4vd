@@ -86,6 +86,9 @@ func (s *Server) handleSubscribe() websockMessageHandler {
 			}
 		}()
 		s.wsSubs[c] = append(s.wsSubs[c], sub)
+		s.log.Debug("websock subscribed to project",
+			zap.String("userID", userID),
+			zap.String("projectID", projectID))
 		return nil
 	}
 }
@@ -119,6 +122,9 @@ func (s *Server) handleUnsubscribe() websockMessageHandler {
 			}
 		}
 		s.wsSubs[c] = subs
+		s.log.Debug("websock unsubscribed from project",
+			zap.String("userID", userID),
+			zap.String("projectID", projectID))
 		return nil
 	}
 }

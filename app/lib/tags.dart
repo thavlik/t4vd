@@ -220,7 +220,7 @@ class _TagsPageState extends State<TagsPage> {
                         decoration: BoxDecoration(
                           image: currentMarker != null
                               ? DecorationImage(
-                                  image: NetworkImage(currentMarker!.imageUrl),
+                                  image: NetworkImage(currentMarker.imageUrl),
                                   alignment: const Alignment(0, 0),
                                   fit: BoxFit.cover,
                                 )

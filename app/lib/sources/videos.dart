@@ -136,10 +136,13 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
   @override
   Widget build(BuildContext context) {
     final info = widget.info;
-    final secs = 777; //model.duration;
-    final m = (secs.toDouble() / 60.0).floor();
-    final s = secs - m * 60;
-    final duration = "${m}m${s}s";
+    String? duration;
+    if (info != null) {
+      final secs = info.duration;
+      final m = (secs.toDouble() / 60.0).floor();
+      final s = secs - m * 60;
+      duration = "${m}m${s}s";
+    }
     return InkWell(
       key: Key('video-${widget.id}'),
       onTap: info != null
@@ -424,28 +427,28 @@ class InputVideosPageState extends State<InputVideosPage> {
           ScopedModelDescendant<BJJModel>(builder: (context, child, model) {
             return ListView(
               children: [
-                const PendingVideoListItem(
-                  id: 'ExqT2SwW1qQ',
-                  message: 'Tyler Spangler • 320 MiB downloaded • 1.2 MiB/sec',
-                  showProgressIndicator: true,
-                  title:
-                      'I Survived The Highest Rated Jiu Jitsu Gyms In Las Vegas',
-                  thumbnail: true,
-                ),
-                const PendingVideoListItem(
-                  id: 'hWg3ooN2ia0',
-                  message: 'Tyler Spangler • Pending download • #2 in queue',
-                  title: 'The Last Video Of Bath Salts Ben',
-                  thumbnail: true,
-                ),
-                const PendingVideoListItem(
-                  id: 'YZXXhpjCXiE',
-                  message: 'Querying • 4s elapsed',
-                ),
-                const PendingVideoListItem(
-                  id: 'morD58OZmy0',
-                  message: 'Pending query • #2 in queue',
-                ),
+                //const PendingVideoListItem(
+                //  id: 'ExqT2SwW1qQ',
+                //  message: 'Tyler Spangler • 320 MiB downloaded • 1.2 MiB/sec',
+                //  showProgressIndicator: true,
+                //  title:
+                //      'I Survived The Highest Rated Jiu Jitsu Gyms In Las Vegas',
+                //  thumbnail: true,
+                //),
+                //const PendingVideoListItem(
+                //  id: 'hWg3ooN2ia0',
+                //  message: 'Tyler Spangler • Pending download • #2 in queue',
+                //  title: 'The Last Video Of Bath Salts Ben',
+                //  thumbnail: true,
+                //),
+                //const PendingVideoListItem(
+                //  id: 'YZXXhpjCXiE',
+                //  message: 'Querying • 4s elapsed',
+                //),
+                //const PendingVideoListItem(
+                //  id: 'morD58OZmy0',
+                //  message: 'Pending query • #2 in queue',
+                //),
                 ...model.videos
                     .where((vid) => !vid.blacklist)
                     .map((vid) => InputVideoListItem(
