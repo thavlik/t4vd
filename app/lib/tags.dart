@@ -303,37 +303,20 @@ class _TagsPageState extends State<TagsPage> {
             ),
             if (currentMarker != null)
               Positioned(
-                top: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTapDown: (details) {
-                    showTagsContextMenu(
-                      context,
-                      details.globalPosition,
-                      id: currentMarker.videoId,
-                      startSeconds:
-                          Duration(microseconds: currentMarker.time ~/ 1000)
-                              .inSeconds,
-                      onSkip: () => skip(context),
-                      onDiscard: () => discard(context),
-                    );
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Icon(
-                      Icons.more_vert,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withAlpha(170),
-                          blurRadius: 12.0,
-                          offset: const Offset(0, 0),
-                        )
-                      ],
-                      color: Colors.pink,
-                    ),
-                  ),
-                ),
-              ),
+                  right: 16,
+                  top: 16,
+                  child: FloatingActionButton(
+                    onPressed: () async {
+                      final marker = model.currentMarker!;
+                      final t = Duration(microseconds: marker.time ~/ 1000);
+                      final url = Uri.parse(
+                          "https://youtube.com/watch?v=${marker.videoId}&t=${t.inSeconds}s"); // "https://youtube.com/watch?v=${}");
+                      if (!await launchUrl(url)) {
+                        throw 'Could not launch $url';
+                      }
+                    },
+                    child: const Icon(Icons.open_in_browser),
+                  )),
             if (_loading)
               const Center(
                 child: CircularProgressIndicator(),
