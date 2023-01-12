@@ -1,0 +1,49 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: youtubes.app.bjj.ai
+spec:
+  group: app.bjj.ai
+  scope: Namespaced
+  names:
+    kind: YouTube
+    listKind: YouTubeList
+    plural: youtubes
+    singular: youtube
+    shortNames:
+      - yt
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - jsonPath: .status.phase
+          name: Status
+          type: string
+        - jsonPath: .status.lastUpdated
+          name: Age
+          type: date
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties: {} # TODO: configure backups
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  description: "brief description of the node's current state"
+                message:
+                  type: string
+                  description: "longer description of the phase, such as an error message"
+                lastProbe:
+                  type: string
+                  description: "timestamp of the last time the node was probed"
+                lastUpdated:
+                  type: string
+                  description: "describes the recency of the status data"
