@@ -1,2 +1,8 @@
 dependencies:
+- crop
 - dataset/youtube
+- filter
+- function
+- helm
+- slice
+- tag
