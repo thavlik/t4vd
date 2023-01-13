@@ -53,7 +53,7 @@ var serverCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		log := base.Log
+		log := base.DefaultLog
 		go base.RunMetrics(serverArgs.MetricsPort, log)
 		redis := initRedis()
 		return server.Entry(
@@ -62,8 +62,8 @@ var serverCmd = &cobra.Command{
 			initScheduler(redis, "dlsched"),
 			initScheduler(redis, "qrysched"),
 			initInfoCache(&serverArgs.db),
-			initVidCache(),
-			initThumbCache(),
+			initVidCache(log),
+			initThumbCache(log),
 			initCachedSet(redis, log),
 			hound.NewHoundClientFromOptions(serverArgs.hound),
 			serverArgs.videoFormat,
@@ -110,17 +110,17 @@ func initScheduler(redis *redis.Client, name string) scheduler.Scheduler {
 	return memory_scheduler.NewMemoryScheduler()
 }
 
-func initVidCache() vidcache.VidCache {
+func initVidCache(log *zap.Logger) vidcache.VidCache {
 	if serverArgs.videoBucket != "" {
-		return s3_vidcache.NewS3VidCache(serverArgs.videoBucket, base.Log)
+		return s3_vidcache.NewS3VidCache(serverArgs.videoBucket, log)
 	} else {
 		panic(errors.New("missing video cache source"))
 	}
 }
 
-func initThumbCache() thumbcache.ThumbCache {
+func initThumbCache(log *zap.Logger) thumbcache.ThumbCache {
 	if serverArgs.thumbnailBucket != "" {
-		return s3_thumbcache.NewS3ThumbCache(serverArgs.thumbnailBucket, base.Log)
+		return s3_thumbcache.NewS3ThumbCache(serverArgs.thumbnailBucket, log)
 	} else {
 		panic(errors.New("missing thumbnail cache source"))
 	}

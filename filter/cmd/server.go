@@ -32,7 +32,8 @@ var serverCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		go base.RunMetrics(serverArgs.MetricsPort, base.Log)
+		log := base.DefaultLog
+		go base.RunMetrics(serverArgs.MetricsPort, log)
 		base.RandomizeSeed()
 		return server.Entry(
 			serverArgs.Port,
@@ -40,7 +41,7 @@ var serverCmd = &cobra.Command{
 			compiler.NewCompilerClientFromOptions(serverArgs.compiler),
 			serverArgs.slideShow,
 			serverArgs.stackSize,
-			base.Log,
+			log,
 		)
 	},
 }

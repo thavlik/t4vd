@@ -1,0 +1,48 @@
+{
+    "id": "3",
+    "submitterID": "<ID of the user that painted the flying saucer pixels>",
+    "submitted": 123475838,
+    "pixelData": "<base64 pixel data masking out flying saucer pixels>",
+    "parent": {
+        "id": "2",
+        "submitterID": "<ID of the user that cropped the frame to only contain the flying saucer>",
+        "submitted": 123475838,
+        "crop": {
+            "x": 127,
+            "y": 100,
+            "width": 374,
+            "height": 374
+        },
+        "parent": {
+            "id": "1",
+            "submitterID": "<ID of the user that tagged this frame as containing a flying saucer>",
+            "submitted": 123475838,
+            "time": 100,
+            "tags": ["saucer"],
+            "parent": {
+                "seek": 100,
+                "parent": {
+                    "id": "4",
+                    "submitterID": "<ID of the user that sliced the video to only contain the ufo>",
+                    "submitted": 123475838,
+                    "slice": {
+                        "start": 1230,
+                        "end": 1402
+                    },
+                    "parent": {
+                        "id": "5",
+                        "submitterID": "<ID of the user that tagged the video as having a ufo>",
+                        "submitted": 123475838,
+                        "tags": ["ufo"],
+                        "parent": {
+                            "id": "6",
+                            "submitterID": "<ID of the user that submitted the video>",
+                            "submitted": 123475838,
+                            "video": "<youtube video ID>"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

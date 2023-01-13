@@ -22,7 +22,6 @@ func (s *Server) handleGetRandomMarker() http.HandlerFunc {
 				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
-
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
@@ -56,6 +55,7 @@ func (s *Server) handleGetFrame() http.HandlerFunc {
 			}
 			tv, err := strconv.ParseInt(r.URL.Query().Get("t"), 10, 64)
 			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
 				return errors.Wrap(err, "parse time query")
 			}
 			t := time.Duration(tv)

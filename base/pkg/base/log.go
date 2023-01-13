@@ -10,7 +10,7 @@ import (
 )
 
 var atom zap.AtomicLevel = zap.NewAtomicLevel()
-var Log *zap.Logger
+var DefaultLog *zap.Logger
 
 func Elapsed(since time.Time) zap.Field {
 	return zap.String(
@@ -24,7 +24,7 @@ func Elapsed(since time.Time) zap.Field {
 func init() {
 	SetLogLevel()
 	encoderCfg := zap.NewProductionEncoderConfig()
-	Log = zap.New(zapcore.NewCore(
+	DefaultLog = zap.New(zapcore.NewCore(
 		zapcore.NewJSONEncoder(encoderCfg),
 		zapcore.Lock(os.Stdout),
 		atom,

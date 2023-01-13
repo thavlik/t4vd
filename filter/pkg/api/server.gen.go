@@ -23,19 +23,19 @@ var (
 		Help: "Auto-generated metric incremented on every call to Filter.Classify that does not return with an error",
 	})
 
-	filterTagTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "filter_tag_total",
-		Help: "Auto-generated metric incremented on every call to Filter.Tag",
+	filterSampleTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "filter_sample_total",
+		Help: "Auto-generated metric incremented on every call to Filter.Sample",
 	})
-	filterTagSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
-		Name: "filter_tag_success_total",
-		Help: "Auto-generated metric incremented on every call to Filter.Tag that does not return with an error",
+	filterSampleSuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "filter_sample_success_total",
+		Help: "Auto-generated metric incremented on every call to Filter.Sample that does not return with an error",
 	})
 )
 
 type Filter interface {
-	Classify(context.Context, Classify) (*Void, error)
-	Tag(context.Context, Tag) (*Void, error)
+	Classify(context.Context, Label) (*Label, error)
+	Sample(context.Context, SampleRequest) (*SampleResponse, error)
 }
 
 type filterServer struct {
@@ -49,12 +49,12 @@ func RegisterFilter(server *otohttp.Server, filter Filter) {
 		filter: filter,
 	}
 	server.Register("Filter", "Classify", handler.handleClassify)
-	server.Register("Filter", "Tag", handler.handleTag)
+	server.Register("Filter", "Sample", handler.handleSample)
 }
 
 func (s *filterServer) handleClassify(w http.ResponseWriter, r *http.Request) {
 	filterClassifyTotal.Inc()
-	var request Classify
+	var request Label
 	if err := otohttp.Decode(r, &request); err != nil {
 		s.server.OnErr(w, r, err)
 		return
@@ -72,14 +72,14 @@ func (s *filterServer) handleClassify(w http.ResponseWriter, r *http.Request) {
 	filterClassifySuccessTotal.Inc()
 }
 
-func (s *filterServer) handleTag(w http.ResponseWriter, r *http.Request) {
-	filterTagTotal.Inc()
-	var request Tag
+func (s *filterServer) handleSample(w http.ResponseWriter, r *http.Request) {
+	filterSampleTotal.Inc()
+	var request SampleRequest
 	if err := otohttp.Decode(r, &request); err != nil {
 		s.server.OnErr(w, r, err)
 		return
 	}
-	response, err := s.filter.Tag(r.Context(), request)
+	response, err := s.filter.Sample(r.Context(), request)
 	if err != nil {
 		log.Println("TODO: oto service error:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -89,26 +89,31 @@ func (s *filterServer) handleTag(w http.ResponseWriter, r *http.Request) {
 		s.server.OnErr(w, r, err)
 		return
 	}
-	filterTagSuccessTotal.Inc()
+	filterSampleSuccessTotal.Inc()
 }
 
 type Marker struct {
-	VideoID string `json:"videoID"`
-	Time    int64  `json:"time"`
+	VideoID   string `json:"videoID"`
+	Timestamp int64  `json:"timestamp"`
 }
 
-type Classify struct {
+type Label struct {
+	ID          string   `json:"id"`
+	Timestamp   int64    `json:"timestamp"`
+	ProjectID   string   `json:"projectID"`
+	Marker      Marker   `json:"marker"`
+	Tags        []string `json:"tags"`
+	SubmitterID string   `json:"submitterID"`
+	ParentID    string   `json:"parentID"`
+	Error       string   `json:"error,omitempty"`
+}
+
+type SampleRequest struct {
 	ProjectID string `json:"projectID"`
-	Marker    Marker `json:"marker"`
-	Label     int64  `json:"label"`
+	BatchSize int    `json:"batchSize"`
 }
 
-type Void struct {
-	Error string `json:"error,omitempty"`
-}
-
-type Tag struct {
-	ProjectID string   `json:"projectID"`
-	Marker    Marker   `json:"marker"`
-	Tags      []string `json:"tags"`
+type SampleResponse struct {
+	Labels []*Label `json:"labels"`
+	Error  string   `json:"error,omitempty"`
 }

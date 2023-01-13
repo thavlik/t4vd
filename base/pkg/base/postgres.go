@@ -104,6 +104,6 @@ func ConnectPostgres(o *PostgresOptions) *sql.DB {
 	if err := db.Ping(); err != nil {
 		panic(fmt.Errorf("ping postgres: %v", err))
 	}
-	Log.Debug("connected to postgres", Elapsed(start))
+	DefaultLog.Debug("connected to postgres", Elapsed(start))
 	return db
 }

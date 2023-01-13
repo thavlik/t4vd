@@ -10,6 +10,7 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	cognito_iam "github.com/thavlik/t4vd/base/pkg/iam/cognito"
 	keycloak_iam "github.com/thavlik/t4vd/base/pkg/iam/keycloak"
+	"go.uber.org/zap"
 )
 
 var defaultTimeout = 10 * time.Second
@@ -25,17 +26,17 @@ func AddIAMSubCommand(rootCmd *cobra.Command) {
 	rootCmd.AddCommand(iamCmd)
 }
 
-func InitIAM(o *base.IAMOptions) iam.IAM {
+func InitIAM(o *base.IAMOptions, log *zap.Logger) iam.IAM {
 	switch o.Driver {
 	case base.CognitoDriver:
 		return cognito_iam.NewCognitoIAM(
 			o.Cognito.AllowTokenUseBeforeIssue,
-			base.Log,
+			log,
 		)
 	case base.KeyCloakDriver:
 		return keycloak_iam.NewKeyCloakIAM(
 			base.ConnectKeyCloak(&o.KeyCloak),
-			base.Log,
+			log,
 		)
 	default:
 		panic(fmt.Errorf("unrecognized iam driver '%s'", o.Driver))

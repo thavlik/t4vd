@@ -48,12 +48,12 @@ var serverCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		log := base.Log
+		log := base.DefaultLog
 		var redis *redis.Client
 		if serverArgs.redis.IsSet() {
 			redis = base.ConnectRedis(&serverArgs.redis)
 		}
-		go base.RunMetrics(serverArgs.MetricsPort, base.Log)
+		go base.RunMetrics(serverArgs.MetricsPort, log)
 		return server.Entry(
 			serverArgs.Port,
 			initScheduler(redis),
@@ -97,7 +97,7 @@ func initScheduler(redis *redis.Client) scheduler.Scheduler {
 func initDataStore(
 	seerClient seer.Seer,
 ) datastore.DataStore {
-	log := base.Log
+	log := base.DefaultLog
 	switch serverArgs.db.Driver {
 	case base.PostgresDriver:
 		ds, err := postgres_datastore.NewPostgresDataStore(

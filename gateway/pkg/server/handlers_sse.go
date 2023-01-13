@@ -62,7 +62,6 @@ func (s *Server) handleServerSentEvents() http.HandlerFunc {
 				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
-
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}

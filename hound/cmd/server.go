@@ -31,14 +31,15 @@ var serverCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		go base.RunMetrics(serverArgs.MetricsPort, base.Log)
+		log := base.DefaultLog
+		go base.RunMetrics(serverArgs.MetricsPort, log)
 		base.RandomizeSeed()
 		return server.Entry(
 			serverArgs.Port,
 			compiler.NewCompilerClientFromOptions(serverArgs.compiler),
 			sources.NewSourcesClientFromOptions(serverArgs.sources),
 			gateway.NewGatewayClientFromOptions(serverArgs.gateway),
-			base.Log,
+			log,
 		)
 	},
 }

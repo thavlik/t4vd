@@ -12,7 +12,7 @@ var defaultTimeout = 12 * time.Second
 
 func main() {
 	if err := rootCmd.Execute(); err != nil {
-		base.Log.Error("main", zap.String("err", err.Error()))
+		base.DefaultLog.Error("main", zap.String("err", err.Error()))
 		os.Exit(1)
 	}
 }

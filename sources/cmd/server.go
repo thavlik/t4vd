@@ -35,11 +35,11 @@ var serverCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		log := base.Log
+		log := base.DefaultLog
 		go base.RunMetrics(serverArgs.MetricsPort, log)
 		return server.Entry(
 			serverArgs.Port,
-			iam.InitIAM(&serverArgs.iam),
+			iam.InitIAM(&serverArgs.iam, log),
 			initStore(&serverArgs.db),
 			seer.NewSeerClientFromOptions(serverArgs.seer),
 			compiler.NewCompilerClientFromOptions(serverArgs.compiler),

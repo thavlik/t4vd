@@ -13,19 +13,16 @@ func (c *mongoInfoCache) GetChannel(
 	ctx context.Context,
 	channelID string,
 ) (*api.ChannelDetails, error) {
-	result := c.cachedChannelsCollection.FindOne(
+	doc := make(map[string]interface{})
+	if err := c.cachedChannelsCollection.FindOne(
 		ctx,
 		map[string]interface{}{
 			"_id": channelID,
-		})
-	if err := result.Err(); err == mongo.ErrNoDocuments {
+		},
+	).Decode(&doc); err == mongo.ErrNoDocuments {
 		return nil, infocache.ErrCacheUnavailable
 	} else if err != nil {
 		return nil, errors.Wrap(err, "mongo")
-	}
-	doc := make(map[string]interface{})
-	if err := result.Decode(&doc); err != nil {
-		return nil, errors.Wrap(err, "decode")
 	}
 	return api.ConvertChannelDetails(doc), nil
 }

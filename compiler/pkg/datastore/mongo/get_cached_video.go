@@ -13,11 +13,10 @@ func (ds *mongoDataStore) GetCachedVideo(ctx context.Context, id string) (*api.V
 	result := ds.videoCache.FindOne(
 		ctx,
 		map[string]interface{}{"_id": id})
-	if err := result.Err(); err == mongo.ErrNoDocuments {
-		return nil, datastore.ErrVideoNotCached
-	}
 	doc := make(map[string]interface{})
-	if err := result.Decode(&doc); err != nil {
+	if err := result.Decode(&doc); err == mongo.ErrNoDocuments {
+		return nil, datastore.ErrVideoNotCached
+	} else if err != nil {
 		return nil, errors.Wrap(err, "decode")
 	}
 	return &api.Video{

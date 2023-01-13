@@ -38,7 +38,7 @@ var serverCmd = &cobra.Command{
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		log := base.Log
+		log := base.DefaultLog
 		go base.RunMetrics(serverArgs.MetricsPort, log)
 		base.RandomizeSeed()
 		var redis *redis.Client

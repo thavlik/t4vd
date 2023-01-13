@@ -2,6 +2,7 @@ package mongo
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/pkg/errors"
@@ -14,21 +15,22 @@ func getRecency(
 	col *mongo.Collection,
 	id string,
 ) (time.Time, error) {
-	result := col.FindOne(
+	doc := make(map[string]interface{})
+	if err := col.FindOne(
 		context.Background(),
 		map[string]interface{}{
 			"_id": id,
-		})
-	if err := result.Err(); err == mongo.ErrNoDocuments {
+		},
+	).Decode(&doc); err == mongo.ErrNoDocuments {
 		return time.Time{}, infocache.ErrCacheUnavailable
 	} else if err != nil {
 		return time.Time{}, errors.Wrap(err, "mongo")
 	}
-	doc := make(map[string]interface{})
-	if err := result.Decode(&doc); err != nil {
-		return time.Time{}, errors.Wrap(err, "decode")
+	v, ok := doc["updated"].(int64)
+	if !ok {
+		return time.Time{}, fmt.Errorf("invalid type for field 'updated': %T", doc["updated"])
 	}
-	updated := time.Unix(0, doc["updated"].(int64))
+	updated := time.Unix(0, v)
 	return updated, nil
 }
 

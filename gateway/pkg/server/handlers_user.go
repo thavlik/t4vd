@@ -43,22 +43,25 @@ func (s *Server) userExists(ctx context.Context, name string) (bool, error) {
 func (s *Server) handleUserExists() http.HandlerFunc {
 	return s.handler(
 		http.MethodGet,
-		func(w http.ResponseWriter, r *http.Request) error {
+		func(w http.ResponseWriter, r *http.Request) (err error) {
 			username := r.URL.Query().Get("u")
+			if username == "" {
+				w.WriteHeader(http.StatusBadRequest)
+				return errors.New("missing username in query")
+			}
 			email := r.URL.Query().Get("e")
+			if email == "" {
+				w.WriteHeader(http.StatusBadRequest)
+				return errors.New("missing email in query")
+			}
 			var result struct {
 				Exists bool `json:"exists"`
 			}
-			if username != "" {
-				var err error
-				result.Exists, err = s.userExists(r.Context(), username)
-				if err != nil {
-					return errors.Wrap(err, "iam")
-				}
-			} else if email != "" {
-				result.Exists = email == "d@d.com"
-			} else {
-				return errors.New("missing username or email in query")
+			if result.Exists, err = s.userExists(
+				r.Context(),
+				username,
+			); err != nil {
+				return errors.Wrap(err, "iam")
 			}
 			w.Header().Set("Content-Type", "application/json")
 			if err := json.NewEncoder(w).Encode(&result); err != nil {

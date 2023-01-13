@@ -67,7 +67,7 @@ func ConnectMongo(o *MongoOptions) *mongo.Database {
 		panic(fmt.Errorf("mongo: failed to ping: %v", err))
 	}
 	db := mongoClient.Database(o.DBName)
-	Log.Debug("connected to mongo", Elapsed(start))
+	DefaultLog.Debug("connected to mongo", Elapsed(start))
 	return db
 }
 

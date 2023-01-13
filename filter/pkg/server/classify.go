@@ -2,9 +2,8 @@ package server
 
 import (
 	"context"
-	"fmt"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/filter/pkg/api"
 	"go.uber.org/zap"
@@ -12,22 +11,20 @@ import (
 
 func (s *Server) Classify(
 	ctx context.Context,
-	req api.Classify,
-) (*api.Void, error) {
-	if req.ProjectID == "" {
+	label api.Label,
+) (*api.Label, error) {
+	if label.ProjectID == "" {
 		return nil, errors.New("missing projectID")
 	}
-	if err := s.labelStore.Insert(
-		req.ProjectID,
-		req.Marker.VideoID,
-		time.Duration(req.Marker.Time),
-		[]string{fmt.Sprintf("%d", req.Label)},
-	); err != nil {
+	if label.ID == "" {
+		label.ID = uuid.New().String()
+	}
+	if err := s.labelStore.Insert(&label); err != nil {
 		return nil, errors.Wrap(err, "mongo")
 	}
 	s.log.Debug("classified frame",
-		zap.String("videoID", req.Marker.VideoID),
-		zap.Int64("time", req.Marker.Time),
-		zap.Int64("label", req.Label))
-	return &api.Void{}, nil
+		zap.String("projectID", label.ProjectID),
+		zap.String("videoID", label.Marker.VideoID),
+		zap.Int64("timestamp", label.Marker.Timestamp))
+	return &label, nil
 }

@@ -13,19 +13,16 @@ func (c *mongoInfoCache) GetVideo(
 	ctx context.Context,
 	videoID string,
 ) (*api.VideoDetails, error) {
-	result := c.cachedVideosCollection.FindOne(
+	doc := make(map[string]interface{})
+	if err := c.cachedVideosCollection.FindOne(
 		ctx,
 		map[string]interface{}{
 			"_id": videoID,
-		})
-	if err := result.Err(); err == mongo.ErrNoDocuments {
+		},
+	).Decode(&doc); err == mongo.ErrNoDocuments {
 		return nil, infocache.ErrCacheUnavailable
 	} else if err != nil {
 		return nil, errors.Wrap(err, "mongo")
-	}
-	doc := make(map[string]interface{})
-	if err := result.Decode(&doc); err != nil {
-		return nil, errors.Wrap(err, "decode")
 	}
 	return api.ConvertVideoDetails(doc), nil
 }

@@ -66,6 +66,7 @@ type GadgetStatus struct {
 	Phase       GadgetPhase       `json:"phase"`       // current phase of the gadget
 	LastUpdated *metav1.Timestamp `json:"lastUpdated"` // last time the status was updated
 	LastProbe   *metav1.Timestamp `json:"lastProbe"`   // last time the status was probed
+	Namespace   string            `json:"namespace"`   // deployment namespace of the gadget
 }
 
 // Resolution defines the resolution of the cropped image.

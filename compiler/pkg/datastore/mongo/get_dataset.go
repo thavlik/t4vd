@@ -55,7 +55,8 @@ func (ds *mongoDataStore) getLatestDataset(
 	complete bool,
 ) (*api.Dataset, error) {
 	// Use the latest complete dataset
-	result := ds.outputDatasets.FindOne(
+	doc := make(map[string]interface{})
+	if err := ds.outputDatasets.FindOne(
 		ctx,
 		map[string]interface{}{
 			"p": projectID,
@@ -68,16 +69,14 @@ func (ds *mongoDataStore) getLatestDataset(
 			SetProjection(map[string]interface{}{
 				"_id": 1,
 				"t":   1,
-			}))
-	if err := result.Err(); err == mongo.ErrNoDocuments {
+			}),
+	).Decode(&doc); err == mongo.ErrNoDocuments {
 		if complete {
 			// Try and get the latest incomplete dataset
 			return ds.getLatestDataset(ctx, projectID, false)
 		}
 		return nil, datastore.ErrDatasetNotFound
-	}
-	doc := make(map[string]interface{})
-	if err := result.Decode(&doc); err != nil {
+	} else if err != nil {
 		return nil, errors.Wrap(err, "decode")
 	}
 	datasetID := doc["_id"].(string)
@@ -95,15 +94,17 @@ func (ds *mongoDataStore) getSpecificDataset(
 			"_id": datasetID,
 			"p":   projectID,
 		})
-	if err := result.Err(); err == mongo.ErrNoDocuments {
-		return nil, datastore.ErrDatasetNotFound
-	}
 	doc := make(map[string]interface{})
-	if err := result.Decode(&doc); err != nil {
+	if err := result.Decode(&doc); err == mongo.ErrNoDocuments {
+		return nil, datastore.ErrDatasetNotFound
+	} else if err != nil {
 		return nil, errors.Wrap(err, "decode")
 	}
-	timestamp := doc["t"].(int64)
-	complete := doc["c"].(bool)
+	timestamp, ok := doc["t"].(int64)
+	if !ok {
+		return nil, errors.New("invalid timestamp")
+	}
+	complete, _ := doc["c"].(bool)
 	videoIDs, err := ds.getDatasetVideoIDs(ctx, datasetID)
 	if err != nil {
 		return nil, errors.Wrap(err, "getDatasetVideoIDs")

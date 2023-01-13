@@ -2,26 +2,40 @@ package postgres
 
 import (
 	"fmt"
-	"time"
+
+	"github.com/thavlik/t4vd/filter/pkg/api"
 
 	"github.com/pkg/errors"
 )
 
 func (l *postgresLabelStore) Insert(
-	projectID string,
-	videoID string,
-	time time.Duration,
-	labels []string,
+	label *api.Label,
 ) error {
 	if _, err := l.db.Exec(
 		fmt.Sprintf(
-			`INSERT INTO %s (v, t, l, p) VALUES ($1, $2, $3, $4)`,
+			`INSERT INTO %s (
+				id,
+				submitter,
+				submitted,
+				video,
+				timestamp,
+				tags,
+				parent,
+				project
+			) VALUES (
+				$1, $2, $3, $4,
+				$5, $6, $7
+			)`,
 			tableName,
 		),
-		videoID,
-		int64(time),
-		labels,
-		projectID,
+		label.ID,
+		label.SubmitterID,
+		label.Timestamp,
+		label.Marker.VideoID,
+		label.Marker.Timestamp,
+		label.Tags,
+		nullString(label.ParentID),
+		label.ProjectID,
 	); err != nil {
 		return errors.Wrap(err, "postgres")
 	}

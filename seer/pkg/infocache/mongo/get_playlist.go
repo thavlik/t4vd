@@ -13,19 +13,16 @@ func (c *mongoInfoCache) GetPlaylist(
 	ctx context.Context,
 	playlistID string,
 ) (*api.PlaylistDetails, error) {
-	result := c.cachedPlaylistsCollection.FindOne(
+	doc := make(map[string]interface{})
+	if err := c.cachedPlaylistsCollection.FindOne(
 		ctx,
 		map[string]interface{}{
 			"_id": playlistID,
-		})
-	if err := result.Err(); err == mongo.ErrNoDocuments {
+		},
+	).Decode(&doc); err == mongo.ErrNoDocuments {
 		return nil, infocache.ErrCacheUnavailable
 	} else if err != nil {
 		return nil, errors.Wrap(err, "mongo")
-	}
-	doc := make(map[string]interface{})
-	if err := result.Decode(&doc); err != nil {
-		return nil, errors.Wrap(err, "decode")
 	}
 	return api.ConvertPlaylistDetails(doc), nil
 }

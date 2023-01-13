@@ -89,7 +89,7 @@ func NewFilterClient(
 	return c
 }
 
-func (c *filterClient) Classify(ctx context.Context, req Classify) (*Void, error) {
+func (c *filterClient) Classify(ctx context.Context, req Label) (*Label, error) {
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(&req); err != nil {
 		return nil, errors.Wrap(err, "encode")
@@ -119,14 +119,14 @@ func (c *filterClient) Classify(ctx context.Context, req Classify) (*Void, error
 		}
 		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
 	}
-	var response Void
+	var response Label
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, errors.Wrap(err, "decode")
 	}
 	return &response, nil
 }
 
-func (c *filterClient) Tag(ctx context.Context, req Tag) (*Void, error) {
+func (c *filterClient) Sample(ctx context.Context, req SampleRequest) (*SampleResponse, error) {
 	var body bytes.Buffer
 	if err := json.NewEncoder(&body).Encode(&req); err != nil {
 		return nil, errors.Wrap(err, "encode")
@@ -134,7 +134,7 @@ func (c *filterClient) Tag(ctx context.Context, req Tag) (*Void, error) {
 	request, err := http.NewRequestWithContext(
 		ctx,
 		"POST",
-		fmt.Sprintf("%s/oto/Filter.Tag", c.endpoint),
+		fmt.Sprintf("%s/oto/Filter.Sample", c.endpoint),
 		&body,
 	)
 	if err != nil {
@@ -156,7 +156,7 @@ func (c *filterClient) Tag(ctx context.Context, req Tag) (*Void, error) {
 		}
 		return nil, fmt.Errorf("status code %d: %s", resp.StatusCode, string(body))
 	}
-	var response Void
+	var response SampleResponse
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, errors.Wrap(err, "decode")
 	}

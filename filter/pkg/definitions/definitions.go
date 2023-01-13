@@ -1,25 +1,36 @@
 package definitions
 
 type Filter interface {
-	Classify(Classify) Void
-	Tag(Tag) Void
+	Classify(Label) Label
+	Sample(SampleRequest) SampleResponse
 }
 
-type Marker struct {
-	VideoID string `json:"videoID"`
-	Time    int64  `json:"time"`
-}
-
-type Classify struct {
+type SampleRequest struct {
 	ProjectID string `json:"projectID"`
-	Marker    Marker `json:"marker"`
-	Label     int64  `json:"label"`
+	BatchSize int    `json:"batchSize"`
 }
 
-type Tag struct {
-	ProjectID string   `json:"projectID"`
-	Marker    Marker   `json:"marker"`
-	Tags      []string `json:"tags"`
+type SampleResponse struct {
+	Labels []*Label `json:"labels"`
 }
 
-type Void struct{}
+// Marker refers to a frame in a video
+type Marker struct {
+	VideoID   string `json:"videoID"`   // ID of video
+	Timestamp int64  `json:"timestamp"` // time in video
+}
+
+// Label is a classification of a frame in a video.
+// 'Tags' is temporary and will be replaced with a more
+// robust system capable of handling multiple types of
+// labeled data, such as XY coordinates, bounding boxes,
+// etc.
+type Label struct {
+	ID          string   `json:"id"`          // unique ID for the label
+	Timestamp   int64    `json:"timestamp"`   // time of classification
+	ProjectID   string   `json:"projectID"`   // project ID
+	Marker      Marker   `json:"marker"`      // video and timestamp in video of frame
+	SubmitterID string   `json:"submitterID"` // ID of user who submitted label
+	ParentID    string   `json:"parentID"`    // ID of parent label
+	Tags        []string `json:"tags"`        // tags to classify frame with
+}

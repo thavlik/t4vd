@@ -22,10 +22,10 @@ func (s *Server) handleAddPlaylist() http.HandlerFunc {
 			ctx := r.Context()
 			var req sources.AddPlaylistRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				w.WriteHeader(http.StatusBadRequest)
 				return errors.Wrap(err, "decoder")
 			}
 			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {
-
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
@@ -53,10 +53,10 @@ func (s *Server) handleRemovePlaylist() http.HandlerFunc {
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
 			var req sources.RemovePlaylistRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				w.WriteHeader(http.StatusBadRequest)
 				return errors.Wrap(err, "decoder")
 			}
 			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
-
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
@@ -83,7 +83,6 @@ func (s *Server) handleListPlaylists() http.HandlerFunc {
 				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
-
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}

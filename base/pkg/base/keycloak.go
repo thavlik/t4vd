@@ -86,7 +86,7 @@ func ConnectKeyCloak(o *KeyCloakOptions) *KeyCloak {
 	if _, err := k.GetAccessToken(context.Background()); err != nil {
 		panic(errors.Wrap(err, "failed to connect to keycloak"))
 	}
-	Log.Debug("connected to keycloak", Elapsed(start))
+	DefaultLog.Debug("connected to keycloak", Elapsed(start))
 	return k
 }
 

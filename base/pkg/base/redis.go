@@ -88,6 +88,6 @@ func ConnectRedis(o *RedisOptions) *redis.Client {
 	if _, err := redisClient.Ping(context.Background()).Result(); err != nil {
 		panic(errors.Wrap(err, "failed to ping redis"))
 	}
-	Log.Debug("connected to redis", Elapsed(start))
+	DefaultLog.Debug("connected to redis", Elapsed(start))
 	return redisClient
 }
