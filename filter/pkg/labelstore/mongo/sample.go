@@ -5,17 +5,17 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/filter/pkg/api"
+	"github.com/thavlik/t4vd/filter/pkg/labelstore"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
 func (l *mongoLabelStore) Sample(
 	ctx context.Context,
-	projectID string,
-	batchSize int,
+	input *labelstore.SampleInput,
 ) ([]*api.Label, error) {
 	cur, err := l.col.Aggregate(ctx, []bson.M{
-		{"$match": bson.M{"project": projectID}},
-		{"$sample": bson.M{"size": batchSize}},
+		{"$match": bson.M{"project": input.ProjectID}},
+		{"$sample": bson.M{"size": input.BatchSize}},
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "mongo")
@@ -27,7 +27,8 @@ func (l *mongoLabelStore) Sample(
 		if err := cur.Decode(&doc); err != nil {
 			return nil, errors.Wrap(err, "mongo")
 		}
-		labels = append(labels, convertLabel(doc))
+		label := api.NewLabelFromMap(doc)
+		labels = append(labels, label)
 	}
 	return labels, nil
 }

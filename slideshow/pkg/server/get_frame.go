@@ -69,7 +69,7 @@ func (s *Server) handleGetFrame() http.HandlerFunc {
 		if err := func() error {
 			if r.Method != http.MethodGet {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.New("bad method")
+				return nil
 			}
 			w.Header().Set("Content-Type", "image/jpeg")
 			videoID := r.URL.Query().Get("v")

@@ -64,7 +64,7 @@ func (s *Server) handleFilterClassify() http.HandlerFunc {
 			var label filter.Label
 			if err := json.NewDecoder(r.Body).Decode(&label); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.Wrap(err, "decoder")
+				return nil
 			}
 			if err := s.ProjectAccess(ctx, userID, label.ProjectID); err != nil {
 				w.WriteHeader(http.StatusForbidden)

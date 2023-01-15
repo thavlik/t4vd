@@ -23,10 +23,9 @@ func (s *Server) handleAddChannel() http.HandlerFunc {
 			var req sources.AddChannelRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.Wrap(err, "decoder")
+				return nil
 			}
 			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {
-
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
@@ -56,7 +55,7 @@ func (s *Server) handleRemoveChannel() http.HandlerFunc {
 			var req sources.RemoveChannelRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.Wrap(err, "decoder")
+				return nil
 			}
 			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {
 				w.WriteHeader(http.StatusForbidden)

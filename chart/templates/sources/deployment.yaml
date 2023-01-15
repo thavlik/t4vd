@@ -111,9 +111,10 @@ spec:
 {{ tpl (toYaml .Values.iam.cognito.secretAccessKey) . | indent 10 }}
       {{- end }}
         readinessProbe:
-          exec:
-            command:
-            - cat
-            - /etc/ready
-          initialDelaySeconds: 1
-          periodSeconds: 4
+          httpGet:
+            path: /readyz
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80

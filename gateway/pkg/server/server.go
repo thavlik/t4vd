@@ -78,6 +78,7 @@ func (s *Server) AdminListenAndServe(port int) error {
 	gateway.RegisterGateway(otoServer, s)
 	mux := http.NewServeMux()
 	mux.Handle("/", otoServer)
+	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
 	s.log.Info("listening forever", zap.Int("port", port))
 	return (&http.Server{
@@ -90,6 +91,7 @@ func (s *Server) AdminListenAndServe(port int) error {
 
 func (s *Server) ListenAndServe(port int) error {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
 	mux.HandleFunc("/project", s.handleGetProject())
 	mux.HandleFunc("/project/create", s.handleCreateProject())

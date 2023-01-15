@@ -131,7 +131,6 @@ type RemoveVideoRequest struct {
 
 type ListChannelsRequest struct {
 	ProjectID string `json:"projectID"`
-	Blacklist bool   `json:"blacklist"`
 }
 
 type Channel struct {
@@ -145,7 +144,6 @@ type ListChannelsResponse struct {
 
 type ListPlaylistsRequest struct {
 	ProjectID string `json:"projectID"`
-	Blacklist bool   `json:"blacklist"`
 }
 
 type Playlist struct {
@@ -159,7 +157,6 @@ type ListPlaylistsResponse struct {
 
 type ListVideosRequest struct {
 	ProjectID string `json:"projectID"`
-	Blacklist bool   `json:"blacklist"`
 }
 
 type Video struct {

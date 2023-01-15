@@ -13,7 +13,6 @@ import (
 func (s *mongoStore) AddPlaylist(
 	projectID string,
 	playlist *api.Playlist,
-	blacklist bool,
 	submitterID string,
 ) error {
 	_, err := s.playlists.UpdateOne(
@@ -25,7 +24,7 @@ func (s *mongoStore) AddPlaylist(
 		},
 		map[string]interface{}{
 			"$set": map[string]interface{}{
-				"blacklist": blacklist,
+				"blacklist": playlist.Blacklist,
 				"submitter": submitterID,
 			},
 		},

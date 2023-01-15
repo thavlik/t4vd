@@ -5,6 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/filter/pkg/api"
+	"github.com/thavlik/t4vd/filter/pkg/labelstore"
 	"go.uber.org/zap"
 )
 
@@ -17,8 +18,10 @@ func (s *Server) Sample(
 	}
 	labels, err := s.labelStore.Sample(
 		ctx,
-		req.ProjectID,
-		req.BatchSize,
+		&labelstore.SampleInput{
+			ProjectID: req.ProjectID,
+			BatchSize: req.BatchSize,
+		},
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "mongo")

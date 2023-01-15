@@ -21,5 +21,5 @@ func (l *mongoLabelStore) Get(
 	} else if err != nil {
 		return nil, err
 	}
-	return convertLabel(doc), nil
+	return api.NewLabelFromMap(doc), nil
 }

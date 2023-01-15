@@ -5,16 +5,17 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/filter/pkg/api"
+	"github.com/thavlik/t4vd/filter/pkg/labelstore"
 )
 
 func (l *mongoLabelStore) List(
 	ctx context.Context,
-	projectID string,
+	input *labelstore.ListInput,
 ) ([]*api.Label, error) {
 	cur, err := l.col.Find(
 		ctx,
 		map[string]interface{}{
-			"project": projectID,
+			"project": input.ProjectID,
 		})
 	if err != nil {
 		return nil, errors.Wrap(err, "mongo")
@@ -26,7 +27,8 @@ func (l *mongoLabelStore) List(
 		if err := cur.Decode(&doc); err != nil {
 			return nil, errors.Wrap(err, "mongo")
 		}
-		labels = append(labels, convertLabel(doc))
+		label := api.NewLabelFromMap(doc)
+		labels = append(labels, label)
 	}
 	return labels, nil
 }

@@ -23,7 +23,7 @@ func (s *Server) handleAddVideo() http.HandlerFunc {
 			var req sources.AddVideoRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.Wrap(err, "decoder")
+				return nil
 			}
 			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {
 				w.WriteHeader(http.StatusForbidden)
@@ -54,7 +54,7 @@ func (s *Server) handleRemoveVideo() http.HandlerFunc {
 			var req sources.RemoveVideoRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.Wrap(err, "decoder")
+				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
 				w.WriteHeader(http.StatusForbidden)

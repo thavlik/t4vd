@@ -21,7 +21,7 @@ func (s *Server) handleCreateProject() http.HandlerFunc {
 			var req sources.Project
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.Wrap(err, "decoder")
+				return nil
 			}
 			if req.Name == "" {
 				w.WriteHeader(http.StatusBadRequest)
@@ -51,13 +51,13 @@ func (s *Server) handleDeleteProject() http.HandlerFunc {
 			var req sources.DeleteProject
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.Wrap(err, "decoder")
+				return nil
 			}
 			var project *sources.Project
 			if req.ID == "" {
 				if req.Name == "" {
 					w.WriteHeader(http.StatusBadRequest)
-					return errors.New("id or name required")
+					return nil
 				}
 				project, err = s.sources.GetProjectByName(
 					ctx,
@@ -75,7 +75,7 @@ func (s *Server) handleDeleteProject() http.HandlerFunc {
 			}
 			if project.CreatorID != userID {
 				w.WriteHeader(http.StatusForbidden)
-				return errors.New("not creator")
+				return nil
 			}
 			if err := s.ProjectAccess(ctx, userID, project.ID); err != nil {
 				// even the creator can't delete a project they don't have access to
@@ -198,7 +198,7 @@ func (s *Server) handleProjectAddCollaborator() http.HandlerFunc {
 			}
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.Wrap(err, "decoder")
+				return nil
 			}
 			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {
 				w.WriteHeader(http.StatusForbidden)
@@ -213,7 +213,7 @@ func (s *Server) handleProjectAddCollaborator() http.HandlerFunc {
 			if project.CreatorID != userID {
 				// right now we only allow the project creator to add collaborators
 				w.WriteHeader(http.StatusForbidden)
-				return errors.New("only the project creator can add collaborators")
+				return nil
 			}
 			if err := s.iam.AddUserToGroup(
 				userID,
@@ -236,7 +236,7 @@ func (s *Server) handleProjectRemoveCollaborator() http.HandlerFunc {
 			}
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.Wrap(err, "decoder")
+				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, req.ProjectID); err != nil {
 				w.WriteHeader(http.StatusForbidden)
@@ -251,7 +251,7 @@ func (s *Server) handleProjectRemoveCollaborator() http.HandlerFunc {
 			if project.CreatorID != userID {
 				// right now we only allow the project creator to remove collaborators
 				w.WriteHeader(http.StatusForbidden)
-				return errors.New("not project creator")
+				return nil
 			}
 			if err := s.iam.RemoveUserFromGroup(
 				userID,

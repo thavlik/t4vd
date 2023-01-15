@@ -13,7 +13,7 @@ func (s *Server) handleGetPlaylistThumbnail() http.HandlerFunc {
 		if err := func() error {
 			if r.Method != http.MethodGet {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.New("bad method")
+				return nil
 			}
 			playlistID := r.URL.Query().Get("list")
 			if playlistID == "" {

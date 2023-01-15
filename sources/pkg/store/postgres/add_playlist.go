@@ -11,7 +11,6 @@ import (
 func (s *postgresStore) AddPlaylist(
 	projectID string,
 	playlist *api.Playlist,
-	blacklist bool,
 	submitterID string,
 ) error {
 	if _, err := s.db.Exec(

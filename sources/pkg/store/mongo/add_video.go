@@ -13,7 +13,6 @@ import (
 func (s *mongoStore) AddVideo(
 	projectID string,
 	video *api.Video,
-	blacklist bool,
 	submitterID string,
 ) error {
 	_, err := s.videos.UpdateOne(
@@ -25,7 +24,7 @@ func (s *mongoStore) AddVideo(
 		},
 		map[string]interface{}{
 			"$set": map[string]interface{}{
-				"blacklist": blacklist,
+				"blacklist": video.Blacklist,
 				"submitter": submitterID,
 			},
 		},

@@ -68,6 +68,7 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.HandleFunc("/video/thumbnail", s.handleGetVideoThumbnail())
 	mux.HandleFunc("/playlist/thumbnail", s.handleGetPlaylistThumbnail())
 	mux.HandleFunc("/channel/avatar", s.handleGetChannelAvatar())
+	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
 	s.log.Info("listening forever", zap.Int("port", port))
 	return (&http.Server{

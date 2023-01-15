@@ -47,12 +47,12 @@ func (s *Server) handleUserExists() http.HandlerFunc {
 			username := r.URL.Query().Get("u")
 			if username == "" {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.New("missing username in query")
+				return nil
 			}
 			email := r.URL.Query().Get("e")
 			if email == "" {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.New("missing email in query")
+				return nil
 			}
 			var result struct {
 				Exists bool `json:"exists"`

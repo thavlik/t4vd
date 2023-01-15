@@ -29,7 +29,6 @@ func (s *Server) AddVideo(ctx context.Context, req api.AddVideoRequest) (*api.Vi
 	if err := s.store.AddVideo(
 		req.ProjectID,
 		video,
-		req.Blacklist,
 		req.SubmitterID,
 	); err != nil {
 		return nil, errors.Wrap(err, "store.AddVideo")

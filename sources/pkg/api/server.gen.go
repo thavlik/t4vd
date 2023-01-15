@@ -734,7 +734,6 @@ type ListChannelIDsResponse struct {
 
 type ListChannelsRequest struct {
 	ProjectID string `json:"projectID"`
-	Blacklist bool   `json:"blacklist"`
 }
 
 type ListChannelsResponse struct {
@@ -754,7 +753,6 @@ type ListPlaylistIDsResponse struct {
 
 type ListPlaylistsRequest struct {
 	ProjectID string `json:"projectID"`
-	Blacklist bool   `json:"blacklist"`
 }
 
 type ListPlaylistsResponse struct {
@@ -784,7 +782,6 @@ type ListVideoIDsResponse struct {
 
 type ListVideosRequest struct {
 	ProjectID string `json:"projectID"`
-	Blacklist bool   `json:"blacklist"`
 }
 
 type ListVideosResponse struct {

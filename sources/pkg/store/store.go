@@ -8,7 +8,9 @@ import (
 	"github.com/thavlik/t4vd/sources/pkg/api"
 )
 
-var ErrProjectNotFound = errors.New("project does not exist")
+var (
+	ErrProjectNotFound = errors.New("project not found")
+)
 
 type Store interface {
 	CreateProject(project *api.Project) error
@@ -21,9 +23,9 @@ type Store interface {
 	GetProjectIDsForChannel(ctx context.Context, channelID string) ([]string, error)
 	GetProjectIDsForPlaylist(ctx context.Context, playlistID string) ([]string, error)
 	GetProjectIDsForVideo(ctx context.Context, videoID string) ([]string, error)
-	AddChannel(projectID string, channel *api.Channel, blacklist bool, submitterID string) error
-	AddPlaylist(projectID string, playlist *api.Playlist, blacklist bool, submitterID string) error
-	AddVideo(projectID string, video *api.Video, blacklist bool, submitterID string) error
+	AddChannel(projectID string, channel *api.Channel, submitterID string) error
+	AddPlaylist(projectID string, playlist *api.Playlist, submitterID string) error
+	AddVideo(projectID string, video *api.Video, submitterID string) error
 	ListChannels(ctx context.Context, projectID string) ([]*api.Channel, error)
 	ListPlaylists(ctx context.Context, projectID string) ([]*api.Playlist, error)
 	ListVideos(ctx context.Context, projectID string) ([]*api.Video, error)

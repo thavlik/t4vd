@@ -1,5 +1,7 @@
 package definitions
 
+import "time"
+
 type Filter interface {
 	Classify(Label) Label
 	Sample(SampleRequest) SampleResponse
@@ -14,23 +16,18 @@ type SampleResponse struct {
 	Labels []*Label `json:"labels"`
 }
 
-// Marker refers to a frame in a video
-type Marker struct {
-	VideoID   string `json:"videoID"`   // ID of video
-	Timestamp int64  `json:"timestamp"` // time in video
-}
-
-// Label is a classification of a frame in a video.
-// 'Tags' is temporary and will be replaced with a more
-// robust system capable of handling multiple types of
-// labeled data, such as XY coordinates, bounding boxes,
-// etc.
 type Label struct {
-	ID          string   `json:"id"`          // unique ID for the label
-	Timestamp   int64    `json:"timestamp"`   // time of classification
-	ProjectID   string   `json:"projectID"`   // project ID
-	Marker      Marker   `json:"marker"`      // video and timestamp in video of frame
-	SubmitterID string   `json:"submitterID"` // ID of user who submitted label
-	ParentID    string   `json:"parentID"`    // ID of parent label
-	Tags        []string `json:"tags"`        // tags to classify frame with
+	ID        string                 `json:"id"`                  // (required) label metadata id, generated if empty
+	GadgetID  string                 `json:"gadgetID"`            // (required) gadget id
+	ProjectID string                 `json:"projectID"`           // (required) project uuid
+	Comment   string                 `json:"comment,omitempty"`   // (optional) label comment
+	Deleted   *time.Time             `json:"deleted,omitempty"`   // (optional) timestamp of deletion
+	DeleterID string                 `json:"deleterID,omitempty"` // (optional) user id of deleter
+	CreatorID string                 `json:"creatorID,omitempty"` // (optional) label submitter id
+	Created   *time.Time             `json:"created,omitempty"`   // (optional) timestamp of when the label was submitted in nanoseconds
+	Parent    *Label                 `json:"parent,omitempty"`    // (optional) parent metadata id
+	Payload   map[string]interface{} `json:"payload,omitempty"`   // (optional) arbitrary, gadget-specific fields
+	Tags      []string               `json:"tags,omitempty"`      // (optional) arbitrary tags attached to the label
+	Seek      time.Duration          `json:"seek,omitempty"`      // (optional) video -> frame cast seek time
+	Pad       time.Duration          `json:"pad,omitempty"`       // (optional) frame -> video cast pad duration
 }

@@ -11,7 +11,6 @@ import (
 func (s *postgresStore) AddVideo(
 	projectID string,
 	video *api.Video,
-	blacklist bool,
 	submitterID string,
 ) error {
 	if _, err := s.db.Exec(

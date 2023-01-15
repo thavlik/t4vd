@@ -13,7 +13,7 @@ func (s *Server) handleGetChannelAvatar() http.HandlerFunc {
 		if err := func() error {
 			if r.Method != http.MethodGet {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.New("bad method")
+				return nil
 			}
 			channelID := r.URL.Query().Get("c")
 			if channelID == "" {

@@ -6,34 +6,32 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/filter/pkg/api"
+	"github.com/thavlik/t4vd/filter/pkg/labelstore"
 )
 
 func (l *postgresLabelStore) Sample(
 	ctx context.Context,
-	projectID string,
-	batchSize int,
+	input *labelstore.SampleInput,
 ) ([]*api.Label, error) {
 	rows, err := l.db.QueryContext(
 		ctx,
 		fmt.Sprintf(`
-			SELECT
-				id,
-				video,
-				timestamp,
-				tags,
-				parent,
-				submitter,
-				submitted
+			SELECT %s
 			FROM %s
 			WHERE project = $1
 			TABLESAMPLE BERNOULLI (%d)`,
+			commonColumns,
 			tableName,
-			batchSize,
+			input.BatchSize,
 		),
-		projectID,
+		input.ProjectID,
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "postgres")
 	}
-	return scanLabels(projectID, rows)
+	labels, err := scanLabels(input.ProjectID, rows)
+	if err != nil {
+		return nil, err
+	}
+	return labels, nil
 }

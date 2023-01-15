@@ -29,7 +29,6 @@ func (s *Server) AddPlaylist(ctx context.Context, req api.AddPlaylistRequest) (*
 	if err := s.store.AddPlaylist(
 		req.ProjectID,
 		playlist,
-		req.Blacklist,
 		req.SubmitterID,
 	); err != nil {
 		return nil, errors.Wrap(err, "store.AddPlaylist")

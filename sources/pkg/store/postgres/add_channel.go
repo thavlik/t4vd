@@ -11,7 +11,6 @@ import (
 func (s *postgresStore) AddChannel(
 	projectID string,
 	channel *api.Channel,
-	blacklist bool,
 	submitterID string,
 ) error {
 	if _, err := s.db.Exec(

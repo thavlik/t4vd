@@ -50,10 +50,11 @@ spec:
         - name: LOG_LEVEL
           value: {{ .Values.hound.logLevel }}
         readinessProbe:
-          exec:
-            command:
-            - cat
-            - /etc/ready
-          initialDelaySeconds: 1
-          periodSeconds: 4
+          httpGet:
+            path: /readyz
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
 {{- end }}

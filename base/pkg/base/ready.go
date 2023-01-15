@@ -1,6 +1,7 @@
 package base
 
 import (
+	"net/http"
 	"os"
 	"time"
 
@@ -22,4 +23,11 @@ func SignalReady(log *zap.Logger) {
 	); err != nil {
 		panic(errors.Wrap(err, "failed to write ready file"))
 	}
+}
+
+func ReadyHandler(w http.ResponseWriter, r *http.Request) {
+	if _, err := os.Stat(readyFile); err == nil {
+		return
+	}
+	w.WriteHeader(http.StatusNotFound)
 }

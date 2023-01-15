@@ -28,7 +28,6 @@ func (s *Server) AddChannel(ctx context.Context, req api.AddChannelRequest) (*ap
 	if err := s.store.AddChannel(
 		req.ProjectID,
 		channel,
-		req.Blacklist,
 		req.SubmitterID,
 	); err != nil {
 		return nil, errors.Wrap(err, "store.AddChannel")

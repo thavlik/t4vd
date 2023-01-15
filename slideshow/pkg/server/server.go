@@ -44,6 +44,7 @@ func (s *Server) ListenAndServe(port int) error {
 	api.RegisterSlideShow(otoServer, s)
 	mux := http.NewServeMux()
 	mux.Handle("/", otoServer)
+	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
 	mux.HandleFunc("/frame", s.handleGetFrame())
 	s.log.Info("listening forever", zap.Int("port", port))

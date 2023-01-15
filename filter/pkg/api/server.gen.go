@@ -11,6 +11,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 
 	"github.com/pacedotdev/oto/otohttp"
+
+	time "time"
 )
 
 var (
@@ -92,20 +94,21 @@ func (s *filterServer) handleSample(w http.ResponseWriter, r *http.Request) {
 	filterSampleSuccessTotal.Inc()
 }
 
-type Marker struct {
-	VideoID   string `json:"videoID"`
-	Timestamp int64  `json:"timestamp"`
-}
-
 type Label struct {
-	ID          string   `json:"id"`
-	Timestamp   int64    `json:"timestamp"`
-	ProjectID   string   `json:"projectID"`
-	Marker      Marker   `json:"marker"`
-	Tags        []string `json:"tags"`
-	SubmitterID string   `json:"submitterID"`
-	ParentID    string   `json:"parentID"`
-	Error       string   `json:"error,omitempty"`
+	ID        string                 `json:"id"`
+	GadgetID  string                 `json:"gadgetID"`
+	ProjectID string                 `json:"projectID"`
+	Comment   string                 `json:"comment"`
+	Deleted   *time.Time             `json:"deleted"`
+	DeleterID string                 `json:"deleterID"`
+	CreatorID string                 `json:"creatorID"`
+	Created   *time.Time             `json:"created"`
+	Parent    *Label                 `json:"parent"`
+	Payload   map[string]interface{} `json:"payload"`
+	Tags      []string               `json:"tags"`
+	Seek      time.Duration          `json:"seek"`
+	Pad       time.Duration          `json:"pad"`
+	Error     string                 `json:"error,omitempty"`
 }
 
 type SampleRequest struct {

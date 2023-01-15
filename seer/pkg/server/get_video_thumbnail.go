@@ -13,7 +13,7 @@ func (s *Server) handleGetVideoThumbnail() http.HandlerFunc {
 		if err := func() error {
 			if r.Method != http.MethodGet {
 				w.WriteHeader(http.StatusBadRequest)
-				return errors.New("bad method")
+				return nil
 			}
 			videoID := r.URL.Query().Get("v")
 			if videoID == "" {

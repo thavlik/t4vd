@@ -54,6 +54,7 @@ func (s *Server) ListenAndServe(port int) error {
 	api.RegisterCompiler(otoServer, s)
 	mux := http.NewServeMux()
 	mux.Handle("/", otoServer)
+	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
 	s.log.Info("listening forever", zap.Int("port", port))
 	return (&http.Server{

@@ -19,13 +19,17 @@ func (l *postgresLabelStore) Get(
 		ctx,
 		fmt.Sprintf(`
 			SELECT
-				video,
-				timestamp,
+				gadget,
+				project,
+				creator,
+				created,
+				deleted,
+				deleter,
 				tags,
 				parent,
-				submitter,
-				submitted,
-				project
+				project,
+				comment,
+				payload
 			FROM %s
 			WHERE id = $1`,
 			tableName,
@@ -35,20 +39,26 @@ func (l *postgresLabelStore) Get(
 	label := &api.Label{ID: id}
 	var parent sql.NullString
 	if err := row.Scan(
-		&label.Marker.VideoID,
-		&label.Marker.Timestamp,
+		&label.GadgetID,
+		&label.ProjectID,
+		&label.CreatorID,
+		&label.Created,
+		&label.Deleted,
+		&label.DeleterID,
 		&label.Tags,
 		&parent,
-		&label.SubmitterID,
-		&label.Timestamp,
 		&label.ProjectID,
+		&label.Comment,
+		&label.Payload,
 	); err == sql.ErrNoRows {
 		return nil, labelstore.ErrNotFound
 	} else if err != nil {
 		return nil, errors.Wrap(err, "postgres")
 	}
 	if parent.Valid {
-		label.ParentID = parent.String
+		// resolving parent details requires backtracing
+		// the label tree, which is not implemented yet
+		label.Parent = &api.Label{ID: parent.String}
 	}
 	return label, nil
 }

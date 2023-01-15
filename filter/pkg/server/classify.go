@@ -23,8 +23,6 @@ func (s *Server) Classify(
 		return nil, errors.Wrap(err, "mongo")
 	}
 	s.log.Debug("classified frame",
-		zap.String("projectID", label.ProjectID),
-		zap.String("videoID", label.Marker.VideoID),
-		zap.Int64("timestamp", label.Marker.Timestamp))
+		zap.String("projectID", label.ProjectID))
 	return &label, nil
 }

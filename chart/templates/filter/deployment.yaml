@@ -76,9 +76,10 @@ spec:
 {{ tpl (toYaml .Values.db.mongo.password) . | indent 10 }}
 {{- end }}
         readinessProbe:
-          exec:
-            command:
-            - cat
-            - /etc/ready
-          initialDelaySeconds: 1
-          periodSeconds: 4
+          httpGet:
+            path: /readyz
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80

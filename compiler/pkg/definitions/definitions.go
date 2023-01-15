@@ -26,7 +26,7 @@ type GetDatasetRequest struct {
 	ProjectID string `json:"projectID"`
 }
 
-type Video struct {
+type VideoDetails struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
@@ -41,6 +41,15 @@ type Video struct {
 	Width       int    `json:"width"`
 	Height      int    `json:"height"`
 	FPS         int    `json:"fps"`
+}
+
+type Video struct {
+	ID          string        `json:"id"`                 // videoID
+	Details     *VideoDetails `json:"details"`            // details from youtube
+	SubmitterID string        `json:"submitterID"`        // userID of submitter
+	Submitted   int64         `json:"submitted"`          // unix timestamp of submission
+	Source      string        `json:"source,omitempty"`   // [playlist|channel]
+	SourceID    string        `json:"sourceID,omitempty"` // [playlistID|channelID]
 }
 
 type Dataset struct {

@@ -56,12 +56,13 @@ spec:
           name: metrics
       {{- end }}
         readinessProbe:
-          exec:
-            command:
-            - cat
-            - /etc/ready
-          initialDelaySeconds: 1
-          periodSeconds: 4
+          httpGet:
+            path: /readyz
+            port: 80
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 80
         env:
         - name: CORS_HEADER
           value: "{{ .Values.gateway.corsHeader }}"
