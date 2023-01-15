@@ -11,6 +11,7 @@ import (
 func Entry(
 	port int,
 	labelStore labelstore.LabelStore,
+	gadgetID string,
 	defaultRef *gadget.DataRef,
 	maxBatchSize int,
 	log *zap.Logger,
@@ -18,6 +19,7 @@ func Entry(
 	base.SignalReady(log)
 	return NewServer(
 		labelStore,
+		gadgetID,
 		maxBatchSize,
 		defaultRef,
 		log,

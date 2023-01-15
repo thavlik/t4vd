@@ -24,7 +24,7 @@ func (s *postgresStore) GetProjectIDForGroup(
 	)
 	var projectID string
 	if err := row.Scan(&projectID); err == sql.ErrNoRows {
-		return "", store.ErrProjectNotFound
+		return "", store.ErrResourceNotFound
 	} else if err != nil {
 		return "", errors.Wrap(err, "postgres")
 	}

@@ -38,6 +38,7 @@ func convertProjectDoc(m map[string]interface{}) *api.Project {
 		ID:          m["_id"].(string),
 		Name:        m["name"].(string),
 		CreatorID:   m["creator"].(string),
+		Created:     m["created"].(int64),
 		GroupID:     m["group"].(string),
 		Tags:        tags,
 		Description: desc,

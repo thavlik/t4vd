@@ -12,6 +12,7 @@ import (
 // given data reference.
 func SetupInputChannel(
 	mux *mux.Router,
+	gadgetID string,
 	name string,
 	ref *DataRef,
 	log *zap.Logger,
@@ -21,6 +22,7 @@ func SetupInputChannel(
 	mux.HandleFunc(
 		fmt.Sprintf("/input/%s/x", name),
 		HandleGetOutputDataFromRef(
+			gadgetID,
 			ref,
 			log,
 		))

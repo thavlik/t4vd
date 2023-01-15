@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
@@ -11,7 +12,9 @@ import (
 )
 
 func (s *Server) AddPlaylist(ctx context.Context, req api.AddPlaylistRequest) (*api.Playlist, error) {
-	if req.ProjectID == "" {
+	if req.Input == "" {
+		return nil, errInvalidInput
+	} else if req.ProjectID == "" {
 		return nil, errMissingProjectID
 	} else if req.SubmitterID == "" {
 		return nil, errMissingSubmitterID
@@ -23,13 +26,14 @@ func (s *Server) AddPlaylist(ctx context.Context, req api.AddPlaylistRequest) (*
 		return nil, errors.Wrap(err, "ExtractPlaylistID")
 	}
 	playlist := &api.Playlist{
-		ID:        playlistID,
-		Blacklist: req.Blacklist,
+		ID:          playlistID,
+		Blacklist:   req.Blacklist,
+		SubmitterID: req.SubmitterID,
+		Submitted:   time.Now().UnixNano(),
 	}
 	if err := s.store.AddPlaylist(
 		req.ProjectID,
 		playlist,
-		req.SubmitterID,
 	); err != nil {
 		return nil, errors.Wrap(err, "store.AddPlaylist")
 	}
@@ -37,6 +41,7 @@ func (s *Server) AddPlaylist(ctx context.Context, req api.AddPlaylistRequest) (*
 	log.Debug("playlist added",
 		zap.String("id", playlistID),
 		zap.Bool("blacklist", req.Blacklist),
-		zap.String("submitterID", req.SubmitterID))
+		zap.String("submitterID", req.SubmitterID),
+		zap.String("projectID", req.ProjectID))
 	return playlist, nil
 }

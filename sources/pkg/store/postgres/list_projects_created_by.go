@@ -15,7 +15,7 @@ func (s *postgresStore) ListProjectsCreatedBy(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(`
-			SELECT id, name, creator, groupid
+			SELECT id, name, creator, created, groupid
 			FROM %s
 			WHERE creator = $1`,
 			projectsTable,
@@ -32,6 +32,7 @@ func (s *postgresStore) ListProjectsCreatedBy(
 			&project.ID,
 			&project.Name,
 			&project.CreatorID,
+			&project.Created,
 			&project.GroupID,
 		); err != nil {
 			return nil, errors.Wrap(err, "scan")

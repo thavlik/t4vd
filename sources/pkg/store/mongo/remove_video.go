@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/pkg/errors"
+	"github.com/thavlik/t4vd/sources/pkg/store"
 )
 
 func (s *mongoStore) RemoveVideo(
@@ -11,15 +12,16 @@ func (s *mongoStore) RemoveVideo(
 	videoID string,
 	blacklist bool,
 ) error {
-	if _, err := s.videos.DeleteMany(
+	if result, err := s.videos.DeleteOne(
 		context.Background(),
 		map[string]interface{}{
+			"_id":       store.ScopedResourceID(projectID, videoID),
 			"blacklist": blacklist,
-			"project":   projectID,
-			"v":         videoID,
 		},
 	); err != nil {
 		return errors.Wrap(err, "mongo")
+	} else if result.DeletedCount == 0 {
+		return store.ErrResourceNotFound
 	}
 	return nil
 }

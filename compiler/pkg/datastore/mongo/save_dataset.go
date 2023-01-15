@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/compiler/pkg/api"
+	seer "github.com/thavlik/t4vd/seer/pkg/api"
 )
 
 func (ds *mongoDataStore) SaveDataset(
@@ -21,8 +22,15 @@ func (ds *mongoDataStore) SaveDataset(
 	docs := make([]interface{}, len(videos))
 	for i, video := range videos {
 		docs[i] = map[string]interface{}{
-			"v":  video.ID,
-			"ds": id,
+			"v":       video.ID,
+			"ds":      id,
+			"details": seer.FlattenVideoDetails((*seer.VideoDetails)(video.Details)),
+			"source": map[string]interface{}{
+				"id":        video.Source.ID,
+				"type":      video.Source.Type,
+				"submitter": video.Source.SubmitterID,
+				"submitted": video.Source.Submitted,
+			},
 		}
 	}
 	if n, err := ds.outputVideos.InsertMany(ctx, docs); err != nil {

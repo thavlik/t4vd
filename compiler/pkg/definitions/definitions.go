@@ -43,13 +43,17 @@ type VideoDetails struct {
 	FPS         int    `json:"fps"`
 }
 
+type VideoSource struct {
+	Type        string `json:"type"`        // [playlist|channel]
+	ID          string `json:"id"`          // playlistID or channelID
+	SubmitterID string `json:"submitterID"` // userID of submitter
+	Submitted   int64  `json:"submitted"`   // unix timestamp of submission
+}
+
 type Video struct {
-	ID          string        `json:"id"`                 // videoID
-	Details     *VideoDetails `json:"details"`            // details from youtube
-	SubmitterID string        `json:"submitterID"`        // userID of submitter
-	Submitted   int64         `json:"submitted"`          // unix timestamp of submission
-	Source      string        `json:"source,omitempty"`   // [playlist|channel]
-	SourceID    string        `json:"sourceID,omitempty"` // [playlistID|channelID]
+	ID      string        `json:"id"`               // videoID
+	Details *VideoDetails `json:"details"`          // details from youtube
+	Source  *VideoSource  `json:"source,omitempty"` // nil if video is included directly
 }
 
 type Dataset struct {

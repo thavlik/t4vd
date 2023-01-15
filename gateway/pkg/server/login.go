@@ -8,7 +8,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *Server) Login(ctx context.Context, req api.LoginRequest) (*api.LoginResponse, error) {
+func (s *Server) Login(
+	ctx context.Context,
+	req api.LoginRequest,
+) (*api.LoginResponse, error) {
 	if req.Username == "" {
 		return nil, errors.New("missing username")
 	}

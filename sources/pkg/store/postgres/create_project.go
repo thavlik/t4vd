@@ -20,10 +20,11 @@ func (s *postgresStore) CreateProject(
 				id,
 				name,
 				creator,
+				created,
 				groupid,
 				description
 			)
-			VALUES ($1, $2, $3, $4, $5)
+			VALUES ($1, $2, $3, $4, $5, $6)
 			ON CONFLICT (id)
 			DO UPDATE
 			SET (name, groupid, description) = (EXCLUDED.name, EXCLUDED.groupid, EXCLUDED.description)`,
@@ -32,6 +33,7 @@ func (s *postgresStore) CreateProject(
 		project.ID,
 		project.Name,
 		project.CreatorID,
+		project.Created,
 		project.GroupID,
 		project.Description,
 	); err != nil {

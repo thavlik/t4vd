@@ -5,6 +5,7 @@ type Channel struct {
 }
 
 type Metadata struct {
+	GadgetID     string     `json:"gadgetID"`
 	Name         string     `json:"name"`
 	MaxBatchSize int        `json:"maxBatchSize"`
 	Inputs       []*Channel `json:"inputs"`

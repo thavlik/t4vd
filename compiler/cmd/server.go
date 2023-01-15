@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v9"
-	seer "github.com/thavlik/t4vd/seer/pkg/api"
 	slideshow "github.com/thavlik/t4vd/slideshow/pkg/api"
 	sources "github.com/thavlik/t4vd/sources/pkg/api"
 	"go.uber.org/zap"
@@ -57,7 +56,7 @@ var serverCmd = &cobra.Command{
 		return server.Entry(
 			serverArgs.Port,
 			initScheduler(redis),
-			initDataStore(seer.NewSeerClientFromOptions(serverArgs.seer)),
+			initDataStore(),
 			initDataCache(redis, log),
 			sources.NewSourcesClientFromOptions(serverArgs.sources),
 			serverArgs.seer,
@@ -94,15 +93,12 @@ func initScheduler(redis *redis.Client) scheduler.Scheduler {
 	return memory_scheduler.NewMemoryScheduler()
 }
 
-func initDataStore(
-	seerClient seer.Seer,
-) datastore.DataStore {
+func initDataStore() datastore.DataStore {
 	log := base.DefaultLog
 	switch serverArgs.db.Driver {
 	case base.PostgresDriver:
 		ds, err := postgres_datastore.NewPostgresDataStore(
 			base.ConnectPostgres(&serverArgs.db.Postgres),
-			seerClient,
 			log,
 		)
 		if err != nil {
@@ -112,7 +108,6 @@ func initDataStore(
 	case base.MongoDriver:
 		return mongo_datastore.NewMongoDataStore(
 			base.ConnectMongo(&serverArgs.db.Mongo),
-			seerClient,
 			log,
 		)
 	default:

@@ -41,6 +41,7 @@ type IAM interface {
 	CreateUser(user *User, password string, temporary bool) (id string, err error)
 	DeleteUser(username string) error
 	GetUser(ctx context.Context, username string) (*User, error)
+	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	ListUsers(context.Context) ([]*User, error)
 	SearchUsers(ctx context.Context, prefix string) ([]*User, error)
 

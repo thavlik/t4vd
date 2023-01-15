@@ -50,6 +50,7 @@ func NewServer(
 func (s *Server) ListenAndServe(port int) error {
 	seerClient := seer.NewSeerClientFromOptions(s.seer)
 	meta := &metadata.Metadata{
+		GadgetID:     s.gadgetID,
 		Name:         "video_dataset",
 		MaxBatchSize: s.maxBatchSize,
 		Inputs: []*metadata.Channel{{
@@ -111,25 +112,29 @@ func (s *Server) ListenAndServe(port int) error {
 		"bucketName",
 		s.log,
 	))
+
+	// handler for retrieving metadata about a specific video
 	router.HandleFunc("/output/videos/y", handleGetVideoMeta(
 		seerClient,
 		s.gadgetID,
 		s.log,
 	))
 
-	// handler for sampling random frames from random videos
+	// handler for sampling random frame metadata from random videos
 	router.HandleFunc("/sample/output/frames/y", handleSampleRandomFrames(
 		s.compiler,
-		s.slideshow,
 		s.gadgetID,
 		s.projectID,
 		s.maxBatchSize,
 		s.log,
 	))
 
-	// handler for sampling random videos
+	// handler for sampling random video metadata
 	router.HandleFunc("/sample/output/videos/y", handleSampleRandomVideos(
 		s.compiler,
+		s.gadgetID,
+		s.projectID,
+		s.maxBatchSize,
 		s.log,
 	))
 

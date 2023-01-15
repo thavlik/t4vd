@@ -8,7 +8,10 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/iam"
 )
 
-func (i *keyCloakIAM) GetUser(ctx context.Context, username string) (*iam.User, error) {
+func (i *keyCloakIAM) GetUserByEmail(
+	ctx context.Context,
+	email string,
+) (*iam.User, error) {
 	accessToken, err := i.refreshAccessToken(ctx)
 	if err != nil {
 		return nil, err
@@ -18,14 +21,14 @@ func (i *keyCloakIAM) GetUser(ctx context.Context, username string) (*iam.User, 
 		accessToken,
 		i.kc.Realm,
 		gocloak.GetUsersParams{
-			Username: gocloak.StringP(username),
+			Email: gocloak.StringP(email),
 		},
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "keycloak")
 	}
 	for _, user := range users {
-		if gocloak.PString(user.Username) == username {
+		if gocloak.PString(user.Email) == email {
 			return convertUser(user), nil
 		}
 	}

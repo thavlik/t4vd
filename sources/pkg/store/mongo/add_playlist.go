@@ -13,7 +13,6 @@ import (
 func (s *mongoStore) AddPlaylist(
 	projectID string,
 	playlist *api.Playlist,
-	submitterID string,
 ) error {
 	_, err := s.playlists.UpdateOne(
 		context.Background(),
@@ -25,7 +24,8 @@ func (s *mongoStore) AddPlaylist(
 		map[string]interface{}{
 			"$set": map[string]interface{}{
 				"blacklist": playlist.Blacklist,
-				"submitter": submitterID,
+				"submitter": playlist.SubmitterID,
+				"submitted": playlist.Submitted,
 			},
 		},
 		options.Update().SetUpsert(true),

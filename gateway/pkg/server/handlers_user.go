@@ -22,9 +22,13 @@ var (
 	minUsernameLength = 4
 	minPasswordLength = 8
 	reservedUsernames = []string{"admin", "sysadmin", "administrator"}
+	reservedEmails    = []string{"d@d.com"}
 )
 
-func (s *Server) userExists(ctx context.Context, name string) (bool, error) {
+func (s *Server) usernameTaken(
+	ctx context.Context,
+	name string,
+) (bool, error) {
 	if base.Contains(reservedUsernames, name) {
 		return true, nil
 	}
@@ -40,37 +44,81 @@ func (s *Server) userExists(ctx context.Context, name string) (bool, error) {
 	}
 }
 
+func (s *Server) emailTaken(
+	ctx context.Context,
+	email string,
+) (bool, error) {
+	if base.Contains(reservedEmails, email) {
+		return true, nil
+	}
+	if _, err := s.iam.GetUserByEmail(
+		ctx,
+		email,
+	); err == iam.ErrUserNotFound {
+		return false, nil
+	} else if err != nil {
+		return false, errors.Wrap(err, "iam")
+	} else {
+		return true, nil
+	}
+}
+
 func (s *Server) handleUserExists() http.HandlerFunc {
 	return s.handler(
 		http.MethodGet,
 		func(w http.ResponseWriter, r *http.Request) (err error) {
-			username := r.URL.Query().Get("u")
-			if username == "" {
-				w.WriteHeader(http.StatusBadRequest)
-				return nil
-			}
-			email := r.URL.Query().Get("e")
-			if email == "" {
-				w.WriteHeader(http.StatusBadRequest)
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusMethodNotAllowed)
 				return nil
 			}
 			var result struct {
 				Exists bool `json:"exists"`
 			}
-			if result.Exists, err = s.userExists(
-				r.Context(),
-				username,
-			); err != nil {
-				return errors.Wrap(err, "iam")
+			if username := r.URL.Query().Get("u"); username != "" {
+				if r.URL.Query().Has("e") {
+					writeError(
+						w,
+						http.StatusBadRequest,
+						errors.New("username and email are mutually exclusive"),
+					)
+					return nil
+				}
+				if result.Exists, err = s.usernameTaken(
+					r.Context(),
+					username,
+				); err != nil {
+					return err
+				}
+				w.Header().Set("Content-Type", "application/json")
+				if err := json.NewEncoder(w).Encode(&result); err != nil {
+					return errors.Wrap(err, "json")
+				}
+				s.log.Debug("check username taken",
+					zap.String("username", username),
+					zap.Bool("exists", result.Exists))
+				return nil
 			}
-			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(&result); err != nil {
-				return errors.Wrap(err, "json")
+			if email := r.URL.Query().Get("e"); email != "" {
+				if result.Exists, err = s.emailTaken(
+					r.Context(),
+					email,
+				); err != nil {
+					return err
+				}
+				w.Header().Set("Content-Type", "application/json")
+				if err := json.NewEncoder(w).Encode(&result); err != nil {
+					return errors.Wrap(err, "json")
+				}
+				s.log.Debug("check email taken",
+					zap.String("email", email),
+					zap.Bool("exists", result.Exists))
+				return nil
 			}
-			s.log.Debug("check exists",
-				zap.String("username", username),
-				zap.String("email", email),
-				zap.Bool("exists", result.Exists))
+			writeError(
+				w,
+				http.StatusBadRequest,
+				errors.New("username or email is required"),
+			)
 			return nil
 		})
 }

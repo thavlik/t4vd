@@ -18,16 +18,22 @@ func (s *Server) handleGetDataset() http.HandlerFunc {
 		func(userID string, w http.ResponseWriter, r *http.Request) error {
 			projectID := r.URL.Query().Get("p")
 			if projectID == "" {
-				w.WriteHeader(http.StatusBadRequest)
+				writeError(
+					w,
+					http.StatusBadRequest,
+					errors.New("missing project id"),
+				)
 				return nil
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
 				w.WriteHeader(http.StatusForbidden)
 				return nil
 			}
-			resp, err := s.compiler.GetDataset(r.Context(), compiler.GetDatasetRequest{
-				ProjectID: projectID,
-			})
+			resp, err := s.compiler.GetDataset(
+				r.Context(),
+				compiler.GetDatasetRequest{
+					ProjectID: projectID,
+				})
 			if err != nil {
 				if strings.Contains(err.Error(), datastore.ErrDatasetNotFound.Error()) {
 					w.WriteHeader(http.StatusNotFound)

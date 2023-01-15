@@ -18,7 +18,7 @@ func (s *postgresStore) GetProject(
 	if err := s.db.QueryRowContext(
 		ctx,
 		fmt.Sprintf(`
-			SELECT name, creator, groupid, description
+			SELECT name, creator, groupid, description, created
 			FROM %s WHERE id = $1`,
 			projectsTable,
 		),
@@ -28,8 +28,9 @@ func (s *postgresStore) GetProject(
 		&project.CreatorID,
 		&project.GroupID,
 		&project.Description,
+		&project.Created,
 	); err == sql.ErrNoRows {
-		return nil, store.ErrProjectNotFound
+		return nil, store.ErrResourceNotFound
 	} else if err != nil {
 		return nil, errors.Wrap(err, "scan")
 	}

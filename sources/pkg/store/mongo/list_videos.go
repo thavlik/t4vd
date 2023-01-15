@@ -46,7 +46,9 @@ func (s *mongoStore) ListVideoIDs(
 
 func convertVideoDoc(m map[string]interface{}) *api.Video {
 	return &api.Video{
-		ID:        m["v"].(string),
-		Blacklist: m["blacklist"].(bool),
+		ID:          m["v"].(string),
+		Blacklist:   m["blacklist"].(bool),
+		SubmitterID: m["submitter"].(string),
+		Submitted:   m["submitted"].(int64),
 	}
 }

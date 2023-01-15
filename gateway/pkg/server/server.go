@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -208,4 +209,16 @@ func (s *Server) handler(
 				zap.String("r.RequestURI", r.RequestURI))
 		}
 	}
+}
+
+func writeError(
+	w http.ResponseWriter,
+	code int,
+	err error,
+) {
+	w.WriteHeader(http.StatusInternalServerError)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"error": err.Error(),
+	})
 }

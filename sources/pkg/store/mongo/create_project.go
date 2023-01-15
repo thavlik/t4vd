@@ -19,6 +19,7 @@ func (s *mongoStore) CreateProject(
 		map[string]interface{}{
 			"$setOnInsert": map[string]interface{}{
 				"creator": project.CreatorID,
+				"created": project.Created,
 			},
 			"$set": map[string]interface{}{
 				"name":  project.Name,

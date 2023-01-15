@@ -15,7 +15,7 @@ func (s *postgresStore) ListPlaylists(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(`
-			SELECT p, blacklist
+			SELECT p, blacklist, submitter, submitted
 			FROM %s WHERE project = $1`,
 			playlistsTable,
 		),
@@ -31,6 +31,8 @@ func (s *postgresStore) ListPlaylists(
 		if err := rows.Scan(
 			&playlist.ID,
 			&playlist.Blacklist,
+			&playlist.SubmitterID,
+			&playlist.Submitted,
 		); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}

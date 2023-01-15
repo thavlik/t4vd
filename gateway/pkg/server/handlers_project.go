@@ -114,7 +114,7 @@ func (s *Server) handleGetProject() http.HandlerFunc {
 					ID: projectID,
 				})
 			if err != nil {
-				if strings.Contains(err.Error(), store.ErrProjectNotFound.Error()) {
+				if strings.Contains(err.Error(), store.ErrResourceNotFound.Error()) {
 					w.WriteHeader(http.StatusNotFound)
 					return nil
 				}
@@ -282,7 +282,7 @@ func (s *Server) handleProjectExists() http.HandlerFunc {
 						Name: name,
 					},
 				); err != nil {
-					if strings.Contains(err.Error(), store.ErrProjectNotFound.Error()) {
+					if strings.Contains(err.Error(), store.ErrResourceNotFound.Error()) {
 						return false, nil
 					}
 					return false, errors.Wrap(err, "sources")

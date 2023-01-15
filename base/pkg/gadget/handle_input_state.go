@@ -25,10 +25,7 @@ func HandleInputState(
 			switch r.Method {
 			case http.MethodGet:
 				gadgetName, channelName, err := ref.Get(r.Context())
-				if err == ErrNullDataRef {
-					retCode = http.StatusNotFound
-					return err
-				} else if err != nil {
+				if err != nil {
 					return err
 				}
 				w.Header().Set("Content-Type", "application/json")

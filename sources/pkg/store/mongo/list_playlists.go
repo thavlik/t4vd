@@ -47,7 +47,9 @@ func (s *mongoStore) ListPlaylistIDs(
 
 func convertPlaylistDoc(m map[string]interface{}) *api.Playlist {
 	return &api.Playlist{
-		ID:        m["p"].(string),
-		Blacklist: m["blacklist"].(bool),
+		ID:          m["p"].(string),
+		Blacklist:   m["blacklist"].(bool),
+		SubmitterID: m["submitter"].(string),
+		Submitted:   m["submitted"].(int64),
 	}
 }

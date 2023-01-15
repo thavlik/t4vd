@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"image"
 	"io"
@@ -9,56 +11,65 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/gadget"
+	"github.com/thavlik/t4vd/filter/pkg/api"
 	"github.com/thavlik/t4vd/filter/pkg/labelstore"
 	"go.uber.org/zap"
 )
 
 func handleGetCroppedOutput(
 	labelStore labelstore.LabelStore,
+	gadgetID string,
 	ref *gadget.DataRef,
 	log *zap.Logger,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {
-			if r.Method != http.MethodGet {
+			defer r.Body.Close()
+			if r.Method != http.MethodPost {
 				retCode = http.StatusMethodNotAllowed
 				return errors.New("method not allowed")
 			}
-			id := r.URL.Query().Get("id")
-			if id == "" {
+			if r.Header.Get("Content-Type") != "application/json" {
 				retCode = http.StatusBadRequest
-				return errors.New("id is required")
+				return errors.New("Content-Type is not application/json")
+			}
+			var label api.Label
+			if err := json.NewDecoder(r.Body).Decode(&label); err != nil {
+				retCode = http.StatusBadRequest
+				return errors.Wrap(err, "json.Decode")
+			}
+			if label.GadgetID != gadgetID {
+				retCode = http.StatusBadRequest
+				return errors.Errorf(
+					"mismatched gadgetID: %s != %s",
+					label.GadgetID,
+					gadgetID,
+				)
+			}
+			if label.Parent == nil {
+				retCode = http.StatusBadRequest
+				return errors.New("label.Parent is nil")
 			}
 			gadgetName, channel, err := ref.Get(r.Context())
-			if err == gadget.ErrNullDataRef {
-				retCode = http.StatusNotFound
-				return err
-			} else if err != nil {
-				return err
-			}
-			label, err := labelStore.Get(r.Context(), id)
-			if err == labelstore.ErrNotFound {
-				retCode = http.StatusNotFound
-				return err
-			} else if err != nil {
-				return errors.Wrap(err, "failed to get label")
-			}
-			box, err := extractBbox(label.Payload)
 			if err != nil {
-				return errors.Wrap(err, "failed to extract bbox from label")
+				return err
 			}
 			url := fmt.Sprintf(
-				"%s/output/%s/x?%s",
+				"%s/output/%s/x",
 				gadget.ResolveBaseURL(gadgetName),
 				channel,
-				r.URL.Query().Encode(),
 			)
+			body, err := json.Marshal(label.Parent)
+			if err != nil {
+				return errors.Wrap(err, "failed to marshal label parent")
+			}
 			req, err := http.NewRequest(
-				http.MethodGet,
+				http.MethodPost,
 				url,
-				nil,
+				bytes.NewReader(body),
 			)
+			req.Header.Set("Content-Type", "application/json")
 			req = req.WithContext(r.Context())
 			if err != nil {
 				return errors.Wrap(err, "failed to create request")
@@ -79,10 +90,18 @@ func handleGetCroppedOutput(
 				)))
 				return nil
 			}
+			if v := resp.Header.Get("Content-Length"); v != "" {
+				w.Header().Set("Content-Length", v)
+			}
 			ct := resp.Header.Get("Content-Type")
 			w.Header().Set("Content-Type", ct)
 			switch ct {
 			case "video/webm":
+				box, err := extractBbox(label.Payload)
+				if err != nil {
+					retCode = http.StatusBadRequest
+					return errors.Wrap(err, "failed to extract bbox from label")
+				}
 				marker, err := extractMarker(label.Payload)
 				if err != nil {
 					return errors.Wrap(err, "failed to extract marker from label")
@@ -96,8 +115,16 @@ func handleGetCroppedOutput(
 			case "image/jpeg":
 				fallthrough
 			case "image/png":
+				box, err := extractBbox(label.Payload)
+				if err != nil {
+					retCode = http.StatusBadRequest
+					return errors.Wrap(err, "failed to extract bbox from label")
+				} else if box == nil {
+					retCode = http.StatusBadRequest
+					return errors.New("no bbox")
+				}
 				return cropImage(
-					box,
+					*box,
 					resp.Body,
 					w,
 				)
@@ -137,32 +164,33 @@ func extractMarker(
 
 func extractBbox(
 	payload map[string]interface{},
-) (image.Rectangle, error) {
+) (*image.Rectangle, error) {
 	var x0, y0, x1, y1 int
 	if v, ok := payload["x0"].(float64); ok {
 		x0 = int(v)
 	} else {
-		return image.Rectangle{}, errors.New("missing x0")
+		return nil, nil
 	}
 	if v, ok := payload["y0"].(float64); ok {
 		y0 = int(v)
 	} else {
-		return image.Rectangle{}, errors.New("missing y0")
+		return nil, nil
 	}
 	if v, ok := payload["x1"].(float64); ok {
 		x1 = int(v)
 	} else {
-		return image.Rectangle{}, errors.New("missing x1")
+		return nil, nil
 	}
 	if v, ok := payload["y1"].(float64); ok {
 		y1 = int(v)
 	} else {
-		return image.Rectangle{}, errors.New("missing y1")
+		return nil, nil
 	}
-	return image.Rect(
+	r := image.Rect(
 		x0,
 		y0,
 		x1,
 		y1,
-	), nil
+	)
+	return &r, nil
 }

@@ -1,6 +1,7 @@
 package gadget
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -16,7 +17,7 @@ var ErrLabelNotFound = errors.New("label not found")
 
 func GetOutputLabelFromRef(
 	ctx context.Context,
-	query string,
+	label *api.Label,
 	ref *DataRef,
 	log *zap.Logger,
 ) (*api.Label, error) {
@@ -24,16 +25,20 @@ func GetOutputLabelFromRef(
 	if err != nil {
 		return nil, err
 	}
+	// TODO: ensure gadgetName points to gadgetID
+	body, err := json.Marshal(label)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to encode label")
+	}
 	url := fmt.Sprintf(
-		"%s/output/%s/y?%s",
+		"%s/output/%s/y",
 		ResolveBaseURL(gadgetName),
 		channel,
-		query,
 	)
 	req, err := http.NewRequest(
-		http.MethodGet,
+		http.MethodPost,
 		url,
-		nil,
+		bytes.NewReader(body),
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create request")
@@ -56,9 +61,9 @@ func GetOutputLabelFromRef(
 			string(body),
 		)
 	}
-	var label api.Label
-	if err := json.NewDecoder(resp.Body).Decode(&label); err != nil {
+	var output api.Label
+	if err := json.NewDecoder(resp.Body).Decode(&output); err != nil {
 		return nil, errors.Wrap(err, "failed to decode label")
 	}
-	return &label, nil
+	return &output, nil
 }

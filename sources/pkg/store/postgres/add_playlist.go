@@ -11,7 +11,6 @@ import (
 func (s *postgresStore) AddPlaylist(
 	projectID string,
 	playlist *api.Playlist,
-	submitterID string,
 ) error {
 	if _, err := s.db.Exec(
 		fmt.Sprintf(`
@@ -20,18 +19,20 @@ func (s *postgresStore) AddPlaylist(
 				p,
 				blacklist,
 				project,
-				submitter
+				submitter,
+				submitted
 			)
-			VALUES ($1, $2, $3, $4, $5)
+			VALUES ($1, $2, $3, $4, $5, $6)
 			ON CONFLICT (id) DO UPDATE
-			SET (blacklist, submitter) = (EXCLUDED.blacklist, EXCLUDED.submitter)`,
+			SET (blacklist, submitter, submitted) = (EXCLUDED.blacklist, EXCLUDED.submitter, EXCLUDED.submitted)`,
 			playlistsTable,
 		),
 		store.ScopedResourceID(projectID, playlist.ID),
 		playlist.ID,
 		playlist.Blacklist,
 		projectID,
-		submitterID,
+		playlist.SubmitterID,
+		playlist.Submitted,
 	); err != nil {
 		return errors.Wrap(err, "postgres")
 	}

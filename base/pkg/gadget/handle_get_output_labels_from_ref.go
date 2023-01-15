@@ -18,13 +18,13 @@ func HandleGetOutputLabelFromRef(
 	return func(w http.ResponseWriter, r *http.Request) {
 		retCode := http.StatusInternalServerError
 		if err := func() error {
-			if r.Method != http.MethodGet {
+			if r.Method != http.MethodPost {
 				retCode = http.StatusMethodNotAllowed
 				return base.InvalidMethod(r.Method)
 			}
 			label, err := GetOutputLabelFromRef(
 				r.Context(),
-				r.URL.Query().Encode(),
+				nil,
 				ref,
 				log,
 			)

@@ -23,18 +23,15 @@ func (ds *mongoDataStore) GetDataset(
 	return ds.getSpecificDataset(ctx, projectID, datasetID)
 }
 
-func (ds *mongoDataStore) getDatasetVideoIDs(
+func (ds *mongoDataStore) getDatasetVideos(
 	ctx context.Context,
 	datasetID string,
-) ([]string, error) {
+) ([]*api.Video, error) {
 	query, err := ds.outputVideos.Find(
 		ctx,
 		map[string]interface{}{
 			"ds": datasetID,
-		},
-		options.Find().SetProjection(map[string]interface{}{
-			"v": 1,
-		}))
+		})
 	if err != nil {
 		return nil, errors.Wrap(err, "mongo")
 	}
@@ -42,11 +39,23 @@ func (ds *mongoDataStore) getDatasetVideoIDs(
 	if err := query.All(ctx, &docs); err != nil {
 		return nil, errors.Wrap(err, "decode")
 	}
-	videoIDs := make([]string, len(docs))
+	videos := make([]*api.Video, len(docs))
 	for i, doc := range docs {
-		videoIDs[i] = doc["v"].(string)
+		source := doc["source"].(map[string]interface{})
+		sourceID, _ := source["id"].(string)
+		sourceTy, _ := source["type"].(string)
+		videos[i] = &api.Video{
+			ID:      doc["v"].(string),
+			Details: (*api.VideoDetails)(seer.ConvertVideoDetails(doc["details"].(map[string]interface{}))),
+			Source: &api.VideoSource{
+				ID:          sourceID,
+				Type:        sourceTy,
+				SubmitterID: source["submitter"].(string),
+				Submitted:   source["submitted"].(int64),
+			},
+		}
 	}
-	return videoIDs, nil
+	return videos, nil
 }
 
 func (ds *mongoDataStore) getLatestDataset(
@@ -105,27 +114,14 @@ func (ds *mongoDataStore) getSpecificDataset(
 		return nil, errors.New("invalid timestamp")
 	}
 	complete, _ := doc["c"].(bool)
-	videoIDs, err := ds.getDatasetVideoIDs(ctx, datasetID)
+	videos, err := ds.getDatasetVideos(ctx, datasetID)
 	if err != nil {
-		return nil, errors.Wrap(err, "getDatasetVideoIDs")
-	}
-	resolved, err := ds.seer.GetBulkVideosDetails(
-		ctx,
-		seer.GetBulkVideosDetailsRequest{
-			VideoIDs: videoIDs,
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "GetBulkVideosDetails")
-	}
-	videos := make([]*api.Video, len(resolved.Videos))
-	for i, video := range resolved.Videos {
-		videos[i] = (*api.Video)(video)
+		return nil, errors.Wrap(err, "getDatasetVideos")
 	}
 	return &api.Dataset{
 		ID:        datasetID,
 		Timestamp: timestamp,
 		Videos:    videos,
-		Complete:  complete && len(videos) == len(videoIDs),
+		Complete:  complete,
 	}, nil
 }

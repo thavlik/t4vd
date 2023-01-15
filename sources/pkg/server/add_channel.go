@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/thavlik/t4vd/base/pkg/base"
@@ -10,7 +11,9 @@ import (
 )
 
 func (s *Server) AddChannel(ctx context.Context, req api.AddChannelRequest) (*api.Channel, error) {
-	if req.ProjectID == "" {
+	if req.Input == "" {
+		return nil, errInvalidInput
+	} else if req.ProjectID == "" {
 		return nil, errMissingProjectID
 	} else if req.SubmitterID == "" {
 		return nil, errMissingSubmitterID
@@ -22,13 +25,14 @@ func (s *Server) AddChannel(ctx context.Context, req api.AddChannelRequest) (*ap
 		return nil, errors.Wrap(err, "ExtractChannelID")
 	}
 	channel := &api.Channel{
-		ID:        channelID,
-		Blacklist: req.Blacklist,
+		ID:          channelID,
+		Blacklist:   req.Blacklist,
+		SubmitterID: req.SubmitterID,
+		Submitted:   time.Now().UnixNano(),
 	}
 	if err := s.store.AddChannel(
 		req.ProjectID,
 		channel,
-		req.SubmitterID,
 	); err != nil {
 		return nil, errors.Wrap(err, "store.AddChannel")
 	}
@@ -36,6 +40,7 @@ func (s *Server) AddChannel(ctx context.Context, req api.AddChannelRequest) (*ap
 	log.Debug("channel added",
 		zap.String("id", channelID),
 		zap.Bool("blacklist", req.Blacklist),
-		zap.String("submitterID", req.SubmitterID))
+		zap.String("submitterID", req.SubmitterID),
+		zap.String("projectID", req.ProjectID))
 	return channel, nil
 }

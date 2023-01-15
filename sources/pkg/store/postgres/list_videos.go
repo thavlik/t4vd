@@ -13,7 +13,7 @@ func (s *postgresStore) ListVideos(
 	projectID string,
 ) ([]*api.Video, error) {
 	rows, err := s.db.QueryContext(ctx, fmt.Sprintf(`
-		SELECT v, blacklist
+		SELECT v, blacklist, submitter, submitted
 		FROM %s WHERE project = $1`,
 		videosTable,
 	), projectID)
@@ -27,6 +27,8 @@ func (s *postgresStore) ListVideos(
 		if err := rows.Scan(
 			&video.ID,
 			&video.Blacklist,
+			&video.SubmitterID,
+			&video.Submitted,
 		); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}

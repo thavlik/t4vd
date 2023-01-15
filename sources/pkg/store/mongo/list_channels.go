@@ -47,7 +47,9 @@ func (s *mongoStore) ListChannelIDs(
 
 func convertChannelDoc(m map[string]interface{}) *api.Channel {
 	return &api.Channel{
-		ID:        m["c"].(string),
-		Blacklist: m["blacklist"].(bool),
+		ID:          m["c"].(string),
+		Blacklist:   m["blacklist"].(bool),
+		SubmitterID: m["submitter"].(string),
+		Submitted:   m["submitted"].(int64),
 	}
 }

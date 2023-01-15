@@ -155,6 +155,12 @@ type ResolveProjectsForVideoResponse struct {
 }
 
 type Video struct {
+	ID      string        `json:"id"`
+	Details *VideoDetails `json:"details"`
+	Source  *VideoSource  `json:"source"`
+}
+
+type VideoDetails struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
@@ -169,4 +175,11 @@ type Video struct {
 	Width       int    `json:"width"`
 	Height      int    `json:"height"`
 	FPS         int    `json:"fPS"`
+}
+
+type VideoSource struct {
+	Type        string `json:"type"`
+	ID          string `json:"id"`
+	SubmitterID string `json:"submitterID"`
+	Submitted   int64  `json:"submitted"`
 }

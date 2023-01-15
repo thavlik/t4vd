@@ -15,7 +15,7 @@ func (s *postgresStore) ListChannels(
 	rows, err := s.db.QueryContext(
 		ctx,
 		fmt.Sprintf(`
-			SELECT c, blacklist
+			SELECT c, blacklist, submitter, submitted
 			FROM %s WHERE project = $1`,
 			channelsTable,
 		),
@@ -31,6 +31,8 @@ func (s *postgresStore) ListChannels(
 		if err := rows.Scan(
 			&channel.ID,
 			&channel.Blacklist,
+			&channel.SubmitterID,
+			&channel.Submitted,
 		); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}

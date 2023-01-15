@@ -34,68 +34,85 @@ func Compile(
 	log = log.With(zap.String("projectID", projectID))
 	log.Debug("compiling dataset")
 	videoIDs := make(map[string]struct{})
+	videoSources := make(map[string]*api.VideoSource)
 	// Add input channels
-	inputChannels, err := sourcesClient.ListChannelIDs(
+	inputChannels, err := sourcesClient.ListChannels(
 		ctx,
-		sources.ListChannelIDsRequest{
+		sources.ListChannelsRequest{
 			ProjectID: projectID,
-			Blacklist: false,
 		})
 	if err != nil {
 		return nil, errors.Wrap(err, "get input channels")
 	}
 	base.Progress(ctx, onProgress)
-	log.Debug("queried whitelist channels",
-		zap.Int("numChannels", len(inputChannels.IDs)))
-	for _, inputChannelID := range inputChannels.IDs {
-		channelVideoIDs, err := GetChannelVideoIDs(ctx, seer, inputChannelID)
+	log.Debug("queried channels",
+		zap.Int("numChannels", len(inputChannels.Channels)))
+	var blacklistChannelIDs []string
+	for _, inputChannel := range inputChannels.Channels {
+		if inputChannel.Blacklist {
+			blacklistChannelIDs = append(blacklistChannelIDs, inputChannel.ID)
+			continue
+		}
+		channelVideoIDs, err := GetChannelVideoIDs(ctx, seer, inputChannel.ID)
 		if err != nil {
 			return nil, errors.Wrap(err, "GetChannelVideoIDs")
 		}
 		log.Debug("queried whitelist channel videos",
-			zap.String("channelID", inputChannelID),
+			zap.String("channelID", inputChannel.ID),
 			zap.Int("numVideos", len(channelVideoIDs)))
+		for _, videoID := range channelVideoIDs {
+			if _, ok := videoSources[videoID]; !ok {
+				videoSources[videoID] = &api.VideoSource{
+					Type:        "channel",
+					ID:          inputChannel.ID,
+					SubmitterID: inputChannel.SubmitterID,
+					Submitted:   inputChannel.Submitted,
+				}
+			}
+		}
 		whitelist(videoIDs, channelVideoIDs)
 	}
 	base.Progress(ctx, onProgress)
 	// Add input playlists
-	inputPlaylists, err := sourcesClient.ListPlaylistIDs(
+	inputPlaylists, err := sourcesClient.ListPlaylists(
 		ctx,
-		sources.ListPlaylistIDsRequest{
+		sources.ListPlaylistsRequest{
 			ProjectID: projectID,
-			Blacklist: false,
 		})
 	if err != nil {
 		return nil, errors.Wrap(err, "get input playlists")
 	}
 	base.Progress(ctx, onProgress)
-	log.Debug("queried whitelist playlists",
-		zap.Int("numPlaylists", len(inputPlaylists.IDs)))
-	for _, inputPlaylistID := range inputPlaylists.IDs {
-		playlistVideoIDs, err := GetPlaylistVideoIDs(ctx, seer, inputPlaylistID)
+	log.Debug("queried playlists",
+		zap.Int("numPlaylists", len(inputPlaylists.Playlists)))
+	var blacklistPlaylistIDs []string
+	for _, inputPlaylist := range inputPlaylists.Playlists {
+		if inputPlaylist.Blacklist {
+			blacklistPlaylistIDs = append(blacklistPlaylistIDs, inputPlaylist.ID)
+			continue
+		}
+		playlistVideoIDs, err := GetPlaylistVideoIDs(ctx, seer, inputPlaylist.ID)
 		if err != nil {
 			return nil, errors.Wrap(err, "GetPlaylistVideoIDs")
 		}
 		log.Debug("queried whitelist playlist videos",
-			zap.String("playlistID", inputPlaylistID),
+			zap.String("playlistID", inputPlaylist.ID),
 			zap.Int("numVideos", len(playlistVideoIDs)))
+		for _, videoID := range playlistVideoIDs {
+			if _, ok := videoSources[videoID]; !ok {
+				videoSources[videoID] = &api.VideoSource{
+					Type:        "playlist",
+					ID:          inputPlaylist.ID,
+					SubmitterID: inputPlaylist.SubmitterID,
+					Submitted:   inputPlaylist.Submitted,
+				}
+			}
+		}
 		whitelist(videoIDs, playlistVideoIDs)
 	}
 	base.Progress(ctx, onProgress)
 	// Remove blacklist channels
-	blacklistChannels, err := sourcesClient.ListChannelIDs(
-		ctx,
-		sources.ListChannelIDsRequest{
-			ProjectID: projectID,
-			Blacklist: true,
-		})
-	if err != nil {
-		return nil, errors.Wrap(err, "get blacklist channels")
-	}
-	base.Progress(ctx, onProgress)
-	log.Debug("queried blacklist channels",
-		zap.Int("numChannels", len(blacklistChannels.IDs)))
-	for _, blacklistChannelID := range blacklistChannels.IDs {
+	for _, blacklistChannelID := range blacklistChannelIDs {
 		channelVideoIDs, err := GetChannelVideoIDs(ctx, seer, blacklistChannelID)
 		if err != nil {
 			return nil, errors.Wrap(err, "GetChannelVideoIDs")
@@ -107,19 +124,7 @@ func Compile(
 	}
 	base.Progress(ctx, onProgress)
 	// Remove blacklist playlists
-	blacklistPlaylists, err := sourcesClient.ListPlaylistIDs(
-		ctx,
-		sources.ListPlaylistIDsRequest{
-			ProjectID: projectID,
-			Blacklist: true,
-		})
-	if err != nil {
-		return nil, errors.Wrap(err, "get blacklist playlists")
-	}
-	base.Progress(ctx, onProgress)
-	log.Debug("queried blacklist playlists",
-		zap.Int("numPlaylists", len(blacklistPlaylists.IDs)))
-	for _, blacklistPlaylistID := range blacklistPlaylists.IDs {
+	for _, blacklistPlaylistID := range blacklistPlaylistIDs {
 		playlistVideoIDs, err := GetPlaylistVideoIDs(ctx, seer, blacklistPlaylistID)
 		if err != nil {
 			return nil, errors.Wrap(err, "GetPlaylistVideoIDs")
@@ -130,45 +135,53 @@ func Compile(
 		blacklist(videoIDs, playlistVideoIDs)
 	}
 	base.Progress(ctx, onProgress)
-	// Remove blacklist videos
-	blacklistVideos, err := sourcesClient.ListVideoIDs(
-		ctx,
-		sources.ListVideoIDsRequest{
-			ProjectID: projectID,
-			Blacklist: true,
-		})
-	if err != nil {
-		return nil, errors.Wrap(err, "get blacklist videos")
-	}
-	base.Progress(ctx, onProgress)
-	log.Debug("queried blacklist videos",
-		zap.Int("numVideos", len(blacklistVideos.IDs)))
-	blacklist(videoIDs, blacklistVideos.IDs)
 	// Add input videos last so they are included
 	// no matter the other blacklists.
-	inputVideos, err := sourcesClient.ListVideoIDs(
+	inputVideos, err := sourcesClient.ListVideos(
 		ctx,
-		sources.ListVideoIDsRequest{
+		sources.ListVideosRequest{
 			ProjectID: projectID,
-			Blacklist: false,
 		})
 	if err != nil {
 		return nil, errors.Wrap(err, "get input videos")
 	}
+	var whitelistVideoIDs, blacklistVideoIDs []string
+	for _, video := range inputVideos.Videos {
+		if video.Blacklist {
+			blacklistVideoIDs = append(blacklistVideoIDs, video.ID)
+			continue
+		}
+		whitelistVideoIDs = append(whitelistVideoIDs, video.ID)
+		videoSources[video.ID] = &api.VideoSource{
+			SubmitterID: video.SubmitterID,
+			Submitted:   video.Submitted,
+		}
+	}
+	blacklist(videoIDs, blacklistVideoIDs)
+	whitelist(videoIDs, whitelistVideoIDs)
 	base.Progress(ctx, onProgress)
-	log.Debug("queried whitelist videos",
-		zap.Int("numVideos", len(inputVideos.IDs)))
-	whitelist(videoIDs, inputVideos.IDs)
-	flattened := flatten(videoIDs)
+	compiled := make([]*api.Video, len(videoIDs))
+	i := 0
+	for videoID := range videoIDs {
+		source, ok := videoSources[videoID]
+		if !ok {
+			return nil, errors.New("failed sanity check: video source not found")
+		}
+		compiled[i] = &api.Video{
+			ID:     videoID,
+			Source: source,
+		}
+		i++
+	}
 
-	// we can now cache the videos
-	if err := dc.Set(projectID, flattened); err != nil {
+	// we can now cache the video IDs for quick lookup
+	if err := dc.Set(projectID, flatten(videoIDs)); err != nil {
 		return nil, errors.Wrap(err, "datacache.Set")
 	}
 
 	log.Debug("resolving videos",
 		base.Elapsed(start),
-		zap.Int("count", len(flattened)))
+		zap.Int("count", len(compiled)))
 	var resolvedVideo chan *api.Video
 	if saveInterval != 0 {
 		resolvedVideo = make(chan *api.Video, 1)
@@ -245,36 +258,41 @@ func Compile(
 		}()
 	}
 	base.Progress(ctx, onProgress)
-	videos, err := datastore.ResolveVideos(
+	if err := ResolveVideos(
 		ctx,
 		seer,
 		ds,
-		flattened,
+		compiled,
 		resolvedVideo,
 		log,
-	)
-	if err != nil {
+	); err != nil {
 		return nil, errors.Wrap(err, "ResolveVideos")
 	}
 	base.Progress(ctx, onProgress)
 	log.Debug("resolved videos",
 		base.Elapsed(start),
-		zap.Int("count", len(videos)))
+		zap.Int("count", len(compiled)))
 	// save completed dataset
-	if len(videos) == 0 {
+	if len(compiled) == 0 {
 		return nil, ErrNoVideos
 	}
 	log.Debug("saving complete dataset",
 		base.Elapsed(start),
-		zap.Int("numVideos", len(videos)))
-	dataset, err := ds.SaveDataset(context.Background(), projectID, videos, true, start)
+		zap.Int("numVideos", len(compiled)))
+	dataset, err := ds.SaveDataset(
+		context.Background(), // do not allow interruption
+		projectID,
+		compiled,
+		true,
+		start,
+	)
 	if err != nil {
 		return nil, errors.Wrap(err, "datastore.SaveDataset")
 	}
 	log.Debug("finished compiling dataset",
 		base.Elapsed(start),
 		zap.String("projectID", projectID),
-		zap.Int("numVideos", len(flattened)),
+		zap.Int("numVideos", len(compiled)),
 		zap.String("dataset.ID", dataset.ID))
 	return dataset, nil
 }

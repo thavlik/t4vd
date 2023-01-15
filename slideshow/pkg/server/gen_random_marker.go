@@ -53,14 +53,14 @@ func genRandomMarker(
 	}
 	choices := make([]weightedrand.Choice[*compiler.Video, int64], len(videos))
 	for i, video := range videos {
-		choices[i] = weightedrand.NewChoice(video, video.Duration)
+		choices[i] = weightedrand.NewChoice(video, video.Details.Duration)
 	}
 	chooser, err := weightedrand.NewChooser(choices...)
 	if err != nil {
 		return nil, errors.Wrap(err, "weightedrand.NewChooser")
 	}
 	video := chooser.Pick()
-	t := time.Duration(math.Floor(rand.Float64() * float64(video.Duration*int64(time.Second))))
+	t := time.Duration(math.Floor(rand.Float64() * float64(video.Details.Duration*int64(time.Second))))
 	// cache the image data
 	//t -= t % frameTime // round to nearest frame
 	if _, err := getFrame(

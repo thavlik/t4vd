@@ -121,13 +121,13 @@ class VideosSection extends StatelessWidget {
                           TableCell(child: Text(video.id)),
                           TableCell(
                             child: Text(
-                              video.info?.title ?? video.id,
+                              video.details?.title ?? video.id,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           TableCell(
                             child: Text(
-                              video.info?.channel ?? '<unknown channel>',
+                              video.details?.channel ?? '<unknown channel>',
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

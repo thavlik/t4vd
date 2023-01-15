@@ -41,7 +41,7 @@ func HandleGetOutputLabel(
 				// reference the input gadget to resolve the parent label
 				if label.Parent, err = GetOutputLabelFromRef(
 					r.Context(),
-					"id="+label.Parent.ID,
+					label.Parent,
 					ref,
 					log,
 				); err != nil {

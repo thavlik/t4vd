@@ -73,38 +73,32 @@ func (ds *postgresDataStore) getSpecificDataset(
 	} else if err != nil {
 		return nil, errors.Wrap(err, "sql")
 	}
-	videoIDs, err := ds.getDatasetVideoIDs(ctx, datasetID)
+	var err error
+	dataset.Videos, err = ds.getDatasetVideos(ctx, datasetID)
 	if err != nil {
 		return nil, errors.Wrap(err, "getDatasetVideoIDs")
 	}
-	resp, err := ds.seer.GetBulkVideosDetails(
-		ctx,
-		seer.GetBulkVideosDetailsRequest{
-			VideoIDs: videoIDs,
-		},
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "GetBulkVideosDetails")
-	}
-	dataset.Videos = make([]*api.Video, len(resp.Videos))
-	for i, video := range resp.Videos {
-		dataset.Videos[i] = (*api.Video)(video)
-	}
-	dataset.Complete = dataset.Complete && len(dataset.Videos) == len(videoIDs)
 	return &dataset, nil
 }
 
-func (ds *postgresDataStore) getDatasetVideoIDs(
+func (ds *postgresDataStore) getDatasetVideos(
 	ctx context.Context,
 	datasetID string,
-) ([]string, error) {
+) ([]*api.Video, error) {
 	if datasetID == "" {
 		return nil, errors.New("missing datasetID")
 	}
 	rows, err := ds.db.QueryContext(
 		ctx,
 		fmt.Sprintf(
-			"SELECT id, v FROM %s WHERE ds = $1",
+			`SELECT
+				v,
+				submitter,
+				submitted,
+				sourcety,
+				sourceid,
+				details
+			FROM %s WHERE ds = $1`,
 			outputVideosTable,
 		),
 		datasetID,
@@ -113,14 +107,29 @@ func (ds *postgresDataStore) getDatasetVideoIDs(
 		return nil, errors.Wrap(err, "sql")
 	}
 	defer rows.Close()
-	var videoIDs []string
+	var videos []*api.Video
 	for rows.Next() {
-		var id int64
-		var v string
-		if err := rows.Scan(&id, &v); err != nil {
+		v := &api.Video{Source: &api.VideoSource{}}
+		var sourceTy, sourceID sql.NullString
+		details := make(map[string]interface{})
+		if err := rows.Scan(
+			&v.ID,
+			&v.Source.SubmitterID,
+			&v.Source.Submitted,
+			&sourceTy,
+			&sourceID,
+			&details,
+		); err != nil {
 			return nil, errors.Wrap(err, "scan")
 		}
-		videoIDs = append(videoIDs, v)
+		if sourceTy.Valid {
+			v.Source.Type = sourceTy.String
+		}
+		if sourceID.Valid {
+			v.Source.ID = sourceID.String
+		}
+		v.Details = (*api.VideoDetails)(seer.ConvertVideoDetails(details))
+		videos = append(videos, v)
 	}
-	return videoIDs, nil
+	return videos, nil
 }

@@ -15,6 +15,7 @@ import (
 type Server struct {
 	labelStore   labelstore.LabelStore
 	inputRef     *gadget.DataRef
+	gadgetID     string
 	maxBatchSize int
 	log          *zap.Logger
 }
@@ -22,12 +23,14 @@ type Server struct {
 func NewServer(
 	labelStore labelstore.LabelStore,
 	initInputRef *gadget.DataRef,
+	gadgetID string,
 	maxBatchSize int,
 	log *zap.Logger,
 ) *Server {
 	return &Server{
 		labelStore,
 		initInputRef,
+		gadgetID,
 		maxBatchSize,
 		log,
 	}
@@ -35,6 +38,7 @@ func NewServer(
 
 func (s *Server) ListenAndServe(port int) error {
 	meta := &metadata.Metadata{
+		GadgetID:     s.gadgetID,
 		Name:         "crop",
 		MaxBatchSize: s.maxBatchSize,
 		Inputs: []*metadata.Channel{{
@@ -50,11 +54,12 @@ func (s *Server) ListenAndServe(port int) error {
 	input := s.inputRef
 
 	// setup the input channel proxy methods
-	gadget.SetupInputChannel(router, "default", input, s.log)
+	gadget.SetupInputChannel(router, s.gadgetID, "default", input, s.log)
 
 	// the output data handler that actually applies the crop
 	router.HandleFunc("/output/default/x", handleGetCroppedOutput(
 		s.labelStore,
+		s.gadgetID,
 		input,
 		s.log,
 	))

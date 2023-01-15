@@ -8,7 +8,7 @@ import (
 )
 
 func cropVideo(
-	box image.Rectangle,
+	box *image.Rectangle,
 	marker *Marker,
 	r io.Reader,
 	w io.Writer,

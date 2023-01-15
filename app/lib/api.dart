@@ -79,7 +79,7 @@ class Marker {
 
 class Dataset {
   final String id;
-  final List<VideoInfo> videos;
+  final List<Video> videos;
   final DateTime timestamp;
 
   Dataset({
@@ -91,7 +91,7 @@ class Dataset {
   static Dataset fromMap(Map m) => Dataset(
         id: m['id'],
         timestamp: DateTime.fromMicrosecondsSinceEpoch(m['timestamp'] ~/ 1000),
-        videos: (m['videos'] as List).map((o) => VideoInfo.fromMap(o)).toList(),
+        videos: (m['videos'] as List).map((o) => Video.fromMap(o)).toList(),
       );
 }
 
@@ -114,7 +114,7 @@ class VideoProgress {
           VideoProgressState.values.firstWhere((state) => state == m['state']));
 }
 
-class VideoInfo {
+class VideoDetails {
   final String id;
   final String title;
   final String uploader;
@@ -128,7 +128,7 @@ class VideoInfo {
   final String uploadDate;
   final int fps;
 
-  VideoInfo({
+  VideoDetails({
     required this.id,
     required this.uploader,
     required this.uploaderId,
@@ -143,7 +143,7 @@ class VideoInfo {
     required this.fps,
   });
 
-  static VideoInfo fromMap(Map m) => VideoInfo(
+  static VideoDetails fromMap(Map m) => VideoDetails(
         id: m['id'],
         title: m['title'],
         channel: m['channel'],
@@ -159,26 +159,51 @@ class VideoInfo {
       );
 }
 
+class VideoSource {
+  final String? type;
+  final String? id;
+  final String submitterId;
+  final DateTime submitted;
+
+  VideoSource({
+    this.type,
+    this.id,
+    required this.submitterId,
+    required this.submitted,
+  });
+
+  static VideoSource fromMap(Map m) => VideoSource(
+        type: m['type'],
+        id: m['id'],
+        submitterId: m['submitterID'],
+        submitted: DateTime.fromMicrosecondsSinceEpoch(m['submitted'] ~/ 1000),
+      );
+}
+
 class Video {
   final String id;
   bool blacklist;
-  VideoInfo? info;
+  VideoDetails? details;
   VideoProgress? progress;
+  VideoSource? source;
 
   Video({
     required this.id,
     this.blacklist = false,
-    this.info,
+    this.details,
     this.progress,
+    this.source,
   });
 
   static Video fromMap(Map m) => Video(
         id: m['id'],
         blacklist: m['blacklist'] ?? false,
-        info: m.containsKey('info') ? VideoInfo.fromMap(m['info']) : null,
+        details: m.containsKey('info') ? VideoDetails.fromMap(m['info']) : null,
         progress: m.containsKey('progress')
             ? VideoProgress.fromMap(m['progress'])
             : null,
+        source:
+            m.containsKey('source') ? VideoSource.fromMap(m['source']) : null,
       );
 }
 

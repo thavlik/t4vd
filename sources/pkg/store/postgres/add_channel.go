@@ -11,7 +11,6 @@ import (
 func (s *postgresStore) AddChannel(
 	projectID string,
 	channel *api.Channel,
-	submitterID string,
 ) error {
 	if _, err := s.db.Exec(
 		fmt.Sprintf(`
@@ -21,17 +20,19 @@ func (s *postgresStore) AddChannel(
 				blacklist,
 				project,
 				submitter
+				submitted
 			)
-			VALUES ($1, $2, $3, $4, $5)
+			VALUES ($1, $2, $3, $4, $5, $6)
 			ON CONFLICT (id) DO UPDATE
-			SET (blacklist, submitter) = (EXCLUDED.blacklist, EXCLUDED.submitter)`,
+			SET (blacklist, submitter, submitted) = (EXCLUDED.blacklist, EXCLUDED.submitter, EXCLUDED.submitted)`,
 			channelsTable,
 		),
 		store.ScopedResourceID(projectID, channel.ID),
 		channel.ID,
 		channel.Blacklist,
 		projectID,
-		submitterID,
+		channel.SubmitterID,
+		channel.Submitted,
 	); err != nil {
 		return errors.Wrap(err, "postgres")
 	}

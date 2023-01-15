@@ -14,6 +14,7 @@ import (
 var serverArgs struct {
 	base.ServerOptions
 	db                     base.DatabaseOptions
+	gadgetID               string
 	maxBatchSize           int
 	collection             string
 	initInputGadget        string
@@ -26,6 +27,7 @@ var serverCmd = &cobra.Command{
 		base.ServerEnv(&serverArgs.ServerOptions)
 		base.DatabaseEnv(&serverArgs.db, true)
 		base.CheckEnv("COLLECTION", &serverArgs.collection)
+		base.CheckEnv("GADGET_ID", &serverArgs.gadgetID)
 		base.CheckEnvInt("MAX_BATCH_SIZE", &serverArgs.maxBatchSize)
 		base.CheckEnv("INIT_INPUT_GADGET", &serverArgs.initInputGadget)
 		base.CheckEnv("INIT_INPUT_GADGET_CHANNEL", &serverArgs.initInputGadgetChannel)
@@ -38,6 +40,7 @@ var serverCmd = &cobra.Command{
 		return server.Entry(
 			serverArgs.ServerOptions.Port,
 			initLabelStore(),
+			serverArgs.gadgetID,
 			gadget.NewDataRef(
 				serverArgs.initInputGadget,
 				serverArgs.initInputGadgetChannel,
@@ -65,6 +68,7 @@ func init() {
 	base.AddDatabaseFlags(serverCmd, &serverArgs.db)
 	base.AddServerFlags(serverCmd, &serverArgs.ServerOptions)
 	serverCmd.PersistentFlags().StringVar(&serverArgs.collection, "collection", "filter", "collection name for the labels")
+	serverCmd.PersistentFlags().StringVar(&serverArgs.gadgetID, "gadget-id", "", "owner gadget uuid")
 	serverCmd.PersistentFlags().IntVar(&serverArgs.maxBatchSize, "max-batch-size", 100, "maximum batch size for the labels")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.initInputGadget, "init-input-gadget", "", "initial input gadget name")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.initInputGadgetChannel, "init-input-gadget-channel", "", "initial input gadget channel name")

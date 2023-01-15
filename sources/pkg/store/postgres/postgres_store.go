@@ -26,24 +26,28 @@ func NewPostgresStore(db *sql.DB) store.Store {
 		c TEXT NOT NULL,
 		blacklist BOOLEAN NOT NULL,
 		project TEXT NOT NULL,
-		submitter TEXT NOT NULL`)
+		submitter TEXT NOT NULL,
+		submitted BIGINT NOT NULL`)
 	table(db, playlistsTable, `
 		id TEXT PRIMARY KEY,
 		p TEXT NOT NULL,
 		blacklist BOOLEAN NOT NULL,
 		project TEXT NOT NULL,
-		submitter TEXT NOT NULL`)
+		submitter TEXT NOT NULL,
+		submitted BIGINT NOT NULL`)
 	table(db, videosTable, `
 		id TEXT PRIMARY KEY,
 		v TEXT NOT NULL,
 		blacklist BOOLEAN NOT NULL,
 		project TEXT NOT NULL,
-		submitter TEXT NOT NULL`)
+		submitter TEXT NOT NULL,
+		submitted BIGINT NOT NULL`)
 	table(db, projectsTable, `
 		id TEXT PRIMARY KEY,
 		name TEXT NOT NULL,
 		groupid TEXT NOT NULL,
 		creator TEXT NOT NULL,
+		created BIGINT NOT NULL,
 		description TEXT NOT NULL`)
 	table(db, projectTagsTable, `
 		id TEXT PRIMARY KEY,

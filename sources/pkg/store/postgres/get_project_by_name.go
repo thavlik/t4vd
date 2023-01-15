@@ -28,7 +28,7 @@ func (s *postgresStore) GetProjectByName(
 		&project.CreatorID,
 		&project.GroupID,
 	); err == sql.ErrNoRows {
-		return nil, store.ErrProjectNotFound
+		return nil, store.ErrResourceNotFound
 	} else if err != nil {
 		return nil, errors.Wrap(err, "scan")
 	}

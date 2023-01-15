@@ -27,7 +27,7 @@ func (s *Server) ListVisibleProjects(
 	i := 0
 	for _, group := range groups {
 		projectID, err := s.store.GetProjectIDForGroup(ctx, group.ID)
-		if err == store.ErrProjectNotFound {
+		if err == store.ErrResourceNotFound {
 			// dangling group references, try and remove the membership
 			if err := s.iam.RemoveUserFromGroup(userID, group.ID); err != nil {
 				s.log.Warn("failed to remove user from dangling group", zap.Error(err))

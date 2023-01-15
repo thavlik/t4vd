@@ -24,7 +24,7 @@ func (s *mongoStore) GetProjectIDForGroup(
 				"_id": 1,
 			}),
 	).Decode(&doc); err == mongo.ErrNoDocuments {
-		return "", store.ErrProjectNotFound
+		return "", store.ErrResourceNotFound
 	} else if err != nil {
 		return "", errors.Wrap(err, "mongo")
 	}

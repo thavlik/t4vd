@@ -16,7 +16,7 @@ const credStorageBrightness = 't4vddm';
 final List<api.Video> exampleVideos = [
   api.Video(
     id: "6wrYM8KzBRU",
-    info: api.VideoInfo(
+    details: api.VideoDetails(
       id: "6wrYM8KzBRU",
       channel: "Tyler Spangler",
       channelId: "TylerSpangler",
@@ -33,7 +33,7 @@ final List<api.Video> exampleVideos = [
   ),
   api.Video(
     id: "e5YuPpbzBdo",
-    info: api.VideoInfo(
+    details: api.VideoDetails(
       id: "e5YuPpbzBdo",
       channel: "Tyler Spangler",
       channelId: "TylerSpangler",
@@ -330,7 +330,7 @@ class BJJModel extends Model {
   IOWebSocketChannel? _channel;
 
   Future<void> connectWebSock() async {
-    if (!isLoggedIn) throw ErrorSummary('not logged in');
+    if (!isLoggedIn) return;
     _channel?.sink.close();
     _channel = api.connectWebSock(_creds!);
     _channel!.stream.listen(
@@ -369,17 +369,17 @@ class BJJModel extends Model {
         mergePlaylistInfo(api.PlaylistInfo.fromMap(obj['info']));
         break;
       case 'video_details':
-        mergeVideoInfo(api.VideoInfo.fromMap(obj['info']));
+        mergeVideoInfo(api.VideoDetails.fromMap(obj['info']));
         break;
       default:
         break;
     }
   }
 
-  void mergeVideoInfo(api.VideoInfo info) {
+  void mergeVideoInfo(api.VideoDetails info) {
     final i = _videos.indexWhere((v) => v.id == info.id);
     if (i == -1) return;
-    _videos[i].info = info;
+    _videos[i].details = info;
   }
 
   void mergePlaylistInfo(api.PlaylistInfo info) {

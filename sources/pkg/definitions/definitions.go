@@ -80,6 +80,7 @@ type Project struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	CreatorID   string   `json:"creatorID"`
+	Created     int64    `json:"created"`
 	GroupID     string   `json:"groupID"`
 	Description string   `json:"description,omitempty"`
 	Tags        []string `json:"tags,omitempty"`
@@ -134,8 +135,10 @@ type ListChannelsRequest struct {
 }
 
 type Channel struct {
-	ID        string `json:"id"`
-	Blacklist bool   `json:"blacklist"`
+	ID          string `json:"id"`
+	Blacklist   bool   `json:"blacklist"`
+	SubmitterID string `json:"submitterID"`
+	Submitted   int64  `json:"submitted"`
 }
 
 type ListChannelsResponse struct {
@@ -147,8 +150,10 @@ type ListPlaylistsRequest struct {
 }
 
 type Playlist struct {
-	ID        string `json:"id"`
-	Blacklist bool   `json:"blacklist"`
+	ID          string `json:"id"`
+	Blacklist   bool   `json:"blacklist"`
+	SubmitterID string `json:"submitterID"`
+	Submitted   int64  `json:"submitted"`
 }
 
 type ListPlaylistsResponse struct {
@@ -160,8 +165,10 @@ type ListVideosRequest struct {
 }
 
 type Video struct {
-	ID        string `json:"id"`
-	Blacklist bool   `json:"blacklist"`
+	ID          string `json:"id"`
+	Blacklist   bool   `json:"blacklist"`
+	SubmitterID string `json:"submitterID"`
+	Submitted   int64  `json:"submitted"`
 }
 
 type ListVideosResponse struct {

@@ -116,13 +116,13 @@ class InputVideoListItem extends StatefulWidget {
   const InputVideoListItem({
     super.key,
     required this.id,
-    this.info,
+    this.details,
     this.editMode = false,
     this.onDelete,
   });
 
   final String id;
-  final VideoInfo? info;
+  final VideoDetails? details;
   final bool editMode;
   final void Function()? onDelete;
 
@@ -135,7 +135,7 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
 
   @override
   Widget build(BuildContext context) {
-    final info = widget.info;
+    final info = widget.details;
     String? duration;
     if (info != null) {
       final secs = info.duration;
@@ -149,7 +149,7 @@ class _InputVideoListItemState extends State<InputVideoListItem> {
           ? () => Navigator.of(context).push(MaterialPageRoute(
               builder: (context) => VideoDetailsPage(Video(
                     id: widget.id,
-                    info: info,
+                    details: info,
                   ))))
           : () => {},
       onLongPress: () {
@@ -455,7 +455,7 @@ class InputVideosPageState extends State<InputVideosPage> {
                           editMode: editMode,
                           onDelete: () => deleteVideo(context, vid.id, false),
                           id: vid.id,
-                          info: vid.info,
+                          details: vid.details,
                         ))
                     .toList(),
                 Visibility(
@@ -493,7 +493,7 @@ class InputVideosPageState extends State<InputVideosPage> {
                           editMode: editMode,
                           onDelete: () => deleteVideo(context, vid.id, true),
                           id: vid.id,
-                          info: vid.info,
+                          details: vid.details,
                         ))
                     .toList(),
                 Visibility(

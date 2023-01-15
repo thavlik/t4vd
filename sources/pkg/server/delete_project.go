@@ -24,7 +24,7 @@ func (s *Server) DeleteProject(ctx context.Context, req api.DeleteProject) (*api
 	} else {
 		return nil, errors.New("must specify either id or name")
 	}
-	if err == store.ErrProjectNotFound {
+	if err == store.ErrResourceNotFound {
 		if req.Name != "" {
 			// try and delete the group by name
 			if s.iam != nil {

@@ -672,9 +672,11 @@ type AddVideoRequest struct {
 }
 
 type Channel struct {
-	ID        string `json:"id"`
-	Blacklist bool   `json:"blacklist"`
-	Error     string `json:"error,omitempty"`
+	ID          string `json:"id"`
+	Blacklist   bool   `json:"blacklist"`
+	SubmitterID string `json:"submitterID"`
+	Submitted   int64  `json:"submitted"`
+	Error       string `json:"error,omitempty"`
 }
 
 type Collaborator struct {
@@ -790,15 +792,18 @@ type ListVideosResponse struct {
 }
 
 type Playlist struct {
-	ID        string `json:"id"`
-	Blacklist bool   `json:"blacklist"`
-	Error     string `json:"error,omitempty"`
+	ID          string `json:"id"`
+	Blacklist   bool   `json:"blacklist"`
+	SubmitterID string `json:"submitterID"`
+	Submitted   int64  `json:"submitted"`
+	Error       string `json:"error,omitempty"`
 }
 
 type Project struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
 	CreatorID   string   `json:"creatorID"`
+	Created     int64    `json:"created"`
 	GroupID     string   `json:"groupID"`
 	Description string   `json:"description"`
 	Tags        []string `json:"tags"`
@@ -824,9 +829,11 @@ type RemoveVideoRequest struct {
 }
 
 type Video struct {
-	ID        string `json:"id"`
-	Blacklist bool   `json:"blacklist"`
-	Error     string `json:"error,omitempty"`
+	ID          string `json:"id"`
+	Blacklist   bool   `json:"blacklist"`
+	SubmitterID string `json:"submitterID"`
+	Submitted   int64  `json:"submitted"`
+	Error       string `json:"error,omitempty"`
 }
 
 type Void struct {

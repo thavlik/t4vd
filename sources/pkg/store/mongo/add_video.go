@@ -13,7 +13,6 @@ import (
 func (s *mongoStore) AddVideo(
 	projectID string,
 	video *api.Video,
-	submitterID string,
 ) error {
 	_, err := s.videos.UpdateOne(
 		context.Background(),
@@ -25,7 +24,8 @@ func (s *mongoStore) AddVideo(
 		map[string]interface{}{
 			"$set": map[string]interface{}{
 				"blacklist": video.Blacklist,
-				"submitter": submitterID,
+				"submitter": video.SubmitterID,
+				"submitted": video.Submitted,
 			},
 		},
 		options.Update().SetUpsert(true),

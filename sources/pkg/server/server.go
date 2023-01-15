@@ -19,6 +19,7 @@ import (
 )
 
 var (
+	errInvalidInput       = errors.New("invalid input")
 	errMissingProjectID   = errors.New("missing project id")
 	errMissingSubmitterID = errors.New("missing submitter id")
 )

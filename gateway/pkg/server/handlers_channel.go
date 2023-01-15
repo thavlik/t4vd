@@ -22,7 +22,11 @@ func (s *Server) handleAddChannel() http.HandlerFunc {
 			ctx := r.Context()
 			var req sources.AddChannelRequest
 			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-				w.WriteHeader(http.StatusBadRequest)
+				writeError(
+					w,
+					http.StatusBadRequest,
+					errors.Wrap(err, "decode json"),
+				)
 				return nil
 			}
 			if err := s.ProjectAccess(ctx, userID, req.ProjectID); err != nil {

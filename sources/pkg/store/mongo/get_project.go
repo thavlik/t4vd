@@ -20,7 +20,7 @@ func (s *mongoStore) GetProject(
 			"_id": projectID,
 		},
 	).Decode(&doc); err == mongo.ErrNoDocuments {
-		return nil, store.ErrProjectNotFound
+		return nil, store.ErrResourceNotFound
 	} else if err != nil {
 		return nil, errors.Wrap(err, "mongo")
 	}

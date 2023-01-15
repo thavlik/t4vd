@@ -12,7 +12,6 @@ import (
 func (s *mongoStore) AddChannel(
 	projectID string,
 	channel *api.Channel,
-	submitterID string,
 ) error {
 	if _, err := s.channels.UpdateOne(
 		context.Background(),
@@ -24,7 +23,8 @@ func (s *mongoStore) AddChannel(
 		map[string]interface{}{
 			"$set": map[string]interface{}{
 				"blacklist": channel.Blacklist,
-				"submitter": submitterID,
+				"submitter": channel.SubmitterID,
+				"submitted": channel.Submitted,
 			},
 		},
 		options.Update().SetUpsert(true),
