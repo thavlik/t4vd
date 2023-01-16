@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -115,21 +117,20 @@ class Graph {
   ];
 }
 
-class NodeWidget extends StatelessWidget {
-  const NodeWidget(
+class _NodeWidget extends StatelessWidget {
+  const _NodeWidget(
     this.node, {
     this.selected = false,
+    required this.nodeKey,
     required this.nibSize,
     required this.onSelected,
-    required this.inputKeys,
-    required this.outputKeys,
     super.key,
   });
 
+  final NodeKey nodeKey;
   final double nibSize;
   final bool selected;
   final Node node;
-  final Map<String, GlobalKey> inputKeys, outputKeys;
   final Function(Node) onSelected;
 
   @override
@@ -139,6 +140,7 @@ class NodeWidget extends StatelessWidget {
       child: GestureDetector(
         onTap: () => onSelected(node),
         child: Container(
+          key: nodeKey.root,
           width: 200,
           height: 200,
           decoration: BoxDecoration(
@@ -198,7 +200,7 @@ class NodeWidget extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
-                                    key: inputKeys[input.name],
+                                    key: nodeKey.inputKeys[input.name],
                                     width: nibSize,
                                     height: nibSize,
                                     decoration: BoxDecoration(
@@ -237,7 +239,7 @@ class NodeWidget extends StatelessWidget {
                                   ),
                                   const SizedBox(width: 4),
                                   Container(
-                                    key: outputKeys[output.name],
+                                    key: nodeKey.outputKeys[output.name],
                                     width: nibSize,
                                     height: nibSize,
                                     decoration: BoxDecoration(
@@ -270,16 +272,29 @@ class GraphPage extends StatefulWidget {
   State<GraphPage> createState() => _GraphPageState();
 }
 
+class _Candidate {
+  Offset location = Offset.zero;
+}
+
+class NodeKey {
+  GlobalKey root = GlobalKey();
+  Map<String, GlobalKey> inputKeys = {};
+  Map<String, GlobalKey> outputKeys = {};
+}
+
+class NodeKeys {
+  final Map<String, NodeKey> nodes = {};
+}
+
 class _GraphPageState extends State<GraphPage> {
   final focusNode = FocusNode();
   final origin = GlobalKey();
   final graph = Graph();
   Set<String> selection = {"0"};
   bool additive = false;
+  bool group = false;
   final nibSize = 16.0;
-
-  final Map<String, Map<String, GlobalKey>> inputKeys = {};
-  final Map<String, Map<String, GlobalKey>> outputKeys = {};
+  final NodeKeys keys = NodeKeys();
 
   @override
   void initState() {
@@ -291,12 +306,16 @@ class _GraphPageState extends State<GraphPage> {
     if (event is KeyDownEvent) {
       if (event.logicalKey == LogicalKeyboardKey.shiftLeft) {
         additive = true;
+      } else if (event.logicalKey == LogicalKeyboardKey.controlLeft) {
+        group = true;
       }
       return;
     }
     if (event is KeyUpEvent) {
       if (event.logicalKey == LogicalKeyboardKey.shiftLeft) {
         additive = false;
+      } else if (event.logicalKey == LogicalKeyboardKey.controlLeft) {
+        group = false;
       }
       return;
     }
@@ -314,51 +333,117 @@ class _GraphPageState extends State<GraphPage> {
         }
       });
 
-  @override
-  Widget build(BuildContext context) {
-    inputKeys.clear();
-    outputKeys.clear();
+  RenderBox get originRenderBox =>
+      origin.currentContext!.findRenderObject() as RenderBox;
+
+  Offset get originOffset =>
+      originRenderBox.localToGlobal(Offset.zero).scale(-1, -1);
+
+  _HitTestResult? _source;
+
+  void onPointerDown(PointerDownEvent ev) {
+    _source = _hitTest(
+      graph: graph,
+      nibSize: nibSize,
+      originOffset: originOffset,
+      testPosition: ev.localPosition,
+      keys: keys,
+    );
+    if (_source != null) {
+      // TODO: set candidate connection
+      return;
+    }
+  }
+
+  void onPointerUp(PointerUpEvent ev) {
+    final sink = _hitTest(
+      graph: graph,
+      nibSize: nibSize,
+      originOffset: originOffset,
+      testPosition: ev.localPosition,
+      keys: keys,
+    );
+    if (sink != null && _source != null) {
+      connect(_source!, sink);
+    }
+    _source = null;
+    // TODO: clear candidate connections
+  }
+
+  void connect(_HitTestResult source, _HitTestResult sink) {
+    if (source.node == sink.node ||
+        source.channel == null ||
+        sink.channel == null) return;
+    if (!source.isOutput) {
+      final temp = source;
+      source = sink;
+      sink = temp;
+    }
+    if (!source.isOutput || sink.isOutput) return;
+    // TODO: try and make connection in backend
+    setState(() => sink.node.inputLinks[sink.channel!] = NodeDataRef(
+          id: source.node.id,
+          channel: source.channel!,
+        ));
+  }
+
+  void onPointerMove(PointerMoveEvent ev) {
+    if (_source != null) {
+      // TODO: update candidate connection position
+    }
+  }
+
+  void buildKeys() {
+    keys.nodes.clear();
     for (final node in graph.nodes) {
-      inputKeys[node.id] = {};
-      outputKeys[node.id] = {};
+      final n = NodeKey();
       for (final input in node.meta.inputs) {
-        inputKeys[node.id]![input.name] = GlobalKey();
+        n.inputKeys[input.name] = GlobalKey();
       }
       for (final output in node.meta.outputs) {
-        outputKeys[node.id]![output.name] = GlobalKey();
+        n.outputKeys[output.name] = GlobalKey();
       }
+      keys.nodes[node.id] = n;
     }
-    return GestureDetector(
-      onTap: () => setState(() => selection = {}),
-      child: KeyboardListener(
-        focusNode: focusNode,
-        onKeyEvent: onKeyEvent,
-        child: Scaffold(
-          key: origin,
-          body: Stack(
-            children: [
-              CustomPaint(
-                painter: MyFancyPainter(
-                  origin: origin,
-                  nibSize: nibSize,
-                  graph: graph,
-                  inputKeys: inputKeys,
-                  outputKeys: outputKeys,
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    buildKeys();
+    return Listener(
+      onPointerDown: onPointerDown,
+      onPointerUp: onPointerUp,
+      onPointerMove: onPointerMove,
+      child: GestureDetector(
+        onTap: () => setState(() => selection = {}),
+        child: KeyboardListener(
+          focusNode: focusNode,
+          onKeyEvent: onKeyEvent,
+          child: Scaffold(
+            key: origin,
+            body: Stack(
+              children: [
+                CustomPaint(
+                  painter: MyFancyPainter(
+                    origin: origin,
+                    nibSize: nibSize,
+                    graph: graph,
+                    nodeKeys: keys,
+                  ),
                 ),
-              ),
-              Row(
-                children: graph.nodes
-                    .map((node) => NodeWidget(
-                          node,
-                          nibSize: nibSize,
-                          selected: selection.contains(node.id),
-                          onSelected: select,
-                          inputKeys: inputKeys[node.id]!,
-                          outputKeys: outputKeys[node.id]!,
-                        ))
-                    .toList(),
-              ),
-            ],
+                Row(
+                  children: graph.nodes
+                      .map((node) => _NodeWidget(
+                            node,
+                            nibSize: nibSize,
+                            selected: selection.contains(node.id),
+                            onSelected: select,
+                            nodeKey: keys.nodes[node.id]!,
+                          ))
+                      .toList(),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -366,19 +451,101 @@ class _GraphPageState extends State<GraphPage> {
   }
 }
 
+class _HitTestResult {
+  final Node node;
+  final bool isOutput;
+  final String? channel;
+
+  _HitTestResult({
+    required this.node,
+    this.isOutput = false,
+    this.channel,
+  });
+
+  @override
+  String toString() => channel == null
+      ? 'HitTestResult(${node.id}, ${node.meta.name})'
+      : 'HitTestResult(${node.id}, ${node.meta.name}, ${isOutput ? "output" : "input"}:$channel)';
+}
+
+_HitTestResult? _hitTest({
+  required Graph graph,
+  required Offset originOffset,
+  required Offset testPosition,
+  required double nibSize,
+  required NodeKeys keys,
+}) {
+  for (var entry in keys.nodes.entries) {
+    final nodeId = entry.key;
+    final node = graph.nodes.firstWhere((node) => node.id == nodeId);
+    final nodeKey = entry.value;
+    for (var inputEntry in nodeKey.inputKeys.entries) {
+      final inputName = inputEntry.key;
+      final inputKey = inputEntry.value;
+      final inputRenderBox =
+          inputKey.currentContext!.findRenderObject() as RenderBox;
+      final inputOffset = inputRenderBox.localToGlobal(originOffset);
+      final inputRect = Rect.fromLTWH(
+        inputOffset.dx,
+        inputOffset.dy,
+        nibSize,
+        nibSize,
+      );
+      if (inputRect.contains(testPosition)) {
+        return _HitTestResult(
+          node: node,
+          isOutput: false,
+          channel: inputName,
+        );
+      }
+    }
+    for (var outputEntry in nodeKey.outputKeys.entries) {
+      final outputName = outputEntry.key;
+      final outputKey = outputEntry.value;
+      final outputRenderBox =
+          outputKey.currentContext!.findRenderObject() as RenderBox;
+      final outputOffset = outputRenderBox.localToGlobal(originOffset);
+      final outputRect = Rect.fromLTWH(
+        outputOffset.dx,
+        outputOffset.dy,
+        nibSize,
+        nibSize,
+      );
+      if (outputRect.contains(testPosition)) {
+        return _HitTestResult(
+          node: node,
+          isOutput: true,
+          channel: outputName,
+        );
+      }
+    }
+    final rootRenderBox =
+        nodeKey.root.currentContext!.findRenderObject() as RenderBox;
+    final rootOffset = rootRenderBox.localToGlobal(originOffset);
+    final rootRect = Rect.fromLTWH(
+      rootOffset.dx,
+      rootOffset.dy,
+      rootRenderBox.size.width,
+      rootRenderBox.size.height,
+    );
+    if (rootRect.contains(testPosition)) {
+      return _HitTestResult(node: node);
+    }
+  }
+  return null;
+}
+
 class MyFancyPainter extends CustomPainter {
   final GlobalKey origin;
   final double nibSize;
   final Graph graph;
-  final Map<String, Map<String, GlobalKey>> inputKeys;
-  final Map<String, Map<String, GlobalKey>> outputKeys;
+  final NodeKeys nodeKeys;
 
   MyFancyPainter({
     required this.origin,
     required this.nibSize,
     required this.graph,
-    required this.inputKeys,
-    required this.outputKeys,
+    required this.nodeKeys,
   });
 
   @override
@@ -399,8 +566,10 @@ class MyFancyPainter extends CustomPainter {
     graph.nodes.where((node) => node.inputLinks.isNotEmpty).forEach((node) {
       node.inputLinks.forEach((key, value) {
         if (value == null) return;
-        final inputKey = inputKeys[node.id]![key]!;
-        final outputKey = outputKeys[value.id]![value.channel]!;
+        final sourceKey = nodeKeys.nodes[node.id]!;
+        final sinkKey = nodeKeys.nodes[value.id]!;
+        final inputKey = sourceKey.inputKeys[key]!;
+        final outputKey = sinkKey.outputKeys[value.channel]!;
         final inputRenderBox =
             inputKey.currentContext!.findRenderObject() as RenderBox;
         final outputRenderBox =
@@ -420,8 +589,6 @@ class MyFancyPainter extends CustomPainter {
           outputOffset.dy + halfNibSize,
         );
         canvas.drawPath(path, paint);
-        //canvas.drawCircle(inputOffset, 16, paint);
-        //canvas.drawCircle(outputOffset, 16, paint);
       });
     });
   }
