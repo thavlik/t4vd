@@ -1,4 +1,5 @@
 import 'package:t4vd/account.dart';
+import 'package:t4vd/graph/graph.dart';
 import 'package:t4vd/project/create_project.dart';
 import 'package:t4vd/project/manage_collaborators.dart';
 import 'package:t4vd/project/select_project.dart';
@@ -108,7 +109,7 @@ class _TabsPageState extends State<TabsPage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-        length: 5,
+        length: 6,
         child: Scaffold(
           appBar: AppBar(
             toolbarHeight: 16,
@@ -134,6 +135,10 @@ class _TabsPageState extends State<TabsPage> {
                   text: "Crop",
                 ),
                 Tab(
+                  icon: Icon(Icons.graphic_eq),
+                  text: "Graph",
+                ),
+                Tab(
                   key: Key('accountTab'),
                   icon: Icon(Icons.account_circle),
                   text: "Account",
@@ -153,6 +158,7 @@ class _TabsPageState extends State<TabsPage> {
               FilterPage(),
               TagsPage(),
               CropPage(),
+              GraphPage(),
               AccountPage(),
               //LandmarksPage(),
             ],
