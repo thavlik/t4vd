@@ -257,6 +257,25 @@ class _NodeWidget extends StatelessWidget {
                   ),
                 ],
               ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        "1k labels",
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      Text(
+                        "1k labels",
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -272,8 +291,10 @@ class GraphPage extends StatefulWidget {
   State<GraphPage> createState() => _GraphPageState();
 }
 
-class _Candidate {
-  Offset location = Offset.zero;
+class Candidate {
+  final HitTestResult hitTest;
+
+  Candidate(this.hitTest);
 }
 
 class NodeKey {
@@ -339,21 +360,26 @@ class _GraphPageState extends State<GraphPage> {
   Offset get originOffset =>
       originRenderBox.localToGlobal(Offset.zero).scale(-1, -1);
 
-  _HitTestResult? _source;
+  HitTestResult? _source;
+  Offset? _cursor;
+  List<Candidate> _candidates = [];
 
-  void onPointerDown(PointerDownEvent ev) {
-    _source = _hitTest(
-      graph: graph,
-      nibSize: nibSize,
-      originOffset: originOffset,
-      testPosition: ev.localPosition,
-      keys: keys,
-    );
-    if (_source != null) {
-      // TODO: set candidate connection
-      return;
-    }
-  }
+  void onPointerDown(PointerDownEvent ev) => setState(() {
+        _cursor = ev.localPosition;
+        _source = _hitTest(
+          graph: graph,
+          nibSize: nibSize,
+          originOffset: originOffset,
+          testPosition: ev.localPosition,
+          keys: keys,
+        );
+        if (_source != null && _source!.channel != null) {
+          _candidates = [
+            Candidate(_source!),
+          ];
+          return;
+        }
+      });
 
   void onPointerUp(PointerUpEvent ev) {
     final sink = _hitTest(
@@ -366,28 +392,16 @@ class _GraphPageState extends State<GraphPage> {
     if (sink != null && _source != null) {
       connect(_source!, sink);
     }
-    _source = null;
+    setState(() {
+      _source = null;
+      _cursor = null;
+      _candidates = [];
+    });
     // TODO: clear candidate connections
   }
 
-  void connect(_HitTestResult source, _HitTestResult sink) {
-    if (source.node == sink.node ||
-        source.channel == null ||
-        sink.channel == null) return;
-    if (!source.isOutput) {
-      final temp = source;
-      source = sink;
-      sink = temp;
-    }
-    if (!source.isOutput || sink.isOutput) return;
-    // TODO: try and make connection in backend
-    setState(() => sink.node.inputLinks[sink.channel!] = NodeDataRef(
-          id: source.node.id,
-          channel: source.channel!,
-        ));
-  }
-
   void onPointerMove(PointerMoveEvent ev) {
+    setState(() => _cursor = ev.localPosition);
     if (_source != null) {
       // TODO: update candidate connection position
     }
@@ -405,6 +419,23 @@ class _GraphPageState extends State<GraphPage> {
       }
       keys.nodes[node.id] = n;
     }
+  }
+
+  void connect(HitTestResult source, HitTestResult sink) {
+    if (source.node == sink.node ||
+        source.channel == null ||
+        sink.channel == null) return;
+    if (!source.isOutput) {
+      final temp = source;
+      source = sink;
+      sink = temp;
+    }
+    if (!source.isOutput || sink.isOutput) return;
+    // TODO: try and make connection in backend
+    setState(() => sink.node.inputLinks[sink.channel!] = NodeDataRef(
+          id: source.node.id,
+          channel: source.channel!,
+        ));
   }
 
   @override
@@ -429,6 +460,8 @@ class _GraphPageState extends State<GraphPage> {
                     nibSize: nibSize,
                     graph: graph,
                     nodeKeys: keys,
+                    candidates: _candidates,
+                    cursor: _cursor,
                   ),
                 ),
                 Row(
@@ -451,12 +484,12 @@ class _GraphPageState extends State<GraphPage> {
   }
 }
 
-class _HitTestResult {
+class HitTestResult {
   final Node node;
   final bool isOutput;
   final String? channel;
 
-  _HitTestResult({
+  HitTestResult({
     required this.node,
     this.isOutput = false,
     this.channel,
@@ -468,7 +501,7 @@ class _HitTestResult {
       : 'HitTestResult(${node.id}, ${node.meta.name}, ${isOutput ? "output" : "input"}:$channel)';
 }
 
-_HitTestResult? _hitTest({
+HitTestResult? _hitTest({
   required Graph graph,
   required Offset originOffset,
   required Offset testPosition,
@@ -492,7 +525,7 @@ _HitTestResult? _hitTest({
         nibSize,
       );
       if (inputRect.contains(testPosition)) {
-        return _HitTestResult(
+        return HitTestResult(
           node: node,
           isOutput: false,
           channel: inputName,
@@ -512,7 +545,7 @@ _HitTestResult? _hitTest({
         nibSize,
       );
       if (outputRect.contains(testPosition)) {
-        return _HitTestResult(
+        return HitTestResult(
           node: node,
           isOutput: true,
           channel: outputName,
@@ -529,7 +562,9 @@ _HitTestResult? _hitTest({
       rootRenderBox.size.height,
     );
     if (rootRect.contains(testPosition)) {
-      return _HitTestResult(node: node);
+      return HitTestResult(
+        node: node,
+      );
     }
   }
   return null;
@@ -540,29 +575,35 @@ class MyFancyPainter extends CustomPainter {
   final double nibSize;
   final Graph graph;
   final NodeKeys nodeKeys;
+  final List<Candidate> candidates;
+  final Offset? cursor;
+
+  final connectionPaint = Paint()
+    ..strokeWidth = 2
+    ..color = Colors.white.withAlpha(128)
+    ..style = PaintingStyle.stroke;
+
+  final candidatePaint = Paint()
+    ..strokeWidth = 2
+    ..color = Colors.yellow.withAlpha(128)
+    ..style = PaintingStyle.stroke;
 
   MyFancyPainter({
     required this.origin,
     required this.nibSize,
     required this.graph,
     required this.nodeKeys,
+    required this.candidates,
+    this.cursor,
   });
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..strokeWidth = 2
-      ..color = Colors.white.withAlpha(128)
-      ..style = PaintingStyle.stroke;
-    //final arc = Path();
-    //arc.moveTo(200, 200);
-    //arc.cubicTo(400, 200, 400, 400, 600, 400);
-    //canvas.drawPath(arc, paint);
+  double get halfNibSize => nibSize / 2;
+
+  void drawConnections(Canvas canvas, Size size) {
     final originRenderBox =
         origin.currentContext!.findRenderObject() as RenderBox;
     final originOffset =
         originRenderBox.localToGlobal(Offset.zero).scale(-1, -1);
-    final halfNibSize = nibSize / 2;
     graph.nodes.where((node) => node.inputLinks.isNotEmpty).forEach((node) {
       node.inputLinks.forEach((key, value) {
         if (value == null) return;
@@ -588,9 +629,46 @@ class MyFancyPainter extends CustomPainter {
           outputOffset.dx + halfNibSize,
           outputOffset.dy + halfNibSize,
         );
-        canvas.drawPath(path, paint);
+        canvas.drawPath(path, connectionPaint);
       });
     });
+  }
+
+  void drawCandidates(Canvas canvas, Size size) {
+    if (cursor == null) return;
+    final originRenderBox =
+        origin.currentContext!.findRenderObject() as RenderBox;
+    final originOffset =
+        originRenderBox.localToGlobal(Offset.zero).scale(-1, -1);
+    for (var candidate in candidates) {
+      final node = nodeKeys.nodes[candidate.hitTest.node.id]!;
+      final candidateKey = candidate.hitTest.isOutput
+          ? node.outputKeys[candidate.hitTest.channel]!
+          : node.inputKeys[candidate.hitTest.channel]!;
+      final renderBox =
+          candidateKey.currentContext!.findRenderObject() as RenderBox;
+      final offset = renderBox.localToGlobal(originOffset);
+      final offsetCursor = cursor!;
+      final path = Path();
+      path.moveTo(offset.dx + halfNibSize, offset.dy + halfNibSize);
+      final hx = (offset.dx + offsetCursor.dx) / 2 + halfNibSize;
+      final hy = (offset.dy + offsetCursor.dy) / 2 + halfNibSize;
+      path.cubicTo(
+        hx + halfNibSize,
+        offset.dy + halfNibSize,
+        hx,
+        hy,
+        offsetCursor.dx,
+        offsetCursor.dy,
+      );
+      canvas.drawPath(path, candidatePaint);
+    }
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    drawConnections(canvas, size);
+    drawCandidates(canvas, size);
   }
 
   @override
