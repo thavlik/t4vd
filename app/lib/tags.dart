@@ -138,7 +138,9 @@ class _TagsPageState extends State<TagsPage> {
     final model = ScopedModel.of<BJJModel>(context);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       if (!mounted) return;
-      if (model.markers.isEmpty || model.markerIndex == model.markers.length) {
+      if (model.markers == null ||
+          model.markers!.isEmpty ||
+          model.markerIndex == model.markers!.length) {
         setState(() => _loading = true);
         try {
           await model.refreshMarkers(Navigator.of(context));
@@ -248,27 +250,30 @@ class _TagsPageState extends State<TagsPage> {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 256,
-                        child: TextField(
-                          controller: _textController,
-                          autofocus: true,
-                          focusNode: _textNode,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (value) => addTag(value),
+                  child: Visibility(
+                    visible: model.markers?.isNotEmpty ?? false,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 256,
+                          child: TextField(
+                            controller: _textController,
+                            autofocus: true,
+                            focusNode: _textNode,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (value) => addTag(value),
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        onPressed: () => addTag(_textController.text),
-                        icon: Icon(
-                          Icons.send,
-                          color: Theme.of(context).iconTheme.color,
-                        ),
-                      )
-                    ],
+                        IconButton(
+                          onPressed: () => addTag(_textController.text),
+                          icon: Icon(
+                            Icons.send,
+                            color: Theme.of(context).iconTheme.color,
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 48),
@@ -317,6 +322,10 @@ class _TagsPageState extends State<TagsPage> {
                     },
                     child: const Icon(Icons.open_in_browser),
                   )),
+            if (model.markers != null && model.markers!.isEmpty)
+              const Center(
+                  child: Text(
+                      'The project is empty. Go to the Sources tab to add some videos.')),
             if (_loading)
               const Center(
                 child: CircularProgressIndicator(),

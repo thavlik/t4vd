@@ -104,6 +104,15 @@ var (
 		Help: "Auto-generated metric incremented on every call to Sources.GetProjectIDsForVideo that does not return with an error",
 	})
 
+	sourcesIsProjectEmptyTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "sources_is_project_empty_total",
+		Help: "Auto-generated metric incremented on every call to Sources.IsProjectEmpty",
+	})
+	sourcesIsProjectEmptySuccessTotal = promauto.NewCounter(prometheus.CounterOpts{
+		Name: "sources_is_project_empty_success_total",
+		Help: "Auto-generated metric incremented on every call to Sources.IsProjectEmpty that does not return with an error",
+	})
+
 	sourcesListChannelIDsTotal = promauto.NewCounter(prometheus.CounterOpts{
 		Name: "sources_list_channel_ids_total",
 		Help: "Auto-generated metric incremented on every call to Sources.ListChannelIDs",
@@ -206,6 +215,7 @@ type Sources interface {
 	GetProjectIDsForChannel(context.Context, GetProjectIDsForChannelRequest) (*GetProjectIDsForChannelResponse, error)
 	GetProjectIDsForPlaylist(context.Context, GetProjectIDsForPlaylistRequest) (*GetProjectIDsForPlaylistResponse, error)
 	GetProjectIDsForVideo(context.Context, GetProjectIDsForVideoRequest) (*GetProjectIDsForVideoResponse, error)
+	IsProjectEmpty(context.Context, IsProjectEmptyRequest) (*IsProjectEmptyResponse, error)
 	ListChannelIDs(context.Context, ListChannelIDsRequest) (*ListChannelIDsResponse, error)
 	ListChannels(context.Context, ListChannelsRequest) (*ListChannelsResponse, error)
 	ListPlaylistIDs(context.Context, ListPlaylistIDsRequest) (*ListPlaylistIDsResponse, error)
@@ -238,6 +248,7 @@ func RegisterSources(server *otohttp.Server, sources Sources) {
 	server.Register("Sources", "GetProjectIDsForChannel", handler.handleGetProjectIDsForChannel)
 	server.Register("Sources", "GetProjectIDsForPlaylist", handler.handleGetProjectIDsForPlaylist)
 	server.Register("Sources", "GetProjectIDsForVideo", handler.handleGetProjectIDsForVideo)
+	server.Register("Sources", "IsProjectEmpty", handler.handleIsProjectEmpty)
 	server.Register("Sources", "ListChannelIDs", handler.handleListChannelIDs)
 	server.Register("Sources", "ListChannels", handler.handleListChannels)
 	server.Register("Sources", "ListPlaylistIDs", handler.handleListPlaylistIDs)
@@ -448,6 +459,26 @@ func (s *sourcesServer) handleGetProjectIDsForVideo(w http.ResponseWriter, r *ht
 		return
 	}
 	sourcesGetProjectIDsForVideoSuccessTotal.Inc()
+}
+
+func (s *sourcesServer) handleIsProjectEmpty(w http.ResponseWriter, r *http.Request) {
+	sourcesIsProjectEmptyTotal.Inc()
+	var request IsProjectEmptyRequest
+	if err := otohttp.Decode(r, &request); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	response, err := s.sources.IsProjectEmpty(r.Context(), request)
+	if err != nil {
+		log.Println("TODO: oto service error:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if err := otohttp.Encode(w, r, http.StatusOK, response); err != nil {
+		s.server.OnErr(w, r, err)
+		return
+	}
+	sourcesIsProjectEmptySuccessTotal.Inc()
 }
 
 func (s *sourcesServer) handleListChannelIDs(w http.ResponseWriter, r *http.Request) {
@@ -722,6 +753,15 @@ type GetProjectIDsForVideoRequest struct {
 type GetProjectIDsForVideoResponse struct {
 	ProjectIDs []string `json:"projectIDs"`
 	Error      string   `json:"error,omitempty"`
+}
+
+type IsProjectEmptyRequest struct {
+	ProjectID string `json:"projectID"`
+}
+
+type IsProjectEmptyResponse struct {
+	IsEmpty bool   `json:"isEmpty"`
+	Error   string `json:"error,omitempty"`
 }
 
 type ListChannelIDsRequest struct {

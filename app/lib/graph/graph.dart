@@ -88,7 +88,7 @@ class Graph {
         color: Colors.deepPurple,
         inputs: [
           NodeChannelMeta(
-            name: "default",
+            name: "frames",
             color: Colors.green,
           )
         ],
@@ -102,13 +102,13 @@ class Graph {
             color: Colors.green,
           ),
           NodeChannelMeta(
-            name: "discard",
+            name: "reject",
             color: Colors.red,
           ),
         ],
       ),
       inputLinks: {
-        "default": NodeDataRef(
+        "frames": NodeDataRef(
           id: "0",
           channel: "frames",
         ),
@@ -455,7 +455,7 @@ class _GraphPageState extends State<GraphPage> {
             body: Stack(
               children: [
                 CustomPaint(
-                  painter: MyFancyPainter(
+                  painter: MyPainter(
                     origin: origin,
                     nibSize: nibSize,
                     graph: graph,
@@ -570,7 +570,7 @@ HitTestResult? _hitTest({
   return null;
 }
 
-class MyFancyPainter extends CustomPainter {
+class MyPainter extends CustomPainter {
   final GlobalKey origin;
   final double nibSize;
   final Graph graph;
@@ -585,10 +585,10 @@ class MyFancyPainter extends CustomPainter {
 
   final candidatePaint = Paint()
     ..strokeWidth = 2
-    ..color = Colors.yellow.withAlpha(128)
+    ..color = Colors.yellow.withAlpha(192)
     ..style = PaintingStyle.stroke;
 
-  MyFancyPainter({
+  MyPainter({
     required this.origin,
     required this.nibSize,
     required this.graph,

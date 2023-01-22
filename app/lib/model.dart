@@ -148,13 +148,14 @@ class BJJModel extends Model {
   List<api.Playlist> get playlists => _playlists;
   List<api.Channel> get channels => _channels;
   List<api.Video> get videos => _videos;
-  List<api.Marker> get markers => _markers;
+  List<api.Marker>? get markers => _markers;
   int get markerIndex => _markerIndex;
   String? get loginErr => _loginErr;
   UserCredentials? get creds => _creds;
-  api.Marker? get currentMarker =>
-      _markers.isNotEmpty && _markerIndex < _markers.length
-          ? _markers[_markerIndex]
+  api.Marker? get currentMarker => _markers == null
+      ? null
+      : _markers!.isNotEmpty && _markerIndex < _markers!.length
+          ? _markers![_markerIndex]
           : null;
   bool get isLoggedIn => _creds != null;
   bool get hasProject => _project != null;
@@ -166,7 +167,7 @@ class BJJModel extends Model {
   List<api.Playlist> _playlists = [];
   List<api.Channel> _channels = [];
   List<api.Video> _videos = [];
-  List<api.Marker> _markers = [];
+  List<api.Marker>? _markers;
   final Map<String, List<String>> _tags = {};
 
   List<String>? getTags(api.Marker marker) => _tags[marker.hash];
@@ -395,8 +396,9 @@ class BJJModel extends Model {
   }
 
   void precacheFrames(BuildContext context) {
+    if (_markers == null) return;
     try {
-      for (var marker in _markers.sublist(_markerIndex)) {
+      for (var marker in _markers!.sublist(_markerIndex)) {
         precacheImage(
           NetworkImage(api.videoThumbnail(marker.videoId)),
           context,
@@ -505,24 +507,37 @@ class BJJModel extends Model {
   Future<void> refreshMarkers(NavigatorState nav) async {
     await withAuth(nav, () async {
       await ensureProject(nav);
-      _markers = [
-        await api.getRandomMarker(
-          projectId: _project!.id,
-          creds: creds!,
-        )
-      ];
+      try {
+        _markers = [
+          await api.getRandomMarker(
+            projectId: _project!.id,
+            creds: creds!,
+          )
+        ];
+      } on api.ResourceNotFoundError {
+        // the project is empty
+        _markers = [];
+      }
       _markerIndex = 0;
       notifyListeners();
     });
   }
 
   void _checkStack() {
-    final remaining = _markers.length - _markerIndex;
+    if (_markers == null) return;
+    final remaining = _markers!.length - _markerIndex;
     if (remaining < 3) {
       // asynchronously get another stack
       api.getStack(projectId: _project!.id, creds: creds!).then((value) {
-        _markers.addAll(value);
+        _markers ??= [];
+        _markers!.addAll(value);
         notifyListeners();
+      }).catchError((err) {
+        if (err is api.ResourceNotFoundError) {
+          // the project is empty
+        } else {
+          throw err;
+        }
       });
     }
   }
@@ -545,7 +560,7 @@ class BJJModel extends Model {
   }) async {
     await withAuth(nav, () async {
       await ensureProject(nav);
-      final cur = _markers[_markerIndex];
+      final cur = _markers![_markerIndex];
       await api.classifyMarker(
         projectId: _project!.id,
         videoId: cur.videoId,
@@ -565,7 +580,7 @@ class BJJModel extends Model {
   }) async {
     await withAuth(nav, () async {
       await ensureProject(nav);
-      final cur = _markers[_markerIndex];
+      final cur = _markers![_markerIndex];
       await api.tagMarker(
         projectId: _project!.id,
         videoId: cur.videoId,
@@ -575,11 +590,11 @@ class BJJModel extends Model {
       );
       _tags[cur.hash] = tags;
       _markerIndex++;
-      final remaining = _markers.length - _markerIndex;
+      final remaining = _markers!.length - _markerIndex;
       if (remaining < 3) {
         // asynchronously get another stack
         api.getStack(projectId: _project!.id, creds: creds!).then((value) {
-          _markers.addAll(value);
+          _markers!.addAll(value);
           notifyListeners();
         });
       }

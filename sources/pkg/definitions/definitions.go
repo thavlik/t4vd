@@ -6,6 +6,7 @@ type Sources interface {
 	ListProjects(ListProjectsRequest) ListProjectsResponse
 	GetProject(GetProject) Project
 	GetProjectByName(GetProjectByName) Project
+	IsProjectEmpty(IsProjectEmptyRequest) IsProjectEmptyResponse
 
 	GetProjectIDsForChannel(GetProjectIDsForChannelRequest) GetProjectIDsForChannelResponse
 	GetProjectIDsForPlaylist(GetProjectIDsForPlaylistRequest) GetProjectIDsForPlaylistResponse
@@ -26,6 +27,14 @@ type Sources interface {
 	RemoveChannel(RemoveChannelRequest) Void
 	RemovePlaylist(RemovePlaylistRequest) Void
 	RemoveVideo(RemoveVideoRequest) Void
+}
+
+type IsProjectEmptyRequest struct {
+	ProjectID string `json:"projectID"`
+}
+
+type IsProjectEmptyResponse struct {
+	IsEmpty bool `json:"isEmpty"`
 }
 
 type Void struct{}

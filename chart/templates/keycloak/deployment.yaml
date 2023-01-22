@@ -37,10 +37,6 @@ spec:
           httpGet:
             path: /realms/master
             port: 8080
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 80
         env:
         - name: KEYCLOAK_ADMIN
 {{ tpl (toYaml .Values.iam.keycloak.admin.username) . | indent 10 }}

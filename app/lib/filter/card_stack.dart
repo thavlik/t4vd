@@ -28,7 +28,9 @@ class _CardStackState extends State<CardStack> {
     final model = ScopedModel.of<BJJModel>(context);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       if (!mounted) return;
-      if (model.markers.isEmpty || model.markerIndex == model.markers.length) {
+      if (model.markers == null ||
+          model.markers!.isEmpty ||
+          model.markerIndex == model.markers!.length) {
         setState(() => _loading = true);
         try {
           await model.refreshMarkers(Navigator.of(context));
@@ -102,6 +104,10 @@ class _CardStackState extends State<CardStack> {
                       )),
                 ],
               ),
+            if (!_loading && model.markers != null && model.markers!.isEmpty)
+              const Center(
+                  child: Text(
+                      'The project is empty. Go to the Sources tab to add some videos.')),
             Visibility(
               visible: model.markerIndex > 0,
               child: Positioned(

@@ -23,6 +23,7 @@ type Store interface {
 	GetProjectIDsForChannel(ctx context.Context, channelID string) ([]string, error)
 	GetProjectIDsForPlaylist(ctx context.Context, playlistID string) ([]string, error)
 	GetProjectIDsForVideo(ctx context.Context, videoID string) ([]string, error)
+	IsProjectEmpty(ctx context.Context, projectID string) (bool, error)
 	AddChannel(projectID string, channel *api.Channel) error
 	AddPlaylist(projectID string, playlist *api.Playlist) error
 	AddVideo(projectID string, video *api.Video) error

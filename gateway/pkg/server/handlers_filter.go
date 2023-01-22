@@ -9,6 +9,7 @@ import (
 	"github.com/thavlik/t4vd/base/pkg/iam"
 	filter "github.com/thavlik/t4vd/filter/pkg/api"
 	slideshow "github.com/thavlik/t4vd/slideshow/pkg/api"
+	sources "github.com/thavlik/t4vd/sources/pkg/api"
 )
 
 func (s *Server) handleGetFilterStack() http.HandlerFunc {
@@ -23,6 +24,16 @@ func (s *Server) handleGetFilterStack() http.HandlerFunc {
 			}
 			if err := s.ProjectAccess(r.Context(), userID, projectID); err != nil {
 				w.WriteHeader(http.StatusForbidden)
+				return nil
+			}
+			if resp, err := s.sources.IsProjectEmpty(r.Context(), sources.IsProjectEmptyRequest{
+				ProjectID: projectID,
+			}); err != nil {
+				return errors.Wrap(err, "sources")
+			} else if resp.IsEmpty {
+				// Project is empty, return 404.
+				w.WriteHeader(http.StatusNotFound)
+				w.Write([]byte("project is empty"))
 				return nil
 			}
 			var size int64 = 5
