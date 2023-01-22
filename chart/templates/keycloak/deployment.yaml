@@ -21,8 +21,7 @@ spec:
         image: {{ .Values.iam.keycloak.image }}
         args:
         - start
-        - --db=postgres
-        - --features=token-exchange
+        - --optimized
         - --http-enabled=true
         - --hostname-strict-https=false
         - --hostname-strict=false
@@ -35,7 +34,11 @@ spec:
           containerPort: 8080
         readinessProbe:
           httpGet:
-            path: /realms/master
+            path: /health/ready
+            port: 8080
+        livenessProbe:
+          httpGet:
+            path: /health/live
             port: 8080
         env:
         - name: KEYCLOAK_ADMIN
