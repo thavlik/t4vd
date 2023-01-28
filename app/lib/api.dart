@@ -528,9 +528,11 @@ Future<void> removeVideo({
 Future<List<Marker>> getStack({
   required String projectId,
   required UserCredentials creds,
+  int? size,
 }) async {
   final url = Uri.https(apiHost, 'filter/stack', {
     'p': projectId,
+    if (size != null) 's': size.toString(),
   });
   final response = await http.get(url, headers: {
     'AccessToken': creds.accessToken,

@@ -1,7 +1,7 @@
 .DS_Store
 */charts/*.tgz
 /target/
-.vscode/
+/.vscode/
 __pycache__
 secrets/*
 cmd/cmd

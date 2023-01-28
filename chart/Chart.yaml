@@ -1,6 +1,6 @@
 apiVersion: v2
-description: Brazilian Jiu-jitsu Vision Backend
-name: application
+description: Collaborative data labeling platform
+name: t4vd
 version: 0.0.1
 maintainers:
   - name: Tom Havlik
