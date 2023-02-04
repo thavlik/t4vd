@@ -81,7 +81,7 @@ func (s *Server) AdminListenAndServe(port int) error {
 	mux.Handle("/", otoServer)
 	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
-	s.log.Info("listening forever", zap.Int("port", port))
+	s.log.Info("iam admin listening forever", zap.Int("port", port))
 	return (&http.Server{
 		Handler:      mux,
 		Addr:         fmt.Sprintf("0.0.0.0:%d", port),
@@ -128,7 +128,7 @@ func (s *Server) ListenAndServe(port int) error {
 		mux.HandleFunc("/user/resetpassword", s.handleSetPassword())
 		mux.HandleFunc("/user/exists", s.handleUserExists())
 	}
-	s.log.Info("listening forever", zap.Int("port", port))
+	s.log.Info("public api listening forever", zap.Int("port", port))
 	return (&http.Server{
 		Handler:      mux,
 		Addr:         fmt.Sprintf("0.0.0.0:%d", port),

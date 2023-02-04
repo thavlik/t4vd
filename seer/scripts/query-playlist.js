@@ -13,29 +13,31 @@ const querystring = require('node:querystring');
     const id = queryParts['list'];
 
     const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.goto(url);
+    try {
+        const page = await browser.newPage();
+        await page.goto(url);
 
-    const titleEl = await page.waitForSelector('h3.ytd-playlist-panel-renderer a');
-    const title = await page.$eval("h3.ytd-playlist-panel-renderer a", element => element.textContent);
-    await titleEl.dispose();
+        const titleEl = await page.waitForSelector('h3.ytd-playlist-panel-renderer a');
+        const title = await page.$eval("h3.ytd-playlist-panel-renderer a", element => element.textContent);
+        await titleEl.dispose();
 
-    const channelEl = await page.waitForSelector('#publisher-container yt-formatted-string.publisher a');
-    const channel = await page.$eval("#publisher-container yt-formatted-string.publisher a", element => element.textContent);
-    const channelID = (await page.$eval("#publisher-container yt-formatted-string.publisher a", element => element.getAttribute('href'))).slice(1);
-    const numVideos = Number(await page.$eval("#publisher-container > div.index-message-wrapper yt-formatted-string span:last-child", element => element.textContent));
-    await channelEl.dispose();
+        const channelEl = await page.waitForSelector('#publisher-container yt-formatted-string.publisher a');
+        const channel = await page.$eval("#publisher-container yt-formatted-string.publisher a", element => element.textContent);
+        const channelID = (await page.$eval("#publisher-container yt-formatted-string.publisher a", element => element.getAttribute('href'))).slice(1);
+        const numVideos = Number(await page.$eval("#publisher-container > div.index-message-wrapper yt-formatted-string span:last-child", element => element.textContent));
+        await channelEl.dispose();
 
 
-    // output json must conform to seer API's PlaylistDetails
-    console.log(JSON.stringify({
-        id,
-        title,
-        channel,
-        channelID,
-        numVideos,
-    }));
-
-    await browser.close();
+        // output json must conform to seer API's PlaylistDetails
+        console.log(JSON.stringify({
+            id,
+            title,
+            channel,
+            channelID,
+            numVideos,
+        }));
+    } finally {
+        await browser.close();
+    }
 })();
 

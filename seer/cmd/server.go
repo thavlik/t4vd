@@ -89,7 +89,10 @@ func initCachedSet(redis *redis.Client, log *zap.Logger) cachedset.CachedSet {
 	panic(errors.New("missing cached set source"))
 }
 
-func initPubSub(redis *redis.Client, log *zap.Logger) pubsub.PubSub {
+func initPubSub(
+	redis *redis.Client,
+	log *zap.Logger,
+) pubsub.PubSub {
 	if redis != nil {
 		return redis_pubsub.NewRedisPubSub(
 			redis,
@@ -99,7 +102,10 @@ func initPubSub(redis *redis.Client, log *zap.Logger) pubsub.PubSub {
 	return memory_pubsub.NewMemoryPubSub(log)
 }
 
-func initScheduler(redis *redis.Client, name string) scheduler.Scheduler {
+func initScheduler(
+	redis *redis.Client,
+	name string,
+) scheduler.Scheduler {
 	if redis != nil {
 		return redis_scheduler.NewRedisScheduler(
 			redis,
