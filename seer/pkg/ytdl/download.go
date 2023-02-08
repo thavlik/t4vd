@@ -39,7 +39,7 @@ func Download(
 		}
 		// video only
 		command = fmt.Sprintf(
-			`youtube-dl -f "bestvideo[ext=%s]/%s" -o - -- "%s"`,
+			`youtube-dl --ignore-errors -f "bestvideo[ext=%s]/%s" -o - -- "%s"`,
 			options.VideoFormat,
 			options.VideoFormat,
 			input,
@@ -51,7 +51,7 @@ func Download(
 			sr = 44100 // default
 		}
 		command = fmt.Sprintf(
-			`youtube-dl -o - -f bestaudio --extract-audio --audio-format %s --audio-quality 0 --postprocessor-args "-osr %d -ac %d" -- %s`,
+			`youtube-dl --ignore-errors -o - -f bestaudio --extract-audio --audio-format %s --audio-quality 0 --postprocessor-args "-osr %d -ac %d" -- %s`,
 			options.AudioFormat,
 			sr,
 			options.AudioChannelCount,
@@ -60,7 +60,7 @@ func Download(
 	} else {
 		// audio and video
 		command = fmt.Sprintf(
-			`youtube-dl --merge-output-format %s -f "bestvideo[ext=%s]+bestaudio[ext=%s]/bestvideo+bestaudio" -o - -- "%s"`,
+			`youtube-dl --ignore-errors --merge-output-format %s -f "bestvideo[ext=%s]+bestaudio[ext=%s]/bestvideo+bestaudio" -o - -- "%s"`,
 			options.VideoFormat,
 			options.VideoFormat,
 			options.AudioFormat,
