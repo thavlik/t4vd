@@ -13,7 +13,7 @@ import (
 )
 
 func (s *s3VidCache) Get(ctx context.Context, videoID string, w io.Writer) error {
-	key := videoKey(videoID)
+	key := videoKey(videoID, s.format)
 	sess := s3.New(base.AWSSession())
 	result, err := sess.GetObjectWithContext(
 		ctx,

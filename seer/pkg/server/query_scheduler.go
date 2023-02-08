@@ -230,13 +230,15 @@ func queryWorker(
 					}
 				}
 				base.Progress(ctx, onProgress)
-				if err := cachePlaylistThumbnail(
-					ctx,
-					e.ID,
-					thumbCache,
-					entityLog,
-				); err != nil {
-					return errors.Wrap(err, "failed to download playlist thumbnail")
+				if thumbCache != nil {
+					if err := cachePlaylistThumbnail(
+						ctx,
+						e.ID,
+						thumbCache,
+						entityLog,
+					); err != nil {
+						return errors.Wrap(err, "failed to download playlist thumbnail")
+					}
 				}
 			case channel:
 				var channel *api.ChannelDetails
@@ -306,14 +308,16 @@ func queryWorker(
 					}
 				}
 				base.Progress(ctx, onProgress)
-				if err := cacheChannelAvatar(
-					ctx,
-					e.ID,
-					channel.Avatar,
-					thumbCache,
-					entityLog,
-				); err != nil {
-					return errors.Wrap(err, "failed to download channel avatar")
+				if thumbCache != nil {
+					if err := cacheChannelAvatar(
+						ctx,
+						e.ID,
+						channel.Avatar,
+						thumbCache,
+						entityLog,
+					); err != nil {
+						return errors.Wrap(err, "failed to download channel avatar")
+					}
 				}
 			case video:
 				if recent, err := infoCache.IsVideoRecent(e.ID); err != nil {
@@ -331,13 +335,15 @@ func queryWorker(
 					go reportVideoDetails(ctx, video, houndClient, log)
 				}
 				base.Progress(ctx, onProgress)
-				if err := cacheVideoThumbnail(
-					ctx,
-					e.ID,
-					thumbCache,
-					entityLog,
-				); err != nil {
-					return errors.Wrap(err, "failed to download video thumbnail")
+				if thumbCache != nil {
+					if err := cacheVideoThumbnail(
+						ctx,
+						e.ID,
+						thumbCache,
+						entityLog,
+					); err != nil {
+						return errors.Wrap(err, "failed to download video thumbnail")
+					}
 				}
 			default:
 				panic(base.Unreachable)

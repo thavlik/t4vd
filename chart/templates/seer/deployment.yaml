@@ -30,6 +30,24 @@ spec:
           - server
           - --hound-endpoint
           - "http://{{ .Release.Name }}-hound:80"
+          - --audio-channel-count
+          - {{ .Values.seer.audioChannelCount }}
+        {{- if .Values.seer.audioSampleRate }}
+          - --audio-sample-rate
+          - {{ .Values.seer.audioSampleRate }}
+        {{- end }}
+        {{- if .Values.seer.skipAudio }}
+          - --skip-audio
+        {{- else if .Values.seer.audioFormat }}
+          - --audio-format
+          - {{ .Values.seer.audioFormat }}
+        {{- end }}
+        {{- if .Values.seer.skipVideo }}
+          - --skip-video
+        {{- else if .Values.seer.videoFormat }}
+          - --video-format
+          - {{ .Values.seer.videoFormat }}
+        {{- end }}
         {{- if .Values.seer.disableDownloads }}
           - --disable-downloads
         {{- end }}

@@ -26,8 +26,6 @@ type Server struct {
 	vidCache       vidcache.VidCache
 	thumbCache     thumbcache.ThumbCache
 	cachedVideoIDs cachedset.CachedSet
-	videoFormat    string
-	includeAudio   bool
 	log            *zap.Logger
 }
 
@@ -39,8 +37,6 @@ func NewServer(
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
 	cachedVideoIDs cachedset.CachedSet,
-	videoFormat string,
-	includeAudio bool,
 	log *zap.Logger,
 ) *Server {
 	return &Server{
@@ -51,8 +47,6 @@ func NewServer(
 		vidCache,
 		thumbCache,
 		cachedVideoIDs,
-		videoFormat,
-		includeAudio,
 		log,
 	}
 }
@@ -65,9 +59,11 @@ func (s *Server) ListenAndServe(port int) error {
 	mux.HandleFunc("/channel/videos", s.handleGetChannelVideoIDs())
 	mux.HandleFunc("/playlist/videos", s.handleGetPlaylistVideoIDs())
 	mux.HandleFunc("/video", s.handleGetVideo())
-	mux.HandleFunc("/video/thumbnail", s.handleGetVideoThumbnail())
-	mux.HandleFunc("/playlist/thumbnail", s.handleGetPlaylistThumbnail())
-	mux.HandleFunc("/channel/avatar", s.handleGetChannelAvatar())
+	if s.thumbCache != nil {
+		mux.HandleFunc("/video/thumbnail", s.handleGetVideoThumbnail())
+		mux.HandleFunc("/playlist/thumbnail", s.handleGetPlaylistThumbnail())
+		mux.HandleFunc("/channel/avatar", s.handleGetChannelAvatar())
+	}
 	mux.HandleFunc("/healthz", base.HealthHandler)
 	mux.HandleFunc("/readyz", base.ReadyHandler)
 	s.log.Info("listening forever", zap.Int("port", port))

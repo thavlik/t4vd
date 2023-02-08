@@ -16,7 +16,10 @@ type s3ThumbCache struct {
 	log        *zap.Logger
 }
 
-func NewS3ThumbCache(bucketName string, log *zap.Logger) thumbcache.ThumbCache {
+func NewS3ThumbCache(
+	bucketName string,
+	log *zap.Logger,
+) thumbcache.ThumbCache {
 	return &s3ThumbCache{bucketName, log}
 }
 

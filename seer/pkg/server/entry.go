@@ -12,6 +12,7 @@ import (
 	"github.com/thavlik/t4vd/seer/pkg/infocache"
 	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
+	"github.com/thavlik/t4vd/seer/pkg/ytdl"
 	"go.uber.org/zap"
 )
 
@@ -29,8 +30,7 @@ func Entry(
 	thumbCache thumbcache.ThumbCache,
 	cachedVideoIDs cachedset.CachedSet,
 	hound hound.Hound,
-	videoFormat string,
-	includeAudio bool,
+	dlOpts *ytdl.Options,
 	concurrency int,
 	disableDownloads bool,
 	log *zap.Logger,
@@ -46,8 +46,6 @@ func Entry(
 		vidCache,
 		thumbCache,
 		cachedVideoIDs,
-		videoFormat,
-		includeAudio,
 		log,
 	)
 
@@ -82,8 +80,7 @@ func Entry(
 		vidCache,
 		thumbCache,
 		hound,
-		videoFormat,
-		includeAudio,
+		dlOpts,
 		disableDownloads,
 		stopPopDl,
 		log,

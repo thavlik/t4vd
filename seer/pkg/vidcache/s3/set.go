@@ -11,7 +11,7 @@ import (
 )
 
 func (s *s3VidCache) Set(videoID string, r io.Reader) (err error) {
-	key := videoKey(videoID)
+	key := videoKey(videoID, s.format)
 	log := s.log.With(
 		zap.String("bucket", s.bucketName),
 		zap.String("key", key))

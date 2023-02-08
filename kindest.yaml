@@ -103,6 +103,7 @@ env:
           seer:
             enabled: true
             disableDownloads: true
+            skipAudio: true
             replicas: 1
           slideshow:
             enabled: true

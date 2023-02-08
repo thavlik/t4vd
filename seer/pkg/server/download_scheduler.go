@@ -10,6 +10,7 @@ import (
 	hound "github.com/thavlik/t4vd/hound/pkg/api"
 	"github.com/thavlik/t4vd/seer/pkg/thumbcache"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
+	"github.com/thavlik/t4vd/seer/pkg/ytdl"
 	"go.uber.org/zap"
 )
 
@@ -20,8 +21,7 @@ func initDownloadWorkers(
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
 	hound hound.Hound,
-	videoFormat string,
-	includeAudio bool,
+	dlOpts *ytdl.Options,
 	disableDownloads bool,
 	stop <-chan struct{},
 	log *zap.Logger,
@@ -39,8 +39,7 @@ func initDownloadWorkers(
 			vidCache,
 			thumbCache,
 			hound,
-			videoFormat,
-			includeAudio,
+			dlOpts,
 			disableDownloads,
 			log,
 		)
@@ -101,8 +100,7 @@ func downloadWorker(
 	vidCache vidcache.VidCache,
 	thumbCache thumbcache.ThumbCache,
 	houndClient hound.Hound,
-	videoFormat string,
-	includeAudio bool,
+	dlOpts *ytdl.Options,
 	disableDownloads bool,
 	log *zap.Logger,
 ) {
@@ -183,8 +181,7 @@ func downloadWorker(
 				ctx,
 				videoID,
 				vidCache,
-				videoFormat,
-				includeAudio,
+				dlOpts,
 				disableDownloads,
 				onProgress,
 				videoLog,

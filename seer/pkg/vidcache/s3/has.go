@@ -14,7 +14,7 @@ func (s *s3VidCache) Has(
 	ctx context.Context,
 	videoID string,
 ) (bool, error) {
-	key := videoKey(videoID)
+	key := videoKey(videoID, s.format)
 	sess := s3.New(base.AWSSession())
 	head, err := sess.HeadObjectWithContext(
 		ctx,

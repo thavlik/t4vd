@@ -146,7 +146,14 @@ sources:
 
 seer:
   enabled: true
-  format: webm # download format
+  
+  skipAudio: false
+  audioFormat: webm
+  audioChannelCount: 1
+  audioSampleRate: 44100
+
+  skipVideo: false
+  videoFormat: webm
   
   # prohibit all video downloads, but
   # allow info queries from youtube

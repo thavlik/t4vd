@@ -10,7 +10,7 @@ import (
 )
 
 func (s *s3VidCache) Del(videoID string) error {
-	key := videoKey(videoID)
+	key := videoKey(videoID, s.format)
 	log := s.log.With(
 		zap.String("bucket", s.bucketName),
 		zap.String("key", key))

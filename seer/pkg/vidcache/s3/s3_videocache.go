@@ -13,15 +13,24 @@ import (
 
 type s3VidCache struct {
 	bucketName string
+	format     string
 	log        *zap.Logger
 }
 
-func NewS3VidCache(bucketName string, log *zap.Logger) vidcache.VidCache {
-	return &s3VidCache{bucketName, log}
+func NewS3VidCache(
+	bucketName string,
+	format string,
+	log *zap.Logger,
+) vidcache.VidCache {
+	return &s3VidCache{
+		bucketName,
+		format,
+		log,
+	}
 }
 
-func videoKey(id string) string {
-	return fmt.Sprintf("%s.webm", id)
+func videoKey(id, format string) string {
+	return fmt.Sprintf("%s.%s", id, format)
 }
 
 func freeMultipartUploads(

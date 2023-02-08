@@ -24,20 +24,25 @@ import (
 	s3_thumbcache "github.com/thavlik/t4vd/seer/pkg/thumbcache/s3"
 	"github.com/thavlik/t4vd/seer/pkg/vidcache"
 	s3_vidcache "github.com/thavlik/t4vd/seer/pkg/vidcache/s3"
+	"github.com/thavlik/t4vd/seer/pkg/ytdl"
 	"go.uber.org/zap"
 )
 
 var serverArgs struct {
 	base.ServerOptions
-	redis            base.RedisOptions
-	db               base.DatabaseOptions
-	hound            base.ServiceOptions
-	videoBucket      string
-	thumbnailBucket  string
-	videoFormat      string
-	includeAudio     bool
-	concurrency      int
-	disableDownloads bool
+	redis             base.RedisOptions
+	db                base.DatabaseOptions
+	hound             base.ServiceOptions
+	videoBucket       string
+	thumbnailBucket   string
+	videoFormat       string
+	audioFormat       string
+	audioChannelCount int
+	audioSampleRate   int
+	skipAudio         bool
+	skipVideo         bool
+	concurrency       int
+	disableDownloads  bool
 }
 
 var serverCmd = &cobra.Command{
@@ -49,7 +54,14 @@ var serverCmd = &cobra.Command{
 		base.ServiceEnv("hound", &serverArgs.hound)
 		base.CheckEnv("VIDEO_BUCKET", &serverArgs.videoBucket)
 		base.CheckEnv("VIDEO_FORMAT", &serverArgs.videoFormat)
-		base.CheckEnvBool("INCLUDE_AUDIO", &serverArgs.includeAudio)
+		base.CheckEnvInt("CONCURRENCY", &serverArgs.concurrency)
+		base.CheckEnvBool("DISABLE_DOWNLOADS", &serverArgs.disableDownloads)
+		base.CheckEnv("THUMBNAIL_BUCKET", &serverArgs.thumbnailBucket)
+		base.CheckEnvBool("SKIP_AUDIO", &serverArgs.skipAudio)
+		base.CheckEnvBool("SKIP_VIDEO", &serverArgs.skipVideo)
+		base.CheckEnv("AUDIO_FORMAT", &serverArgs.audioFormat)
+		base.CheckEnvInt("AUDIO_CHANNEL_COUNT", &serverArgs.audioChannelCount)
+		base.CheckEnvInt("AUDIO_SAMPLE_RATE", &serverArgs.audioSampleRate)
 		return nil
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
@@ -66,8 +78,14 @@ var serverCmd = &cobra.Command{
 			initThumbCache(log),
 			initCachedSet(redis, log),
 			hound.NewHoundClientFromOptions(serverArgs.hound),
-			serverArgs.videoFormat,
-			serverArgs.includeAudio,
+			&ytdl.Options{
+				VideoFormat:       serverArgs.videoFormat,
+				AudioFormat:       serverArgs.audioFormat,
+				SkipAudio:         serverArgs.skipAudio,
+				SkipVideo:         serverArgs.skipVideo,
+				AudioChannelCount: serverArgs.audioChannelCount,
+				AudioSampleRate:   serverArgs.audioSampleRate,
+			},
 			serverArgs.concurrency,
 			serverArgs.disableDownloads,
 			log,
@@ -118,7 +136,11 @@ func initScheduler(
 
 func initVidCache(log *zap.Logger) vidcache.VidCache {
 	if serverArgs.videoBucket != "" {
-		return s3_vidcache.NewS3VidCache(serverArgs.videoBucket, log)
+		return s3_vidcache.NewS3VidCache(
+			serverArgs.videoBucket,
+			serverArgs.videoFormat,
+			log,
+		)
 	} else {
 		panic(errors.New("missing video cache source"))
 	}
@@ -126,9 +148,13 @@ func initVidCache(log *zap.Logger) vidcache.VidCache {
 
 func initThumbCache(log *zap.Logger) thumbcache.ThumbCache {
 	if serverArgs.thumbnailBucket != "" {
-		return s3_thumbcache.NewS3ThumbCache(serverArgs.thumbnailBucket, log)
+		return s3_thumbcache.NewS3ThumbCache(
+			serverArgs.thumbnailBucket,
+			log,
+		)
 	} else {
-		panic(errors.New("missing thumbnail cache source"))
+		// don't cache thumbnails
+		return nil
 	}
 }
 
@@ -154,9 +180,13 @@ func init() {
 	base.AddServiceFlags(serverCmd, "hound", &serverArgs.hound, 10*time.Second)
 	serverCmd.PersistentFlags().IntVar(&serverArgs.concurrency, "concurrency", 1, "number of concurrent youtube queries (best set to 1 and increase # replicas)")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.videoBucket, "video-bucket", "", "full length video cache bucket name")
-	serverCmd.PersistentFlags().StringVar(&serverArgs.thumbnailBucket, "thumbnail-bucket", "", "thumbnail cache bucket name")
+	serverCmd.PersistentFlags().StringVar(&serverArgs.thumbnailBucket, "thumbnail-bucket", "", "thumbnail cache bucket name (optional)")
 	serverCmd.PersistentFlags().StringVar(&serverArgs.videoFormat, "video-format", "webm", "download video format")
-	serverCmd.PersistentFlags().BoolVar(&serverArgs.includeAudio, "include-audio", false, "download audio")
+	serverCmd.PersistentFlags().StringVar(&serverArgs.audioFormat, "audio-format", "webm", "download audio format")
+	serverCmd.PersistentFlags().IntVar(&serverArgs.audioChannelCount, "audio-channel-count", 1, "download audio channel count (1 = mono, 2 = stereo)")
+	serverCmd.PersistentFlags().IntVar(&serverArgs.audioSampleRate, "audio-sample-rate", 44100, "download audio sample rate")
+	serverCmd.PersistentFlags().BoolVar(&serverArgs.skipAudio, "skip-audio", false, "skip downloading audio")
+	serverCmd.PersistentFlags().BoolVar(&serverArgs.skipVideo, "skip-video", false, "skip downloading video")
 	serverCmd.PersistentFlags().BoolVar(&serverArgs.disableDownloads, "disable-downloads", false, "disable all downloads from youtube (info queries still allowed)")
 	ConfigureCommand(serverCmd)
 }
