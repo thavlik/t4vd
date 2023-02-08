@@ -173,7 +173,7 @@ func queryWorker(
 					return errors.Wrap(err, "infocache.IsPlaylistRecent")
 				} else if !recent {
 					playlist := &api.PlaylistDetails{}
-					if err := queryPlaylist(e.ID, playlist); err != nil {
+					if err := queryPlaylist(ctx, e.ID, playlist); err != nil {
 						return errors.Wrap(err, "failed to query playlist")
 					}
 					if err := infoCache.SetPlaylist(playlist); err != nil {
@@ -249,7 +249,7 @@ func queryWorker(
 					}
 				} else {
 					channel = &api.ChannelDetails{}
-					if err := queryChannel(e.ID, channel); err != nil {
+					if err := queryChannel(ctx, e.ID, channel); err != nil {
 						return errors.Wrap(err, "failed to query channel")
 					}
 					if err := infoCache.SetChannel(channel); err != nil {

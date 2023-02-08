@@ -10,7 +10,10 @@ import (
 	"go.uber.org/zap"
 )
 
-func queryVideoDetails(videoID string, log *zap.Logger) (*api.VideoDetails, error) {
+func queryVideoDetails(
+	videoID string,
+	log *zap.Logger,
+) (*api.VideoDetails, error) {
 	input := fmt.Sprintf("https://youtube.com/watch?v=%s", videoID)
 	videos := make(chan *api.VideoDetails)
 	done := make(chan error)

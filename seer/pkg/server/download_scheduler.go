@@ -131,7 +131,7 @@ func downloadWorker(
 				_ = lock.Release()
 				cancel()
 			}()
-			onProgress := make(chan *base.DownloadProgress, 1)
+			onProgress := make(chan *base.DownloadProgress, 16)
 			defer close(onProgress)
 			go func() {
 				defer func() { stopped <- struct{}{} }()
