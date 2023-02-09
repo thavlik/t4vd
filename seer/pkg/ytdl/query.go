@@ -26,7 +26,12 @@ func Query(
 	videos chan<- *api.VideoDetails,
 	limit int,
 	log *zap.Logger,
-) error {
+) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.Errorf("panic: %v", r)
+		}
+	}()
 	command := "youtube-dl -i -j"
 	if limit != 0 {
 		command += fmt.Sprintf(" --max-downloads %d", limit)
