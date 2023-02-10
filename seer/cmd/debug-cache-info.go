@@ -22,7 +22,8 @@ var debugCacheInfoArgs struct {
 }
 
 var debugCacheInfoCmd = &cobra.Command{
-	Use: "debug-cache-info",
+	Use:  "debug-cache-info",
+	Long: "This command takes an input bucket, extracts all the video IDs from the key names, fetches the corresponding metadata json from youtube, and stores it in the output bucket.",
 	PreRunE: func(cmd *cobra.Command, args []string) error {
 		base.CheckEnv("INPUT_BUCKET", &debugCacheInfoArgs.inputBucket)
 		if debugCacheInfoArgs.inputBucket == "" {
