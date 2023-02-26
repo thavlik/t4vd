@@ -296,9 +296,12 @@ class InputVideosPageState extends State<InputVideosPage> {
     super.initState();
     ScopedModel.of<BJJModel>(context)
         .refreshVideos(Navigator.of(context))
-        .then((value) => setState(() {
-              loading = false;
-            }));
+        .then((value) {
+      if (!mounted) return;
+      setState(() {
+        loading = false;
+      });
+    });
   }
 
   void addVideo(

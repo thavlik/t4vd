@@ -70,14 +70,16 @@ void main() {
     await tester.tap(findSubmit);
     await tester.pumpAndSettle();
     await pumpUntilFound(tester, find.byKey(const Key('accountTab')));
+    await tester.pumpAndSettle();
   }
 
   Future<void> doSignOut(WidgetTester tester) async {
     await tester.pumpAndSettle();
     final findAccountTab = find.byKey(const Key('accountTab'));
     await pumpUntilFound(tester, findAccountTab);
+    await tester.pumpAndSettle();
     expect(findAccountTab, findsOneWidget);
-    await tester.tap(findAccountTab);
+    await tester.tap(findAccountTab, warnIfMissed: false);
     await pumpUntilFound(tester, findAccountTab);
     await tester.pumpAndSettle();
     await tester.tap(findAccountTab);
