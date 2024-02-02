@@ -65,9 +65,6 @@ It is estimated that the story of Cain & Abel may be mankind's oldest, pre-datin
 And can you even fathom the paradise we'd create if a majority of deep learning researchers struggled with this?
 
 ## License
-This project's code is closed source. There are plans to open source parts of it in the future.
+All code in this repository is released under [MIT](LICENSE-MIT) / [Apache 2.0](LICENSE-Apache) dual license, which is extremely permissive. Please open an issue if somehow these terms are insufficient.
 
 All videos are property of their respective creators.
-
-Laselva logo is property of [Laselva MMA & Fitness](http://www.laselvamma.com/). This project was originally intended to create Brazilian Jiu-jitsu datasets, so the logo made sense for the prototype.
-
