@@ -1,8 +1,8 @@
 # t4vd (Tool for Video Data)
 [<img src="https://img.shields.io/badge/maintenance%20status-as%20is-yellow">](https://github.com/thavlik/t4vd)
+[<img src="https://img.shields.io/badge/Language-golang-blue.svg">](https://go.dev/)
 [<img src="https://img.shields.io/badge/License-Apache_2.0-orange.svg">](./LICENSE)
 [<img src="https://img.shields.io/badge/License-MIT-lightblue.svg">](./LICENSE-MIT)
-[<img src="https://img.shields.io/badge/Language-golang-blue.svg">](https://go.dev/)
 
 This project is an open source platform for simplifying the creation of video datasets. The core functionality is currently centered around labeling individual frames as "keep" or "discard", facilitating the training of models that filter "junk" frames. There are plans to implement a variety of other labeling strategies.
 
